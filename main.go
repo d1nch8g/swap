@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/liteclient"
+	"github.com/xssnick/tonutils-go/tlb"
 	"github.com/xssnick/tonutils-go/ton"
 	"github.com/xssnick/tonutils-go/ton/wallet"
 )
@@ -44,7 +47,7 @@ func main() {
 		seed = strings.Split(string(f), " ")
 	}
 
-	w, err := wallet.FromSeed(api, seed, wallet.V4R2)
+	w, err := wallet.FromSeed(api, seed, wallet.V4R1)
 	if err != nil {
 		log.Fatalln("FromSeed err:", err.Error())
 		return
@@ -71,27 +74,26 @@ func main() {
 
 	log.Println("Balance: ", balance, err)
 
-	// addr = address.MustParseAddr("UQAGCpx5L_noxcmqAD66VFiDhynHIBnkpE2--ZYm3RRU7qtB")
+	addr = address.MustParseAddr("UQAGCpx5L_noxcmqAD66VFiDhynHIBnkpE2--ZYm3RRU7qtB")
 
-	// transfer, err := w.BuildTransfer(addr, tlb.MustFromTON("0.003"), true, "Hello from tonutils-go!")
-	// if err != nil {
-	// 	log.Fatalln("Transfer err:", err.Error())
-	// 	return
-	// }
+	transfer, err := w.BuildTransfer(addr, tlb.MustFromTON("0.003"), true, "Hello from tonutils-go!")
+	if err != nil {
+		log.Fatalln("Transfer err:", err.Error())
+		return
+	}
 
-	// tx, block, err := w.SendWaitTransaction(ctx, transfer)
-	// if err != nil {
-	// 	log.Fatalln("SendWaitTransaction err:", err.Error())
-	// 	return
-	// }
+	tx, block, err := w.SendWaitTransaction(ctx, transfer)
+	if err != nil {
+		log.Fatalln("SendWaitTransaction err:", err.Error())
+		return
+	}
 
-	// balance, err = w.GetBalance(ctx, block)
-	// if err != nil {
-	// 	log.Fatalln("GetBalance err:", err.Error())
-	// 	return
-	// }
+	balance, err = w.GetBalance(ctx, block)
+	if err != nil {
+		log.Fatalln("GetBalance err:", err.Error())
+		return
+	}
 
-	// log.Printf("transaction confirmed at block %d, hash: %s balance left: %s", block.SeqNo,
-	// 	base64.StdEncoding.EncodeToString(tx.Hash), balance.String())
-
+	log.Printf("transaction confirmed at block %d, hash: %s balance left: %s", block.SeqNo,
+		base64.StdEncoding.EncodeToString(tx.Hash), balance.String())
 }
