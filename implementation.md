@@ -1,0 +1,1 @@
+## How project is structured nad implemented
