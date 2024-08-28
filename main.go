@@ -1,22 +1,21 @@
 package main
 
-func main() {
-	// client := bestchange.NewClient("2dcd269e14d6bf5060e9df0fc7ab16a7")
+import (
+	"github.com/jessevdk/go-flags"
+)
 
-	// sbpton, err := client.Rates(21, 209) // SBP to TON
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println(" ===== SBT-TON ===== Give SBT, receive TON")
-	// bestchange.PrintTable(sbpton)
+var opts struct {
+	Query  bool `short:"Q" long:"query"`
+	Remove bool `short:"R" long:"remove"`
+	Sync   bool `short:"S" long:"sync"`
+	Push   bool `short:"P" long:"push"`
+	Build  bool `short:"B" long:"build"`
+}
 
-	// tonsbp, err := client.Rates(209, 21) // TON to SBP
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println(" ===== TON-SBP ===== Give TON, receive SBT")
-	// bestchange.PrintTable(tonsbp)
+func main() error {
+	_, err := flags.NewParser(&opts, flags.IgnoreUnknown).Parse()
+	if err != nil {
+		return err
+	}
 
-	// avg := bestchange.EstimateAverageRate(sbpton, tonsbp)
-	// fmt.Printf("Average estimated price is: %f\n", avg)
 }
