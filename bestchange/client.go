@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"text/tabwriter"
 )
 
@@ -20,6 +21,7 @@ func NewClient(token string) *Client {
 
 type Rate struct {
 	Rate    string   `json:"rate"`
+	RateRev string   `json:"raterev"`
 	Inmin   string   `json:"inmin"`
 	Inmax   string   `json:"inmax"`
 	Reserve string   `json:"reserve"`
@@ -27,7 +29,7 @@ type Rate struct {
 	Changer int      `json:"changer"`
 }
 
-func (c *Client) Rates(first, second, limit uint16, reverse, order bool) ([]Rate, error) {
+func (c *Client) Rates(first, second uint16) ([]Rate, error) {
 
 	url := fmt.Sprintf("https://www.bestchange.app/v2/%s/rates/%d-%d", c.token, first, second)
 
@@ -57,14 +59,12 @@ func (c *Client) Rates(first, second, limit uint16, reverse, order bool) ([]Rate
 	}
 	slice := wrapmap["rates"][fmt.Sprintf("%d-%d", first, second)]
 
-	if limit != 0 {
-		slice = slice[:limit]
-	}
-
-	if order {
-		sort.Slice(slice, func(i, j int) bool {
-			return slice[i].Rate < slice[j].Rate
-		})
+	sort.Slice(slice, func(i, j int) bool {
+		return slice[i].Rate < slice[j].Rate
+	})
+	for i := range slice {
+		flt, _ := strconv.ParseFloat(slice[i].Rate, 8)
+		slice[i].RateRev = fmt.Sprintf("%f", 1/flt)
 	}
 
 	return slice, err
@@ -73,10 +73,28 @@ func (c *Client) Rates(first, second, limit uint16, reverse, order bool) ([]Rate
 func PrintTable(r []Rate) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 
-	fmt.Fprintln(w, "Rate\tInmin\tInmax\tReserve\tId\t")
+	fmt.Fprintln(w, "Rate\tRateRev\tInmin\tInmax\tReserve\tId\t")
 	for _, rate := range r {
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%d\t\n", rate.Rate, rate.Inmin, rate.Inmax, rate.Reserve, rate.Changer)
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%d\t\n", rate.Rate, rate.RateRev, rate.Inmin, rate.Inmax, rate.Reserve, rate.Changer)
 	}
 	w.Flush()
+}
 
+func EstimateAverageRate(forward, backward []Rate) float64 {
+	var result float64
+	for i := range forward {
+		if i == 3 {
+			break
+		}
+		flt, _ := strconv.ParseFloat(forward[i].Rate, 8)
+		result += flt
+	}
+	for i := range backward {
+		if i == 3 {
+			break
+		}
+		flt, _ := strconv.ParseFloat(backward[i].RateRev, 8)
+		result += flt
+	}
+	return result / 6
 }
