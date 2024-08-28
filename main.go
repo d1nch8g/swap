@@ -2,18 +2,23 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jessevdk/go-flags"
+	"ion.lc/d1nhc8g/bitchange/endpoints"
+	"ion.lc/d1nhc8g/bitchange/gen/database"
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/labstack/echo/v4"
+
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/github"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 var opts struct {
-	Port     int32  `long:"port" env:"PORT"`
+	Port     string `long:"port" env:"PORT"`
 	Database string `long:"database" env:"DATABASE"`
 }
 
@@ -23,12 +28,6 @@ func main() {
 		panic(err)
 	}
 
-	conn, err := pgx.Connect(context.Background(), opts.Database)
-	if err != nil {
-		panic(err)
-	}
-	defer conn.Close(context.Background())
-
 	m, err := migrate.New(
 		"file://db/migrations",
 		opts.Database,
@@ -36,6 +35,28 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	m.Steps(2)
 
+	err = m.Up()
+	if err != nil {
+		if !errors.Is(err, migrate.ErrNoChange) {
+			panic(err)
+		}
+	}
+
+	conn, err := pgx.Connect(context.Background(), opts.Database)
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close(context.Background())
+
+	sqlc := database.New(conn)
+
+	e := echo.New()
+
+	endpoints := endpoints.Create(e, sqlc)
+
+	err = endpoints.Run("localhost:" + opts.Port)
+	if err != nil {
+		panic(err)
+	}
 }

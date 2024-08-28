@@ -4,10 +4,6 @@
 
 package database
 
-import (
-	"github.com/jackc/pgx/v5/pgtype"
-)
-
 type Admin struct {
 	ID        int64
 	Email     string
@@ -16,10 +12,10 @@ type Admin struct {
 
 type Exchanger struct {
 	ID      int64
-	Inmin   pgtype.Numeric
-	Inmax   pgtype.Numeric
-	Reserve pgtype.Numeric
-	Rate    pgtype.Numeric
+	Inmin   float64
+	Inmax   float64
+	Reserve float64
+	Rate    float64
 	Change  string
 }
 
