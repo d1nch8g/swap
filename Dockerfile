@@ -35,6 +35,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=builder /microservice/microservice .
 COPY --from=builder /microservice/db/migrations ./db/migrations
+COPY --from=builder /microservice/public ./public
 
 # Running as appuser
 USER appuser:appuser

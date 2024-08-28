@@ -14,15 +14,13 @@ type mapper struct {
 
 func Create(e *echo.Echo, d *database.Queries) *mapper {
 	e.Static("/", "public")
-
 	m := &mapper{
 		Queries: d,
 		Echo:    e,
 	}
 
-	e.POST("/order/{from}/{to}", func(c echo.Context) error {
-		return nil
-	})
+	e.POST("/params/{from}/{to}", m.ActualParams)
+	e.POST("/order/{from}/{to}", m.CreateOrder)
 
 	return m
 }
