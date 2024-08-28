@@ -6,15 +6,16 @@ LIMIT 1;
 -- name: ListUsers :many
 SELECT *
 FROM users
-ORDER BY name;
+ORDER BY card;
 -- name: CreateUser :one
 INSERT INTO users (email, card, verified)
 VALUES ($1, $2, $3)
 RETURNING *;
 -- name: UpdateUser :exec
 UPDATE users
-set name = $2,
-  bio = $3
+set email = $2,
+  card = $3,
+  verified = $4
 WHERE id = $1
 RETURNING *;
 -- name: DeleteUser :exec

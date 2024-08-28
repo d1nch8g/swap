@@ -34,6 +34,7 @@ COPY --from=builder /etc/group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=builder /microservice/microservice .
+COPY --from=builder /microservice/db/migrations ./db/migrations
 
 # Running as appuser
 USER appuser:appuser
