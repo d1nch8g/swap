@@ -25,3 +25,5 @@ go.work
 
 data/*
 .vscode/*
+node_modules/*
+dist/*

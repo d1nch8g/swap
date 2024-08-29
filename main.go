@@ -55,7 +55,7 @@ func main() {
 
 	endpoints := endpoints.Create(e, sqlc)
 
-	err = endpoints.Run("localhost:" + opts.Port)
+	err = endpoints.Run(opts.Port)
 	if err != nil {
 		panic(err)
 	}

@@ -9,13 +9,17 @@ format:
 	gofmt -w .
 
 rundb:
-	docker run --rm -it 
+	docker compose up
 
 migrate:
 	migrate -path db/migrations/ -database "postgresql://user:password@localhost:5432/db?sslmode=disable" -verbose up
+
+run:
+	go run . --port 8080 --database "postgresql://user:password@localhost:5432/db?sslmode=disable"
 
 # Generates database related and swagger documentation from request comments (also checks migration schema)
 .PHONY: gen
 gen:
 	sqlc generate
+	npm run build
 

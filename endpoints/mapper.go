@@ -13,7 +13,7 @@ type mapper struct {
 }
 
 func Create(e *echo.Echo, d *database.Queries) *mapper {
-	e.Static("/", "public")
+	e.Static("/", "dist")
 	m := &mapper{
 		Queries: d,
 		Echo:    e,
@@ -26,6 +26,6 @@ func Create(e *echo.Echo, d *database.Queries) *mapper {
 }
 
 func (m *mapper) Run(port string) error {
-	m.Echo.Logger.Fatal(m.Echo.Start(port))
+	m.Echo.Logger.Fatal(m.Echo.Start("localhost:" + port))
 	return errors.New("unable to run anymore")
 }
