@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/jessevdk/go-flags"
+	"ion.lc/d1nhc8g/bitchange/bestchange"
 	"ion.lc/d1nhc8g/bitchange/endpoints"
 	"ion.lc/d1nhc8g/bitchange/gen/database"
 
@@ -18,8 +19,9 @@ import (
 )
 
 var opts struct {
-	Port     string `long:"port" env:"PORT"`
-	Database string `long:"database" env:"DATABASE"`
+	Port       string `long:"port" env:"PORT"`
+	Database   string `long:"database" env:"DATABASE"`
+	Bestchange string `long:"bestchange" env:"BESTCHANGE"`
 }
 
 func main() {
@@ -50,10 +52,10 @@ func main() {
 	defer conn.Close(context.Background())
 
 	sqlc := database.New(conn)
+	bestchange := bestchange.New(opts.Bestchange)
+	echo := echo.New()
 
-	e := echo.New()
-
-	endpoints := endpoints.Create(e, sqlc)
+	endpoints := endpoints.Create(echo, sqlc, bestchange)
 
 	err = endpoints.Run(opts.Port)
 	if err != nil {
