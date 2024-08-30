@@ -12,7 +12,6 @@ import { RouterLink, RouterView } from 'vue-router'
       <RouterLink to="/transfer">Transfer</RouterLink>
       <RouterLink to="/verify">Verify</RouterLink>
     </nav>
-    example
   </header>
 
   <RouterView />
