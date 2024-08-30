@@ -1,27 +1,34 @@
-package endpoints
+package server
 
 import (
 	"fmt"
 
 	"github.com/labstack/echo/v4"
 	"ion.lc/d1nhc8g/bitchange/bestchange"
+	"ion.lc/d1nhc8g/bitchange/gen/database"
 )
 
-func (m *mapper) ActualParams(c echo.Context) error {
-	var request struct {
-		Give    uint16 `query:"give"`
-		Receive uint16 `query:"receive"`
-	}
-	c.Bind(&request)
+type orderservice struct {
+	db *database.Queries
+	e  *echo.Echo
+	bc *bestchange.Client
+}
 
-	sbpton, err := m.bc.Rates(request.Give, request.Receive)
+func (m *orderservice) ActualParams(c echo.Context) error {
+	give := c.Param("give")
+	receive := c.Param("receive")
+
+	fmt.Println("taking rates")
+	sbpton, err := m.bc.Rates(give, receive)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(" ===== SBT-TON ===== Give SBT, receive TON")
 	bestchange.PrintTable(sbpton)
 
-	tonsbp, err := m.bc.Rates(request.Receive, request.Give)
+	fmt.Println("taking rates second")
+
+	tonsbp, err := m.bc.Rates(receive, give)
 	if err != nil {
 		panic(err)
 	}
@@ -34,6 +41,6 @@ func (m *mapper) ActualParams(c echo.Context) error {
 	return nil
 }
 
-func (m *mapper) CreateOrder(c echo.Context) error {
+func (m *orderservice) CreateOrder(c echo.Context) error {
 	return nil
 }

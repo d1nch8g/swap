@@ -6,8 +6,8 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	"ion.lc/d1nhc8g/bitchange/bestchange"
-	"ion.lc/d1nhc8g/bitchange/endpoints"
 	"ion.lc/d1nhc8g/bitchange/gen/database"
+	"ion.lc/d1nhc8g/bitchange/server"
 
 	"github.com/jackc/pgx/v5"
 
@@ -22,6 +22,7 @@ var opts struct {
 	Port       string `long:"port" env:"PORT"`
 	Database   string `long:"database" env:"DATABASE"`
 	Bestchange string `long:"bestchange" env:"BESTCHANGE"`
+	Dir        string `long:"dir" env:"DIR" default:"dist"`
 }
 
 func main() {
@@ -55,10 +56,5 @@ func main() {
 	bestchange := bestchange.New(opts.Bestchange)
 	echo := echo.New()
 
-	endpoints := endpoints.Create(echo, sqlc, bestchange)
-
-	err = endpoints.Run(opts.Port)
-	if err != nil {
-		panic(err)
-	}
+	server.Run(opts.Dir, opts.Port, echo, sqlc, bestchange)
 }

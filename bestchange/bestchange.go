@@ -24,7 +24,10 @@ type Response struct {
 
 // Create bestchange client.
 func New(token string) *Client {
-	return &Client{token: token}
+	return &Client{
+		token: token,
+		cache: map[string]Response{},
+	}
 }
 
 // Exchanger with specific rate.
@@ -39,10 +42,10 @@ type Rate struct {
 }
 
 // Receive exchanger rates from bestchange for 2 currency ID's.
-func (c *Client) Rates(first, second uint16) ([]Rate, error) {
+func (c *Client) Rates(first, second string) ([]Rate, error) {
 	var body Response
 
-	url := fmt.Sprintf("https://www.bestchange.app/v2/%s/rates/%d-%d", c.token, first, second)
+	url := fmt.Sprintf("https://www.bestchange.app/v2/%s/rates/%s-%s", c.token, first, second)
 
 	value, ok := c.cache[url]
 	if ok && time.Since(value.Time) < time.Minute {
@@ -77,7 +80,7 @@ func (c *Client) Rates(first, second uint16) ([]Rate, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to unmarshal request 1: %v", err)
 	}
-	rates := wrapmap["rates"][fmt.Sprintf("%d-%d", first, second)]
+	rates := wrapmap["rates"][fmt.Sprintf("%s-%s", first, second)]
 
 	sort.Slice(rates, func(i, j int) bool {
 		return rates[i].Rate < rates[j].Rate
