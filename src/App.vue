@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
   <header>
     <nav>
       <RouterLink to="/">Home</RouterLink>
-      <RouterLink to="/ton-rub">TON-RUB</RouterLink>
+      <RouterLink to="/contacts">Contacts</RouterLink>
+      <RouterLink to="/description">Description</RouterLink>
+      <RouterLink to="/order">Order</RouterLink>
+      <RouterLink to="/transfer">Transfer</RouterLink>
+      <RouterLink to="/verify">Verify</RouterLink>
     </nav>
+    example
   </header>
 
   <RouterView />

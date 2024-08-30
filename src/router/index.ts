@@ -1,6 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import AboutView from '../views/AboutView.vue'
+import HomeView from '../views/Home.vue'
+import Contacts from '@/views/Contacts.vue'
+import Description from '@/views/Description.vue'
+import Order from '@/views/Order.vue'
+import Transfer from '@/views/Transfer.vue'
+import Verify from '@/views/Verify.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,14 +15,29 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: '/ton-rub',
-      name: 'ton-rub',
-      component: () => AboutView
+      path: '/contacts',
+      name: 'contacts',
+      component: Contacts
     },
     {
-      path: '/rub-ton',
-      name: 'rub-ton',
-      component: () => AboutView
+      path: '/description',
+      name: 'description',
+      component: Description
+    },
+    {
+      path: '/order',
+      name: 'order',
+      component: Order
+    },
+    {
+      path: '/transfer',
+      name: 'transfer',
+      component: Transfer
+    },
+    {
+      path: '/verify',
+      name: 'verify',
+      component: Verify
     }
   ]
 })
