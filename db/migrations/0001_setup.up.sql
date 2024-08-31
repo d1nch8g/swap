@@ -1,9 +1,9 @@
 CREATE TABLE currencies (
   id BIGSERIAL PRIMARY KEY,
-  code VARCHAR (50) UNIQUE NOT NULL,
-  description VARCHAR (50) UNIQUE NOT NULL,
-  bestchange_id VARCHAR (50) UNIQUE NOT NULL,
-  accepted_window VARCHAR (50) NOT NULL,
+  code TEXT UNIQUE NOT NULL,
+  description TEXT UNIQUE NOT NULL,
+  bestchange_id TEXT UNIQUE NOT NULL,
+  accepted_window TEXT NOT NULL,
   require_payment_verification BOOLEAN NOT NULL
 );
 CREATE TABLE exchangers (
@@ -18,11 +18,12 @@ CREATE TABLE exchangers (
 );
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
-  email VARCHAR (50) UNIQUE NOT NULL,
+  email TEXT UNIQUE NOT NULL,
   verified BOOLEAN NOT NULL,
-  passwhash VARCHAR (50) UNIQUE NOT NULL,
+  passwhash TEXT UNIQUE NOT NULL,
   admin BOOLEAN NOT NULL,
   active BOOLEAN NOT NULL,
+  token TEXT NOT NULL,
   busy BOOLEAN NOT NULL
 );
 CREATE TABLE user_balances (

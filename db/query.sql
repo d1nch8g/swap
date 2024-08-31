@@ -31,8 +31,16 @@ set rate = $2
 WHERE id = $1
 RETURNING *;
 -- name: CreateUser :one
-INSERT INTO users (email, verified, passwhash, admin, active, busy)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO users (
+    email,
+    verified,
+    passwhash,
+    admin,
+    active,
+    busy,
+    token
+  )
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 -- name: UpdateBusy :one
 UPDATE users
@@ -52,6 +60,11 @@ ORDER BY email;
 UPDATE users
 SET verified = $2
 WHERE email = $1
+RETURNING *;
+-- name: UpdateUserToken :one
+UPDATE users
+SET token = $2
+WHERE id = $1
 RETURNING *;
 -- name: CreateUserBalance :one
 INSERT INTO user_balances (user_id, currency_id, balance, address)

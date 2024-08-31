@@ -22,5 +22,3 @@ run:
 .PHONY: gen
 gen:
 	sqlc generate
-	npm run build
-

@@ -13,16 +13,14 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 
 	api := e.Group("/api")
 
-	orderservice := &orderservice{
+	userSvc := &UserService{
 		db: d,
 		e:  e,
 		bc: b,
 	}
-	api.POST("/neworder", orderservice.CreateOrder)
-	api.GET("/params/:give/:receive", orderservice.ActualParams)
 
-	api.GET("/neworder/*", orderservice.CreateOrder)
-	api.GET("/info", orderservice.CreateOrder)
+	api.POST("/login", userSvc.Login)
+	
 
 	if tls != "" {
 		e.Logger.Fatal(e.StartAutoTLS(tls))

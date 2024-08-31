@@ -48,6 +48,7 @@ type User struct {
 	Passwhash string
 	Admin     bool
 	Active    bool
+	Token     string
 	Busy      bool
 }
 

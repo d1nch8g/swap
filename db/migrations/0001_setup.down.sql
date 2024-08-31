@@ -1,5 +1,6 @@
-DROP TABLE order_chats;
-DROP TABLE admins;
+DROP TABLE currencies;
 DROP TABLE exchangers;
-DROP TABLE orders;
 DROP TABLE users;
+DROP TABLE user_balances;
+DROP TABLE payment_confirmations;
+DROP TABLE orders;

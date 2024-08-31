@@ -166,9 +166,17 @@ func (q *Queries) CreatePaymentConfirmation(ctx context.Context, arg CreatePayme
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (email, verified, passwhash, admin, active, busy)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, email, verified, passwhash, admin, active, busy
+INSERT INTO users (
+    email,
+    verified,
+    passwhash,
+    admin,
+    active,
+    busy,
+    token
+  )
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, email, verified, passwhash, admin, active, token, busy
 `
 
 type CreateUserParams struct {
@@ -178,6 +186,7 @@ type CreateUserParams struct {
 	Admin     bool
 	Active    bool
 	Busy      bool
+	Token     string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -188,6 +197,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Admin,
 		arg.Active,
 		arg.Busy,
+		arg.Token,
 	)
 	var i User
 	err := row.Scan(
@@ -197,6 +207,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Passwhash,
 		&i.Admin,
 		&i.Active,
+		&i.Token,
 		&i.Busy,
 	)
 	return i, err
@@ -287,7 +298,7 @@ func (q *Queries) GetPaymentConfirmation(ctx context.Context, id int64) (Payment
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, verified, passwhash, admin, active, busy
+SELECT id, email, verified, passwhash, admin, active, token, busy
 FROM users
 WHERE email = $1
 LIMIT 1
@@ -303,6 +314,7 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 		&i.Passwhash,
 		&i.Admin,
 		&i.Active,
+		&i.Token,
 		&i.Busy,
 	)
 	return i, err
@@ -341,7 +353,7 @@ func (q *Queries) ListCurrencies(ctx context.Context) ([]Currency, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, verified, passwhash, admin, active, busy
+SELECT id, email, verified, passwhash, admin, active, token, busy
 FROM users
 ORDER BY email
 `
@@ -362,6 +374,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.Passwhash,
 			&i.Admin,
 			&i.Active,
+			&i.Token,
 			&i.Busy,
 		); err != nil {
 			return nil, err
@@ -378,7 +391,7 @@ const updateBusy = `-- name: UpdateBusy :one
 UPDATE users
 SET busy = $2
 WHERE email = $1
-RETURNING id, email, verified, passwhash, admin, active, busy
+RETURNING id, email, verified, passwhash, admin, active, token, busy
 `
 
 type UpdateBusyParams struct {
@@ -396,6 +409,7 @@ func (q *Queries) UpdateBusy(ctx context.Context, arg UpdateBusyParams) (User, e
 		&i.Passwhash,
 		&i.Admin,
 		&i.Active,
+		&i.Token,
 		&i.Busy,
 	)
 	return i, err
@@ -480,11 +494,39 @@ func (q *Queries) UpdateUserBalance(ctx context.Context, arg UpdateUserBalancePa
 	return i, err
 }
 
+const updateUserToken = `-- name: UpdateUserToken :one
+UPDATE users
+SET token = $2
+WHERE id = $1
+RETURNING id, email, verified, passwhash, admin, active, token, busy
+`
+
+type UpdateUserTokenParams struct {
+	ID    int64
+	Token string
+}
+
+func (q *Queries) UpdateUserToken(ctx context.Context, arg UpdateUserTokenParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserToken, arg.ID, arg.Token)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Verified,
+		&i.Passwhash,
+		&i.Admin,
+		&i.Active,
+		&i.Token,
+		&i.Busy,
+	)
+	return i, err
+}
+
 const updateUserVerified = `-- name: UpdateUserVerified :one
 UPDATE users
 SET verified = $2
 WHERE email = $1
-RETURNING id, email, verified, passwhash, admin, active, busy
+RETURNING id, email, verified, passwhash, admin, active, token, busy
 `
 
 type UpdateUserVerifiedParams struct {
@@ -502,6 +544,7 @@ func (q *Queries) UpdateUserVerified(ctx context.Context, arg UpdateUserVerified
 		&i.Passwhash,
 		&i.Admin,
 		&i.Active,
+		&i.Token,
 		&i.Busy,
 	)
 	return i, err

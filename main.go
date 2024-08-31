@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"crypto/sha512"
+	"encoding/base64"
 	"errors"
+	"strings"
 
 	"ion.lc/d1nhc8g/bitchange/bestchange"
 	"ion.lc/d1nhc8g/bitchange/gen/database"
@@ -22,7 +25,7 @@ var opts struct {
 	Dir        string `long:"dir" env:"DIR" default:"dist"`
 	Bestchange string `long:"bestchange" env:"BESTCHANGE"`
 	Tls        string `long:"tls" env:"TLS"`
-	Admin      string `long:"admin" env:"ADMIN" default:"admin:password:support@inswap.in"`
+	Admin      string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
 }
 
 func main() {
@@ -55,6 +58,23 @@ func main() {
 	e := echo.New()
 	sqlc := database.New(conn)
 	bc := bestchange.New(opts.Bestchange)
+
+	hasher := sha512.New()
+	hasher.Write([]byte(strings.Split(opts.Admin, ":")[0]))
+	passhash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
+	_, err = sqlc.CreateUser(context.Background(), database.CreateUserParams{
+		Email:     strings.Split(opts.Admin, ":")[1],
+		Verified:  true,
+		Passwhash: passhash,
+		Admin:     true,
+		Active:    true,
+		Busy:      false,
+		Token:     "nil",
+	})
+	if err != nil && !strings.Contains(err.Error(), "duplicate key value violates unique constraint ") {
+		panic(err)
+	}
 
 	server.Run(opts.Dir, opts.Port, opts.Tls, e, sqlc, bc)
 }

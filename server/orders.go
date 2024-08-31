@@ -6,18 +6,18 @@ import (
 	"ion.lc/d1nhc8g/bitchange/gen/database"
 )
 
-type orderservice struct {
+type OrderService struct {
 	db *database.Queries
 	e  *echo.Echo
 	bc *bestchange.Client
 }
 
-func (m *orderservice) ActualParams(c echo.Context) error {
+func (m *OrderService) ActualParams(c echo.Context) error {
 
 	// min max exchange rate
 	return nil
 }
 
-func (m *orderservice) CreateOrder(c echo.Context) error {
+func (m *OrderService) CreateOrder(c echo.Context) error {
 	return nil
 }
