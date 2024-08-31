@@ -6,6 +6,8 @@ import (
 	"ion.lc/d1nhc8g/bitchange/gen/database"
 )
 
+// add endpoint to give exchangers info for bestchange
+
 func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange.Client) {
 	e.Static("/", dir)
 

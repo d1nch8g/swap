@@ -22,6 +22,7 @@ var opts struct {
 	Dir        string `long:"dir" env:"DIR" default:"dist"`
 	Bestchange string `long:"bestchange" env:"BESTCHANGE"`
 	Tls        string `long:"tls" env:"TLS"`
+	Admin      string `long:"admin" env:"ADMIN" default:"admin:password:support@inswap.in"`
 }
 
 func main() {

@@ -3,7 +3,6 @@ module ion.lc/d1nhc8g/bitchange
 go 1.23.0
 
 require (
-	github.com/golang-migrate/migrate v3.5.4+incompatible
 	github.com/golang-migrate/migrate/v4 v4.17.1
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/jessevdk/go-flags v1.6.1

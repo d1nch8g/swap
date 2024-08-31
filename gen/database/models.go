@@ -4,37 +4,57 @@
 
 package database
 
-type Admin struct {
-	ID        int64
-	Email     string
-	Passwhash string
+type Currency struct {
+	ID                         int64
+	Code                       string
+	Description                string
+	BestchangeID               string
+	AcceptedWindow             string
+	RequirePaymentVerification bool
 }
 
 type Exchanger struct {
-	ID      int64
-	Inmin   float64
-	Inmax   float64
-	Reserve float64
-	Rate    float64
-	Change  string
+	ID          int64
+	Rate        float64
+	Inmin       float64
+	Description string
+	Input       int64
+	Output      int64
 }
 
 type Order struct {
-	ID      int64
-	Give    string
-	Receive string
-	UserID  int64
+	ID          int64
+	UserID      int64
+	OperatorID  int64
+	ExchangerID int64
+	AmountIn    float64
+	AmountOut   float64
+	Finished    bool
 }
 
-type OrderChat struct {
-	ID      int64
-	UserID  int64
-	OrderID int64
+type PaymentConfirmation struct {
+	ID         int64
+	UserID     int64
+	CurrencyID int64
+	Address    string
+	Verified   bool
+	Image      []byte
 }
 
 type User struct {
-	ID       int64
-	Email    string
-	Card     string
-	Verified bool
+	ID        int64
+	Email     string
+	Verified  bool
+	Passwhash string
+	Admin     bool
+	Active    bool
+	Busy      bool
+}
+
+type UserBalance struct {
+	ID         int64
+	UserID     int64
+	CurrencyID int64
+	Balance    float64
+	Address    string
 }

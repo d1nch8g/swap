@@ -1,33 +1,58 @@
-CREATE TABLE users (
+CREATE TABLE currencies (
   id BIGSERIAL PRIMARY KEY,
-  email VARCHAR (50) UNIQUE NOT NULL,
-  card VARCHAR (50) UNIQUE NOT NULL,
-  verified BOOLEAN NOT NULL
-);
-CREATE TABLE admins (
-  id BIGSERIAL PRIMARY KEY,
-  email VARCHAR (50) UNIQUE NOT NULL,
-  PASSWHASH VARCHAR (50) NOT NULL
-);
-CREATE TABLE orders (
-  id BIGSERIAL PRIMARY KEY,
-  give TEXT NOT NULL,
-  receive TEXT NOT NULL,
-  user_id BIGSERIAL NOT NULL,
-  CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id)
+  code VARCHAR (50) UNIQUE NOT NULL,
+  description VARCHAR (50) UNIQUE NOT NULL,
+  bestchange_id VARCHAR (50) UNIQUE NOT NULL,
+  accepted_window VARCHAR (50) NOT NULL,
+  require_payment_verification BOOLEAN NOT NULL
 );
 CREATE TABLE exchangers (
   id BIGSERIAL PRIMARY KEY,
-  inmin DOUBLE PRECISION NOT NULL,
-  inmax DOUBLE PRECISION NOT NULL,
-  reserve DOUBLE PRECISION NOT NULL,
   rate DOUBLE PRECISION NOT NULL,
-  change TEXT NOT NULL
+  inmin DOUBLE PRECISION NOT NULL,
+  description TEXT NOT NULL,
+  input BIGSERIAL NOT NULL,
+  CONSTRAINT fk_curr_in FOREIGN KEY(input) REFERENCES currencies(id),
+  output BIGSERIAL NOT NULL,
+  CONSTRAINT fk_curr_out FOREIGN KEY(output) REFERENCES currencies(id)
 );
-CREATE TABLE order_chats (
+CREATE TABLE users (
+  id BIGSERIAL PRIMARY KEY,
+  email VARCHAR (50) UNIQUE NOT NULL,
+  verified BOOLEAN NOT NULL,
+  passwhash VARCHAR (50) UNIQUE NOT NULL,
+  admin BOOLEAN NOT NULL,
+  active BOOLEAN NOT NULL,
+  busy BOOLEAN NOT NULL
+);
+CREATE TABLE user_balances (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGSERIAL NOT NULL,
+  CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(id),
+  currency_id BIGSERIAL NOT NULL,
+  CONSTRAINT fk_currency_id FOREIGN KEY(currency_id) REFERENCES currencies(id),
+  balance DOUBLE PRECISION NOT NULL,
+  address TEXT UNIQUE NOT NULL
+);
+CREATE TABLE payment_confirmations (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGSERIAL NOT NULL,
+  CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(id),
+  currency_id BIGSERIAL NOT NULL,
+  CONSTRAINT fk_currency_id FOREIGN KEY(currency_id) REFERENCES currencies(id),
+  address TEXT UNIQUE NOT NULL,
+  verified BOOLEAN NOT NULL,
+  image BYTEA
+);
+CREATE TABLE orders (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGSERIAL NOT NULL,
   CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id),
-  order_id BIGSERIAL NOT NULL,
-  CONSTRAINT fk_order FOREIGN KEY(order_id) REFERENCES orders(id)
+  operator_id BIGSERIAL NOT NULL,
+  CONSTRAINT fk_operator FOREIGN KEY(operator_id) REFERENCES users(id),
+  exchanger_id BIGSERIAL NOT NULL,
+  CONSTRAINT fk_exchanger_id FOREIGN KEY(exchanger_id) REFERENCES exchangers(id),
+  amount_in DOUBLE PRECISION NOT NULL,
+  amount_out DOUBLE PRECISION NOT NULL,
+  finished BOOLEAN NOT NULL
 );

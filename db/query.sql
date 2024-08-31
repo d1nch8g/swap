@@ -1,23 +1,89 @@
+-- name: CreateCurrency :one
+INSERT INTO currencies (
+    code,
+    description,
+    bestchange_id,
+    accepted_window,
+    require_payment_verification
+  )
+VALUES ($1, $2, $3, $4, $5)
+RETURNING *;
+-- name: ListCurrencies :many
+SELECT *
+FROM currencies;
+-- name: GetCurrencyByCode :many
+SELECT *
+FROM currencies
+WHERE code = $1;
+-- name: CreateExchanger :one
+INSERT INTO exchangers (
+    rate,
+    description,
+    inmin,
+    input,
+    output
+  )
+VALUES ($1, $2, $3, $4, $5)
+RETURNING *;
+-- name: UpdateExchangerRate :one
+UPDATE exchangers
+set rate = $2
+WHERE id = $1
+RETURNING *;
+-- name: CreateUser :one
+INSERT INTO users (email, verified, passwhash, admin, active, busy)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING *;
+-- name: UpdateBusy :one
+UPDATE users
+SET busy = $2
+WHERE email = $1
+RETURNING *;
 -- name: GetUser :one
 SELECT *
 FROM users
-WHERE id = $1
+WHERE email = $1
 LIMIT 1;
 -- name: ListUsers :many
 SELECT *
 FROM users
-ORDER BY card;
--- name: CreateUser :one
-INSERT INTO users (email, card, verified)
-VALUES ($1, $2, $3)
-RETURNING *;
--- name: UpdateUser :exec
+ORDER BY email;
+-- name: UpdateUserVerified :one
 UPDATE users
-set email = $2,
-  card = $3,
-  verified = $4
+SET verified = $2
+WHERE email = $1
+RETURNING *;
+-- name: CreateUserBalance :one
+INSERT INTO user_balances (user_id, currency_id, balance, address)
+VALUES ($1, $2, $3, $4)
+RETURNING *;
+-- name: UpdateUserBalance :one
+UPDATE user_balances
+SET balance = $2
 WHERE id = $1
 RETURNING *;
--- name: DeleteUser :exec
-DELETE FROM users
+-- name: CreatePaymentConfirmation :one
+INSERT INTO payment_confirmations (user_id, currency_id, address, verified)
+VALUES ($1, $2, $3, $4)
+RETURNING *;
+-- name: GetPaymentConfirmation :one
+SELECT *
+FROM payment_confirmations
 WHERE id = $1;
+-- name: UpdatePaymentConfirmationImage :one
+UPDATE payment_confirmations
+SET image = $2,
+  verified = $3
+WHERE id = $1
+RETURNING *;
+-- name: CreateOrder :one
+INSERT INTO orders (
+    user_id,
+    operator_id,
+    exchanger_id,
+    amount_in,
+    amount_out,
+    finished
+  )
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING *;
