@@ -20,7 +20,15 @@ type UserService struct {
 	bc *bestchange.Client
 }
 
-// This method will issue token for user and give it to new users.
+// @Summary	Login to platform user account
+// @ID			login
+// @Accept		json
+// @Produce	json
+// @Param		Email		header		string	true	"Some ID"
+// @Param		Password	header		string	true	"Some ID"
+// @Success	200			{string}	string	"ok"
+// @Failure	401			{object}	string	"Unautharized"
+// @Router		/api/login [get]
 func (s *UserService) Login(c echo.Context) error {
 	email := c.Request().Header["Email"]
 	password := c.Request().Header["Password"]
@@ -69,6 +77,15 @@ type Orders struct {
 	ActiveOrders []database.Order `json:"orders"`
 }
 
+// @Summary	Login to platform user account
+// @ID			login
+// @Accept		json
+// @Produce	json
+// @Param		Email		header		string	true	"Some ID"
+// @Param		Password	header		string	true	"Some ID"
+// @Success	200			{string}	string	"ok"
+// @Failure	401			{object}	string	"Unautharized"
+// @Router		/api/login [get]
 func (s *UserService) GetOrders(c echo.Context) error {
 	orders, err := s.db.OrdersUnfinished(c.Request().Context())
 	if err != nil {

@@ -12,24 +12,29 @@ import (
 // add endpoint to give exchangers info for bestchange
 
 func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange.Client) {
+	userSvc := &UserService{
+		db: d,
+		e:  e,
+		bc: b,
+	}
+	orserSvc := &OrderService{
+		db: d,
+		e:  e,
+		bc: b,
+	}
+
 	e.Use(middleware.Logger())
 
 	e.Static("/", dir)
 
 	api := e.Group("/api")
 
-	userSvc := &UserService{
-		db: d,
-		e:  e,
-		bc: b,
-	}
-
 	api.POST("/login", userSvc.Login)
-	api.POST("/create", userSvc.CreateUser)
+	api.POST("/createuser", userSvc.CreateUser)
+	api.POST("/createorder", orserSvc.CreateOrder)
 
 	admin := api.Group("/admin")
 
-	admin.GET("/getorders", userSvc.GetOrders)
 	admin.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		token := c.Request().Header["Token"]
 		if token == nil {
@@ -44,6 +49,7 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 		}
 		return true, nil
 	}))
+	admin.GET("/getorders", userSvc.GetOrders)
 
 	if tls != "" {
 		e.Logger.Fatal(e.StartAutoTLS(tls))

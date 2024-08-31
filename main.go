@@ -19,6 +19,21 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//	@title			Bitchange API
+//	@version		1.0
+//	@description	Simple exchanger software API.
+//	@termsOfService	http://inswap.in/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://inswap.in/support
+//	@contact.email	support@inswap.in
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@host		inswap.in
+//	@BasePath	/
+
 var opts struct {
 	Port       string `long:"port" env:"PORT" default:"8080"`
 	Database   string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`

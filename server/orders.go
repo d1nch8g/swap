@@ -12,13 +12,25 @@ type OrderService struct {
 	bc *bestchange.Client
 }
 
-// type CreateOrderRequest struct{
-// 	User
-// }
+type CreateOrderRequest struct {
+	Email  string  `json:"email"`
+	Input  string  `json:"input"`
+	Ouput  string  `json:"output"`
+	Amount float64 `json:"amount"`
+}
 
 // This function is used to create order
 func (m *OrderService) CreateOrder(c echo.Context) error {
+	us := &UserService{
+		db: m.db,
+		e:  m.e,
+		bc: m.bc,
+	}
+	err := us.CreateUser(c)
+	if err != nil {
+		return err
+	}
 
-	// m.bc.EstimateOperation()
+	// Estimate exchange rate for order and create it for user with one free admin
 	return nil
 }

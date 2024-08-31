@@ -18,8 +18,8 @@ type Client struct {
 }
 
 type Response struct {
-	Rates []byte
-	Time  time.Time
+	Resp []byte
+	Time time.Time
 }
 
 // Create bestchange client.
@@ -56,7 +56,6 @@ func (c *Client) Rates(first, second string) ([]Rate, error) {
 			return nil, fmt.Errorf("unable to create request: %v", err)
 		}
 
-		req.Header.Add("User-Agent", "Thunder Client (https://www.thunderclient.com)")
 		req.Header.Add("accept", "application/json")
 
 		res, err := http.DefaultClient.Do(req)
@@ -70,16 +69,16 @@ func (c *Client) Rates(first, second string) ([]Rate, error) {
 			return nil, fmt.Errorf("unable to read response: %v", err)
 		}
 		c.cache[url] = Response{
-			Rates: cacheBody,
-			Time:  time.Now(),
+			Resp: cacheBody,
+			Time: time.Now(),
 		}
-		body = Response{Rates: cacheBody}
+		body = Response{Resp: cacheBody}
 	}
 
 	wrapmap := map[string]map[string][]Rate{}
-	err := json.Unmarshal(body.Rates, &wrapmap)
+	err := json.Unmarshal(body.Resp, &wrapmap)
 	if err != nil {
-		return nil, fmt.Errorf("unable to unmarshal request: %v", err)
+		return nil, fmt.Errorf("unable to unmarshal response: %v", err)
 	}
 	rates := wrapmap["rates"][fmt.Sprintf("%s-%s", first, second)]
 
@@ -103,6 +102,59 @@ func (c *Client) PrintTable(r []Rate) {
 		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%d\t\n", rate.Rate, rate.RateRev, rate.Inmin, rate.Inmax, rate.Reserve, rate.Changer)
 	}
 	w.Flush()
+}
+
+type Currencies struct {
+	Currencies []Currency `json:"currencies"`
+}
+
+type Currency struct {
+	Id   int    `json:"id"`
+	Code string `json:"code"`
+}
+
+// Create currency id to currency card mapper.
+func (c *Client) CreateCurrencyMapper() (map[string]string, error) {
+	var body Response
+
+	url := fmt.Sprintf("https://www.bestchange.app/v2/%s/currencies/ru", c.token)
+
+	value, ok := c.cache[url]
+	if ok && time.Since(value.Time) < time.Minute {
+		body = value
+	} else {
+		req, _ := http.NewRequest("GET", url, nil)
+
+		req.Header.Add("accept", "application/json")
+
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("unable to execute request: %v", err)
+		}
+
+		defer res.Body.Close()
+		cacheBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, fmt.Errorf("unable to read response: %v", err)
+		}
+		c.cache[url] = Response{
+			Resp: cacheBody,
+			Time: time.Now(),
+		}
+		body = Response{Resp: cacheBody}
+	}
+
+	var currencies Currencies
+	err := json.Unmarshal(body.Resp, &currencies)
+	if err != nil {
+		return nil, fmt.Errorf("unable to unmarshal response: %v", err)
+	}
+
+	result := map[string]string{}
+	for _, curr := range currencies.Currencies {
+		result[curr.Code] = fmt.Sprintf("%d", curr.Id)
+	}
+	return result, nil
 }
 
 // Function which takes rates and based on this rates estimates a good price
@@ -130,7 +182,12 @@ func (c *Client) EstimateOver(r []Rate) (float64, float64) {
 
 // Estimate exchane pair to get actual and reversed exchange rate for pair
 func (c *Client) EstimateOperation(first, second string) (float64, error) {
-	rates, err := c.Rates(first, second)
+	m, err := c.CreateCurrencyMapper()
+	if err != nil {
+		return 0, err
+	}
+
+	rates, err := c.Rates(m[first], m[second])
 	if err != nil {
 		return 0, err
 	}

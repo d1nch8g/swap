@@ -1,0 +1,44 @@
+basePath: /
+host: inswap.in
+info:
+  contact:
+    email: support@inswap.in
+    name: API Support
+    url: http://inswap.in/support
+  description: Simple exchanger software API.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://inswap.in/terms/
+  title: Bitchange API
+  version: "1.0"
+paths:
+  /api/login:
+    get:
+      consumes:
+      - application/json
+      operationId: login
+      parameters:
+      - description: Some ID
+        in: header
+        name: Email
+        required: true
+        type: string
+      - description: Some ID
+        in: header
+        name: Password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "401":
+          description: Unautharized
+          schema:
+            type: string
+      summary: Login to platform user account
+swagger: "2.0"
