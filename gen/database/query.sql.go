@@ -22,11 +22,11 @@ RETURNING id, code, description, bestchange_id, accepted_window, require_payment
 `
 
 type CreateCurrencyParams struct {
-	Code                       string
-	Description                string
-	BestchangeID               string
-	AcceptedWindow             string
-	RequirePaymentVerification bool
+	Code                       string `json:"code"`
+	Description                string `json:"description"`
+	BestchangeID               string `json:"bestchange_id"`
+	AcceptedWindow             string `json:"accepted_window"`
+	RequirePaymentVerification bool   `json:"require_payment_verification"`
 }
 
 func (q *Queries) CreateCurrency(ctx context.Context, arg CreateCurrencyParams) (Currency, error) {
@@ -62,11 +62,11 @@ RETURNING id, rate, inmin, description, input, output
 `
 
 type CreateExchangerParams struct {
-	Rate        float64
-	Description string
-	Inmin       float64
-	Input       int64
-	Output      int64
+	Rate        float64 `json:"rate"`
+	Description string  `json:"description"`
+	Inmin       float64 `json:"inmin"`
+	Input       int64   `json:"input"`
+	Output      int64   `json:"output"`
 }
 
 func (q *Queries) CreateExchanger(ctx context.Context, arg CreateExchangerParams) (Exchanger, error) {
@@ -103,12 +103,12 @@ RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, finishe
 `
 
 type CreateOrderParams struct {
-	UserID      int64
-	OperatorID  int64
-	ExchangerID int64
-	AmountIn    float64
-	AmountOut   float64
-	Finished    bool
+	UserID      int64   `json:"user_id"`
+	OperatorID  int64   `json:"operator_id"`
+	ExchangerID int64   `json:"exchanger_id"`
+	AmountIn    float64 `json:"amount_in"`
+	AmountOut   float64 `json:"amount_out"`
+	Finished    bool    `json:"finished"`
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
@@ -140,10 +140,10 @@ RETURNING id, user_id, currency_id, address, verified, image
 `
 
 type CreatePaymentConfirmationParams struct {
-	UserID     int64
-	CurrencyID int64
-	Address    string
-	Verified   bool
+	UserID     int64  `json:"user_id"`
+	CurrencyID int64  `json:"currency_id"`
+	Address    string `json:"address"`
+	Verified   bool   `json:"verified"`
 }
 
 func (q *Queries) CreatePaymentConfirmation(ctx context.Context, arg CreatePaymentConfirmationParams) (PaymentConfirmation, error) {
@@ -171,22 +171,20 @@ INSERT INTO users (
     verified,
     passwhash,
     admin,
-    active,
     busy,
     token
   )
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, email, verified, passwhash, admin, active, token, busy
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, email, verified, passwhash, admin, token, busy
 `
 
 type CreateUserParams struct {
-	Email     string
-	Verified  bool
-	Passwhash string
-	Admin     bool
-	Active    bool
-	Busy      bool
-	Token     string
+	Email     string `json:"email"`
+	Verified  bool   `json:"verified"`
+	Passwhash string `json:"passwhash"`
+	Admin     bool   `json:"admin"`
+	Busy      bool   `json:"busy"`
+	Token     string `json:"token"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -195,7 +193,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Verified,
 		arg.Passwhash,
 		arg.Admin,
-		arg.Active,
 		arg.Busy,
 		arg.Token,
 	)
@@ -206,7 +203,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
-		&i.Active,
 		&i.Token,
 		&i.Busy,
 	)
@@ -220,10 +216,10 @@ RETURNING id, user_id, currency_id, balance, address
 `
 
 type CreateUserBalanceParams struct {
-	UserID     int64
-	CurrencyID int64
-	Balance    float64
-	Address    string
+	UserID     int64   `json:"user_id"`
+	CurrencyID int64   `json:"currency_id"`
+	Balance    float64 `json:"balance"`
+	Address    string  `json:"address"`
 }
 
 func (q *Queries) CreateUserBalance(ctx context.Context, arg CreateUserBalanceParams) (UserBalance, error) {
@@ -298,7 +294,7 @@ func (q *Queries) GetPaymentConfirmation(ctx context.Context, id int64) (Payment
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, verified, passwhash, admin, active, token, busy
+SELECT id, email, verified, passwhash, admin, token, busy
 FROM users
 WHERE email = $1
 LIMIT 1
@@ -313,7 +309,27 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
-		&i.Active,
+		&i.Token,
+		&i.Busy,
+	)
+	return i, err
+}
+
+const getUserByToken = `-- name: GetUserByToken :one
+SELECT id, email, verified, passwhash, admin, token, busy
+FROM users
+WHERE token = $1
+`
+
+func (q *Queries) GetUserByToken(ctx context.Context, token string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByToken, token)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Verified,
+		&i.Passwhash,
+		&i.Admin,
 		&i.Token,
 		&i.Busy,
 	)
@@ -353,7 +369,7 @@ func (q *Queries) ListCurrencies(ctx context.Context) ([]Currency, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, verified, passwhash, admin, active, token, busy
+SELECT id, email, verified, passwhash, admin, token, busy
 FROM users
 ORDER BY email
 `
@@ -373,9 +389,42 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.Verified,
 			&i.Passwhash,
 			&i.Admin,
-			&i.Active,
 			&i.Token,
 			&i.Busy,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const ordersUnfinished = `-- name: OrdersUnfinished :many
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, finished
+FROM orders
+WHERE finished = false
+`
+
+func (q *Queries) OrdersUnfinished(ctx context.Context) ([]Order, error) {
+	rows, err := q.db.Query(ctx, ordersUnfinished)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OperatorID,
+			&i.ExchangerID,
+			&i.AmountIn,
+			&i.AmountOut,
+			&i.Finished,
 		); err != nil {
 			return nil, err
 		}
@@ -391,12 +440,12 @@ const updateBusy = `-- name: UpdateBusy :one
 UPDATE users
 SET busy = $2
 WHERE email = $1
-RETURNING id, email, verified, passwhash, admin, active, token, busy
+RETURNING id, email, verified, passwhash, admin, token, busy
 `
 
 type UpdateBusyParams struct {
-	Email string
-	Busy  bool
+	Email string `json:"email"`
+	Busy  bool   `json:"busy"`
 }
 
 func (q *Queries) UpdateBusy(ctx context.Context, arg UpdateBusyParams) (User, error) {
@@ -408,7 +457,6 @@ func (q *Queries) UpdateBusy(ctx context.Context, arg UpdateBusyParams) (User, e
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
-		&i.Active,
 		&i.Token,
 		&i.Busy,
 	)
@@ -423,8 +471,8 @@ RETURNING id, rate, inmin, description, input, output
 `
 
 type UpdateExchangerRateParams struct {
-	ID   int64
-	Rate float64
+	ID   int64   `json:"id"`
+	Rate float64 `json:"rate"`
 }
 
 func (q *Queries) UpdateExchangerRate(ctx context.Context, arg UpdateExchangerRateParams) (Exchanger, error) {
@@ -450,9 +498,9 @@ RETURNING id, user_id, currency_id, address, verified, image
 `
 
 type UpdatePaymentConfirmationImageParams struct {
-	ID       int64
-	Image    []byte
-	Verified bool
+	ID       int64  `json:"id"`
+	Image    []byte `json:"image"`
+	Verified bool   `json:"verified"`
 }
 
 func (q *Queries) UpdatePaymentConfirmationImage(ctx context.Context, arg UpdatePaymentConfirmationImageParams) (PaymentConfirmation, error) {
@@ -477,8 +525,8 @@ RETURNING id, user_id, currency_id, balance, address
 `
 
 type UpdateUserBalanceParams struct {
-	ID      int64
-	Balance float64
+	ID      int64   `json:"id"`
+	Balance float64 `json:"balance"`
 }
 
 func (q *Queries) UpdateUserBalance(ctx context.Context, arg UpdateUserBalanceParams) (UserBalance, error) {
@@ -498,12 +546,12 @@ const updateUserToken = `-- name: UpdateUserToken :one
 UPDATE users
 SET token = $2
 WHERE id = $1
-RETURNING id, email, verified, passwhash, admin, active, token, busy
+RETURNING id, email, verified, passwhash, admin, token, busy
 `
 
 type UpdateUserTokenParams struct {
-	ID    int64
-	Token string
+	ID    int64  `json:"id"`
+	Token string `json:"token"`
 }
 
 func (q *Queries) UpdateUserToken(ctx context.Context, arg UpdateUserTokenParams) (User, error) {
@@ -515,7 +563,6 @@ func (q *Queries) UpdateUserToken(ctx context.Context, arg UpdateUserTokenParams
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
-		&i.Active,
 		&i.Token,
 		&i.Busy,
 	)
@@ -526,12 +573,12 @@ const updateUserVerified = `-- name: UpdateUserVerified :one
 UPDATE users
 SET verified = $2
 WHERE email = $1
-RETURNING id, email, verified, passwhash, admin, active, token, busy
+RETURNING id, email, verified, passwhash, admin, token, busy
 `
 
 type UpdateUserVerifiedParams struct {
-	Email    string
-	Verified bool
+	Email    string `json:"email"`
+	Verified bool   `json:"verified"`
 }
 
 func (q *Queries) UpdateUserVerified(ctx context.Context, arg UpdateUserVerifiedParams) (User, error) {
@@ -543,7 +590,6 @@ func (q *Queries) UpdateUserVerified(ctx context.Context, arg UpdateUserVerified
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
-		&i.Active,
 		&i.Token,
 		&i.Busy,
 	)

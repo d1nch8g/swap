@@ -22,7 +22,6 @@ CREATE TABLE users (
   verified BOOLEAN NOT NULL,
   passwhash TEXT UNIQUE NOT NULL,
   admin BOOLEAN NOT NULL,
-  active BOOLEAN NOT NULL,
   token TEXT NOT NULL,
   busy BOOLEAN NOT NULL
 );

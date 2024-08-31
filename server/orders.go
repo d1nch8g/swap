@@ -12,12 +12,7 @@ type OrderService struct {
 	bc *bestchange.Client
 }
 
-func (m *OrderService) ActualParams(c echo.Context) error {
-
-	// min max exchange rate
-	return nil
-}
-
 func (m *OrderService) CreateOrder(c echo.Context) error {
+	// Create new order request
 	return nil
 }

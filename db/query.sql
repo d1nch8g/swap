@@ -36,11 +36,10 @@ INSERT INTO users (
     verified,
     passwhash,
     admin,
-    active,
     busy,
     token
   )
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 -- name: UpdateBusy :one
 UPDATE users
@@ -66,6 +65,10 @@ UPDATE users
 SET token = $2
 WHERE id = $1
 RETURNING *;
+-- name: GetUserByToken :one
+SELECT *
+FROM users
+WHERE token = $1;
 -- name: CreateUserBalance :one
 INSERT INTO user_balances (user_id, currency_id, balance, address)
 VALUES ($1, $2, $3, $4)
@@ -100,3 +103,7 @@ INSERT INTO orders (
   )
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
+-- name: OrdersUnfinished :many
+SELECT *
+FROM orders
+WHERE finished = false;

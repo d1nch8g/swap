@@ -68,7 +68,6 @@ func main() {
 		Verified:  true,
 		Passwhash: passhash,
 		Admin:     true,
-		Active:    true,
 		Busy:      false,
 		Token:     "nil",
 	})

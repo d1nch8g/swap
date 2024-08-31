@@ -5,57 +5,56 @@
 package database
 
 type Currency struct {
-	ID                         int64
-	Code                       string
-	Description                string
-	BestchangeID               string
-	AcceptedWindow             string
-	RequirePaymentVerification bool
+	ID                         int64  `json:"id"`
+	Code                       string `json:"code"`
+	Description                string `json:"description"`
+	BestchangeID               string `json:"bestchange_id"`
+	AcceptedWindow             string `json:"accepted_window"`
+	RequirePaymentVerification bool   `json:"require_payment_verification"`
 }
 
 type Exchanger struct {
-	ID          int64
-	Rate        float64
-	Inmin       float64
-	Description string
-	Input       int64
-	Output      int64
+	ID          int64   `json:"id"`
+	Rate        float64 `json:"rate"`
+	Inmin       float64 `json:"inmin"`
+	Description string  `json:"description"`
+	Input       int64   `json:"input"`
+	Output      int64   `json:"output"`
 }
 
 type Order struct {
-	ID          int64
-	UserID      int64
-	OperatorID  int64
-	ExchangerID int64
-	AmountIn    float64
-	AmountOut   float64
-	Finished    bool
+	ID          int64   `json:"id"`
+	UserID      int64   `json:"user_id"`
+	OperatorID  int64   `json:"operator_id"`
+	ExchangerID int64   `json:"exchanger_id"`
+	AmountIn    float64 `json:"amount_in"`
+	AmountOut   float64 `json:"amount_out"`
+	Finished    bool    `json:"finished"`
 }
 
 type PaymentConfirmation struct {
-	ID         int64
-	UserID     int64
-	CurrencyID int64
-	Address    string
-	Verified   bool
-	Image      []byte
+	ID         int64  `json:"id"`
+	UserID     int64  `json:"user_id"`
+	CurrencyID int64  `json:"currency_id"`
+	Address    string `json:"address"`
+	Verified   bool   `json:"verified"`
+	Image      []byte `json:"image"`
 }
 
 type User struct {
-	ID        int64
-	Email     string
-	Verified  bool
-	Passwhash string
-	Admin     bool
-	Active    bool
-	Token     string
-	Busy      bool
+	ID        int64  `json:"id"`
+	Email     string `json:"email"`
+	Verified  bool   `json:"verified"`
+	Passwhash string `json:"passwhash"`
+	Admin     bool   `json:"admin"`
+	Token     string `json:"token"`
+	Busy      bool   `json:"busy"`
 }
 
 type UserBalance struct {
-	ID         int64
-	UserID     int64
-	CurrencyID int64
-	Balance    float64
-	Address    string
+	ID         int64   `json:"id"`
+	UserID     int64   `json:"user_id"`
+	CurrencyID int64   `json:"currency_id"`
+	Balance    float64 `json:"balance"`
+	Address    string  `json:"address"`
 }

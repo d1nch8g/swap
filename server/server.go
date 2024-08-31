@@ -1,6 +1,8 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"ion.lc/d1nhc8g/bitchange/bestchange"
@@ -23,6 +25,24 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	}
 
 	api.POST("/login", userSvc.Login)
+
+	admin := api.Group("/admin")
+
+	admin.GET("/getorders", userSvc.GetOrders)
+	admin.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+		token := c.Request().Header["Token"]
+		if token == nil {
+			c.Response().WriteHeader(http.StatusUnauthorized)
+			return false, nil
+		}
+
+		_, err := d.GetUserByToken(c.Request().Context(), token[0])
+		if err != nil {
+			c.Response().WriteHeader(http.StatusUnauthorized)
+			return false, nil
+		}
+		return true, nil
+	}))
 
 	if tls != "" {
 		e.Logger.Fatal(e.StartAutoTLS(tls))

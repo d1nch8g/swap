@@ -19,6 +19,7 @@ type UserService struct {
 	bc *bestchange.Client
 }
 
+// This method will issue token for user and give it to new users.
 func (s *UserService) Login(c echo.Context) error {
 	email := c.Request().Header["Email"]
 	password := c.Request().Header["Password"]
@@ -61,4 +62,19 @@ func (s *UserService) Login(c echo.Context) error {
 
 	_, err = c.Response().Write([]byte(token))
 	return err
+}
+
+type Orders struct {
+	ActiveOrders []database.Order `json:"orders"`
+}
+
+func (s *UserService) GetOrders(c echo.Context) error {
+	orders, err := s.db.OrdersUnfinished(c.Request().Context())
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &Orders{
+		ActiveOrders: orders,
+	})
 }
