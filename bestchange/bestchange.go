@@ -73,12 +73,13 @@ func (c *Client) Rates(first, second string) ([]Rate, error) {
 			Rates: cacheBody,
 			Time:  time.Now(),
 		}
+		body = Response{Rates: cacheBody}
 	}
 
 	wrapmap := map[string]map[string][]Rate{}
 	err := json.Unmarshal(body.Rates, &wrapmap)
 	if err != nil {
-		return nil, fmt.Errorf("unable to unmarshal request 1: %v", err)
+		return nil, fmt.Errorf("unable to unmarshal request: %v", err)
 	}
 	rates := wrapmap["rates"][fmt.Sprintf("%s-%s", first, second)]
 
@@ -94,7 +95,7 @@ func (c *Client) Rates(first, second string) ([]Rate, error) {
 }
 
 // Give a table representation for received views, can be used for debugging.
-func PrintTable(r []Rate) {
+func (c *Client) PrintTable(r []Rate) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 
 	fmt.Fprintln(w, "Rate\tRateRev\tInmin\tInmax\tReserve\tId\t")
@@ -104,30 +105,25 @@ func PrintTable(r []Rate) {
 	w.Flush()
 }
 
-// Returns good forward selling rate, good backward selling rate and average
-func (c *Client) EstimateRates(forward, backward []Rate) (float64, float64, float64) {
-	var forwardRate, backwardRate, average float64
-	for i := range forward {
-		if i == 3 {
+// Function which takes rates and based on this rates estimates a good price
+// for exchange operations.
+func (c *Client) EstimateOver(r []Rate) (float64, float64) {
+	var result float64
+	var resultrev float64
+	for i := range r {
+		if i == 4 {
 			break
 		}
-		flt, err := strconv.ParseFloat(forward[i].Rate, 32)
+		flt, err := strconv.ParseFloat(r[i].Rate, 32)
 		if err != nil {
 			panic(err)
 		}
-		average += flt
-		forwardRate += flt
-	}
-	for i := range backward {
-		if i == 3 {
-			break
-		}
-		flt, err := strconv.ParseFloat(backward[i].RateRev, 32)
+		result += flt
+		fltrev, err := strconv.ParseFloat(r[i].RateRev, 32)
 		if err != nil {
 			panic(err)
 		}
-		average += flt
-		backwardRate += flt
+		resultrev += fltrev
 	}
-	return forwardRate / 3, backwardRate / 3, average / 6
+	return result / 4, resultrev / 4
 }

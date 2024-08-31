@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "vue": "^3.4.29",
+    "vue-navigation-bar": "^6.1.0",
     "vue-router": "^4.3.3"
   },
   "devDependencies": {

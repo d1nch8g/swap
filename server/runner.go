@@ -6,7 +6,7 @@ import (
 	"ion.lc/d1nhc8g/bitchange/gen/database"
 )
 
-func Run(dir, port string, e *echo.Echo, d *database.Queries, b *bestchange.Client) {
+func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange.Client) {
 	e.Static("/", dir)
 
 	api := e.Group("/api")
@@ -22,5 +22,8 @@ func Run(dir, port string, e *echo.Echo, d *database.Queries, b *bestchange.Clie
 	api.GET("/neworder/*", orderservice.CreateOrder)
 	api.GET("/info", orderservice.CreateOrder)
 
+	if tls != "" {
+		e.Logger.Fatal(e.StartAutoTLS(tls))
+	}
 	e.Logger.Fatal(e.Start("localhost:" + port))
 }
