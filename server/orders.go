@@ -12,7 +12,13 @@ type OrderService struct {
 	bc *bestchange.Client
 }
 
+// type CreateOrderRequest struct{
+// 	User
+// }
+
+// This function is used to create order
 func (m *OrderService) CreateOrder(c echo.Context) error {
-	// Create new order request
+
+	// m.bc.EstimateOperation()
 	return nil
 }

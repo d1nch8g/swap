@@ -127,3 +127,13 @@ func (c *Client) EstimateOver(r []Rate) (float64, float64) {
 	}
 	return result / 4, resultrev / 4
 }
+
+// Estimate exchane pair to get actual and reversed exchange rate for pair
+func (c *Client) EstimateOperation(first, second string) (float64, error) {
+	rates, err := c.Rates(first, second)
+	if err != nil {
+		return 0, err
+	}
+	rate, _ := c.EstimateOver(rates)
+	return rate, nil
+}

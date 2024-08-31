@@ -20,7 +20,7 @@ CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   verified BOOLEAN NOT NULL,
-  passwhash TEXT UNIQUE NOT NULL,
+  passwhash TEXT NOT NULL,
   admin BOOLEAN NOT NULL,
   token TEXT NOT NULL,
   busy BOOLEAN NOT NULL

@@ -25,6 +25,7 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	}
 
 	api.POST("/login", userSvc.Login)
+	api.POST("/create", userSvc.CreateUser)
 
 	admin := api.Group("/admin")
 
