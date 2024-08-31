@@ -20,8 +20,14 @@ type UserService struct {
 }
 
 func (s *UserService) Login(c echo.Context) error {
-	email := c.Request().Header["email"]
-	password := c.Request().Header["password"]
+	email := c.Request().Header["Email"]
+	password := c.Request().Header["Password"]
+
+	if email == nil || password == nil {
+		c.Response().WriteHeader(http.StatusUnauthorized)
+		_, err := c.Response().Write([]byte("empty login or password"))
+		return err
+	}
 
 	user, err := s.db.GetUser(c.Request().Context(), email[0])
 	if err != nil {

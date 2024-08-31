@@ -60,11 +60,11 @@ func main() {
 	bc := bestchange.New(opts.Bestchange)
 
 	hasher := sha512.New()
-	hasher.Write([]byte(strings.Split(opts.Admin, ":")[0]))
+	hasher.Write([]byte(strings.Split(opts.Admin, ":")[1]))
 	passhash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
 	_, err = sqlc.CreateUser(context.Background(), database.CreateUserParams{
-		Email:     strings.Split(opts.Admin, ":")[1],
+		Email:     strings.Split(opts.Admin, ":")[0],
 		Verified:  true,
 		Passwhash: passhash,
 		Admin:     true,
