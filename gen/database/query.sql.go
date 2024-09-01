@@ -436,33 +436,6 @@ func (q *Queries) OrdersUnfinished(ctx context.Context) ([]Order, error) {
 	return items, nil
 }
 
-const updateBusy = `-- name: UpdateBusy :one
-UPDATE users
-SET busy = $2
-WHERE email = $1
-RETURNING id, email, verified, passwhash, admin, token, busy
-`
-
-type UpdateBusyParams struct {
-	Email string `json:"email"`
-	Busy  bool   `json:"busy"`
-}
-
-func (q *Queries) UpdateBusy(ctx context.Context, arg UpdateBusyParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateBusy, arg.Email, arg.Busy)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Email,
-		&i.Verified,
-		&i.Passwhash,
-		&i.Admin,
-		&i.Token,
-		&i.Busy,
-	)
-	return i, err
-}
-
 const updateExchangerRate = `-- name: UpdateExchangerRate :one
 UPDATE exchangers
 set rate = $2
@@ -538,6 +511,33 @@ func (q *Queries) UpdateUserBalance(ctx context.Context, arg UpdateUserBalancePa
 		&i.CurrencyID,
 		&i.Balance,
 		&i.Address,
+	)
+	return i, err
+}
+
+const updateUserBusy = `-- name: UpdateUserBusy :one
+UPDATE users
+SET busy = $2
+WHERE email = $1
+RETURNING id, email, verified, passwhash, admin, token, busy
+`
+
+type UpdateUserBusyParams struct {
+	Email string `json:"email"`
+	Busy  bool   `json:"busy"`
+}
+
+func (q *Queries) UpdateUserBusy(ctx context.Context, arg UpdateUserBusyParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserBusy, arg.Email, arg.Busy)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Verified,
+		&i.Passwhash,
+		&i.Admin,
+		&i.Token,
+		&i.Busy,
 	)
 	return i, err
 }

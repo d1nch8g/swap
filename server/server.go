@@ -34,11 +34,9 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	api.POST("/createuser", endpoints.CreateUser)
 	api.POST("/createorder", endpoints.CreateOrder)
 	api.GET("/verify/:uuid", endpoints.VerifyEmail)
-
 	api.POST("/login", endpoints.Login)
-	admin := api.Group("/admin")
 
-	admin.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+	admin := api.Group("/admin", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		token := c.Request().Header["Token"]
 		if token == nil {
 			c.Response().WriteHeader(http.StatusUnauthorized)
@@ -57,8 +55,11 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 		}
 		return true, nil
 	}))
+
 	admin.GET("/getorders", endpoints.GetOrders)
 	admin.POST("/createcurrency", endpoints.CreateCurrency)
+	admin.POST("/removecurrency", endpoints.RemoveCurrency)
+	admin.POST("/listcurrencies", endpoints.ListCurrencies)
 
 	if tls != "" {
 		e.Logger.Fatal(e.StartAutoTLS(tls))

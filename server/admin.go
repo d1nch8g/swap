@@ -12,7 +12,7 @@ import (
 	"ion.lc/d1nhc8g/inswap/gen/database"
 )
 
-func (s *Endpoints) Login(c echo.Context) error {
+func (e *Endpoints) Login(c echo.Context) error {
 	email := c.Request().Header["Email"]
 	password := c.Request().Header["Password"]
 
@@ -22,7 +22,7 @@ func (s *Endpoints) Login(c echo.Context) error {
 		return err
 	}
 
-	user, err := s.db.GetUser(c.Request().Context(), email[0])
+	user, err := e.db.GetUser(c.Request().Context(), email[0])
 	if err != nil {
 		c.Response().WriteHeader(http.StatusUnauthorized)
 		return errors.New("unable to login")
@@ -42,7 +42,7 @@ func (s *Endpoints) Login(c echo.Context) error {
 	tokenhasher.Write([]byte(fmt.Sprintf("%d", time.Now().UnixNano())))
 	token := base64.URLEncoding.EncodeToString(tokenhasher.Sum(nil))
 
-	_, err = s.db.UpdateUserToken(c.Request().Context(), database.UpdateUserTokenParams{
+	_, err = e.db.UpdateUserToken(c.Request().Context(), database.UpdateUserTokenParams{
 		ID:    user.ID,
 		Token: token,
 	})
@@ -56,14 +56,41 @@ func (s *Endpoints) Login(c echo.Context) error {
 	return err
 }
 
-// verify email address
+type Busy struct {
+	Busy bool `json:""`
+}
+
+func (e *Endpoints) ChangeBusy(c echo.Context) error {
+	a := c.Request().Header["Token"]
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), a[0])
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	u, err = e.db.UpdateUserBusy(c.Request().Context(), database.UpdateUserBusyParams{
+		Email: u.Email,
+		Busy:  !u.Busy,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &Busy{
+		Busy: u.Busy,
+	})
+}
 
 type Orders struct {
 	ActiveOrders []database.Order `json:"orders"`
 }
 
-func (s *Endpoints) GetOrders(c echo.Context) error {
-	orders, err := s.db.OrdersUnfinished(c.Request().Context())
+func (e *Endpoints) GetOrders(c echo.Context) error {
+	orders, err := e.db.OrdersUnfinished(c.Request().Context())
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -75,10 +102,10 @@ func (s *Endpoints) GetOrders(c echo.Context) error {
 	})
 }
 
-func (s *Endpoints) CreateCurrency(c echo.Context) error {
+func (e *Endpoints) CreateCurrency(c echo.Context) error {
 	var curr database.CreateCurrencyParams
 	c.Bind(&curr)
-	_, err := s.db.CreateCurrency(c.Request().Context(), curr)
+	_, err := e.db.CreateCurrency(c.Request().Context(), curr)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -87,11 +114,11 @@ func (s *Endpoints) CreateCurrency(c echo.Context) error {
 	return nil
 }
 
-func (s *Endpoints) RemoveCurrency(c echo.Context) error {
+func (e *Endpoints) RemoveCurrency(c echo.Context) error {
 	return nil
 }
 
-func (s *Endpoints) ListCurrencies(c echo.Context) error {
+func (e *Endpoints) ListCurrencies(c echo.Context) error {
 	return nil
 }
 

@@ -41,7 +41,7 @@ INSERT INTO users (
   )
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
--- name: UpdateBusy :one
+-- name: UpdateUserBusy :one
 UPDATE users
 SET busy = $2
 WHERE email = $1
