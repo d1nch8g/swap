@@ -1,5 +1,46 @@
-basePath: /
-host: inswap.in
+basePath: /api
+definitions:
+  database.Order:
+    properties:
+      amount_in:
+        type: number
+      amount_out:
+        type: number
+      exchanger_id:
+        type: integer
+      finished:
+        type: boolean
+      id:
+        type: integer
+      operator_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  server.CreateOrderRequest:
+    properties:
+      amount:
+        type: number
+      email:
+        type: string
+      input:
+        type: string
+      output:
+        type: string
+    type: object
+  server.CreateUserRequest:
+    properties:
+      email:
+        type: string
+    type: object
+  server.Orders:
+    properties:
+      orders:
+        items:
+          $ref: '#/definitions/database.Order'
+        type: array
+    type: object
+host: localhost:8080
 info:
   contact:
     email: support@inswap.in
@@ -13,18 +54,73 @@ info:
   title: Bitchange API
   version: "1.0"
 paths:
-  /api/login:
+  /admin/getorders:
     get:
+      consumes:
+      - application/json
+      operationId: admin.getorders
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Orders
+          schema:
+            $ref: '#/definitions/server.Orders'
+      security:
+      - ApiKeyAuth: []
+      summary: Get active orders as administrator accout
+  /createorder:
+    post:
+      consumes:
+      - application/json
+      operationId: order.create
+      parameters:
+      - description: Create order body
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/server.CreateOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Create new order
+  /createuser:
+    get:
+      consumes:
+      - application/json
+      operationId: user.create
+      parameters:
+      - description: Create user request
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/server.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/server.Orders'
+      summary: Create new user
+  /login:
+    post:
       consumes:
       - application/json
       operationId: login
       parameters:
-      - description: Some ID
+      - description: Email login
         in: header
         name: Email
         required: true
         type: string
-      - description: Some ID
+      - description: Password
         in: header
         name: Password
         required: true
@@ -41,4 +137,10 @@ paths:
           schema:
             type: string
       summary: Login to platform user account
+securityDefinitions:
+  ApiKeyAuth:
+    description: Security token
+    in: header
+    name: Token
+    type: apiKey
 swagger: "2.0"

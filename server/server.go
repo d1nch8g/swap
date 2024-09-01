@@ -42,7 +42,12 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 			return false, nil
 		}
 
-		_, err := d.GetUserByToken(c.Request().Context(), token[0])
+		u, err := d.GetUserByToken(c.Request().Context(), token[0])
+		if !u.Admin {
+			c.Response().WriteHeader(http.StatusUnauthorized)
+			return false, nil
+		}
+
 		if err != nil {
 			c.Response().WriteHeader(http.StatusUnauthorized)
 			return false, nil

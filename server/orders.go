@@ -19,7 +19,13 @@ type CreateOrderRequest struct {
 	Amount float64 `json:"amount"`
 }
 
-// This function is used to create order
+//	@Summary	Create new order
+//	@ID			order.create
+//	@Accept		json
+//	@Produce	json
+//	@Param		Body	body		CreateOrderRequest	true "Create order body"
+//	@Success	200		{string}	string				"ok"
+//	@Router		/createorder [post]
 func (m *OrderService) CreateOrder(c echo.Context) error {
 	us := &UserService{
 		db: m.db,

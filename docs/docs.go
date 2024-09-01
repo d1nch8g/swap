@@ -24,8 +24,95 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/login": {
+        "/admin/getorders": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get active orders as administrator accout",
+                "operationId": "admin.getorders",
+                "responses": {
+                    "200": {
+                        "description": "Orders",
+                        "schema": {
+                            "$ref": "#/definitions/server.Orders"
+                        }
+                    }
+                }
+            }
+        },
+        "/createorder": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create new order",
+                "operationId": "order.create",
+                "parameters": [
+                    {
+                        "description": "Create order body",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/server.CreateOrderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/createuser": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create new user",
+                "operationId": "user.create",
+                "parameters": [
+                    {
+                        "description": "Create user request",
+                        "name": "Body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/server.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/server.Orders"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
                 "consumes": [
                     "application/json"
                 ],
@@ -37,14 +124,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Some ID",
+                        "description": "Email login",
                         "name": "Email",
                         "in": "header",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Some ID",
+                        "description": "Password",
                         "name": "Password",
                         "in": "header",
                         "required": true
@@ -66,14 +153,86 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "definitions": {
+        "database.Order": {
+            "type": "object",
+            "properties": {
+                "amount_in": {
+                    "type": "number"
+                },
+                "amount_out": {
+                    "type": "number"
+                },
+                "exchanger_id": {
+                    "type": "integer"
+                },
+                "finished": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "operator_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "server.CreateOrderRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "input": {
+                    "type": "string"
+                },
+                "output": {
+                    "type": "string"
+                }
+            }
+        },
+        "server.CreateUserRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "server.Orders": {
+            "type": "object",
+            "properties": {
+                "orders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Order"
+                    }
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "Security token",
+            "type": "apiKey",
+            "name": "Token",
+            "in": "header"
+        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "inswap.in",
-	BasePath:         "/",
+	Host:             "localhost:8080",
+	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Bitchange API",
 	Description:      "Simple exchanger software API.",

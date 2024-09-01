@@ -23,3 +23,5 @@ run:
 .PHONY: gen
 gen:
 	sqlc generate
+	swag fmt
+	swag init

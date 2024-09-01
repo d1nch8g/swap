@@ -20,15 +20,15 @@ type UserService struct {
 	bc *bestchange.Client
 }
 
-// @Summary	Login to platform user account
-// @ID			login
-// @Accept		json
-// @Produce	json
-// @Param		Email		header		string	true	"Some ID"
-// @Param		Password	header		string	true	"Some ID"
-// @Success	200			{string}	string	"ok"
-// @Failure	401			{object}	string	"Unautharized"
-// @Router		/api/login [get]
+//	@Summary	Login to platform user account
+//	@ID			login
+//	@Accept		json
+//	@Produce	json
+//	@Param		Email		header		string	true	"Email login"
+//	@Param		Password	header		string	true	"Password"
+//	@Success	200			{string}	string	"ok"
+//	@Failure	401			{object}	string	"Unautharized"
+//	@Router		/login [post]
 func (s *UserService) Login(c echo.Context) error {
 	email := c.Request().Header["Email"]
 	password := c.Request().Header["Password"]
@@ -77,15 +77,13 @@ type Orders struct {
 	ActiveOrders []database.Order `json:"orders"`
 }
 
-// @Summary	Login to platform user account
-// @ID			login
-// @Accept		json
-// @Produce	json
-// @Param		Email		header		string	true	"Some ID"
-// @Param		Password	header		string	true	"Some ID"
-// @Success	200			{string}	string	"ok"
-// @Failure	401			{object}	string	"Unautharized"
-// @Router		/api/login [get]
+//	@Summary	Get active orders as administrator accout
+//	@ID			admin.getorders
+//	@Accept		json
+//	@Produce	json
+//	@Success	200	{object}	Orders	"Orders"
+//	@Security	ApiKeyAuth
+//	@Router		/admin/getorders [get]
 func (s *UserService) GetOrders(c echo.Context) error {
 	orders, err := s.db.OrdersUnfinished(c.Request().Context())
 	if err != nil {
@@ -103,6 +101,14 @@ type CreateUserRequest struct {
 	Email string `json:"email"`
 }
 
+
+//	@Summary	Create new user
+//	@ID			user.create
+//	@Accept		json
+//	@Produce	json
+//	@Param		Body	body		CreateUserRequest	true	"Create user request"
+//	@Success	200		{object}	Orders				"ok"
+//	@Router		/createuser [get]
 func (s *UserService) CreateUser(c echo.Context) error {
 	var createUser CreateUserRequest
 	err := c.Bind(&createUser)
@@ -125,3 +131,4 @@ func (s *UserService) CreateUser(c echo.Context) error {
 
 	return nil
 }
+
