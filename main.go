@@ -81,7 +81,12 @@ func main() {
 	e := echo.New()
 	sqlc := database.New(conn)
 	bc := bestchange.New(opts.Bestchange)
-	mail := email.New(opts.EmailAddress, strings.Split(opts.EmailCreds, ":")[0], strings.Split(opts.EmailCreds, ":")[1])
+	mail := email.New(
+		opts.EmailAddress,
+		strings.Split(opts.EmailCreds, ":")[0],
+		strings.Split(opts.EmailCreds, ":")[1],
+		"Inswap",
+	)
 
 	hasher := sha512.New()
 	hasher.Write([]byte(strings.Split(opts.Admin, ":")[1]))

@@ -2,6 +2,7 @@ package email
 
 import (
 	"crypto/tls"
+	"fmt"
 
 	"github.com/labstack/echo/v4"
 	"gopkg.in/gomail.v2"
@@ -9,9 +10,10 @@ import (
 
 type Mailer struct {
 	*gomail.Dialer
+	Name string
 }
 
-func New(addr, login, password string) *Mailer {
+func New(addr, login, password, name string) *Mailer {
 	d := gomail.NewDialer(addr, 587, login, password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
@@ -19,7 +21,6 @@ func New(addr, login, password string) *Mailer {
 
 	mes.SetHeader("From", login)
 	mes.SetHeader("To", login)
-	mes.SetAddressHeader("Cc", "support@inswap.in", "Support")
 	mes.SetHeader("Subject", "New instance login initialized!")
 	mes.SetBody("text/html", "Hello from exchanger!")
 
@@ -29,17 +30,38 @@ func New(addr, login, password string) *Mailer {
 	}
 	return &Mailer{
 		Dialer: d,
+		Name:   name,
 	}
 }
 
-func OrderCreated(email, from, to, amount string) {
-	
+func (m *Mailer) OrderCreated(email, from, to, amount, address string) error {
+	mes := gomail.NewMessage()
+
+	mes.SetHeader("From", m.Name)
+	mes.SetHeader("To", email)
+	mes.SetHeader("Subject", "Order have been created.")
+	mes.SetBody("text/html", fmt.Sprintf(`Created exchange order:
+	Order email: %s
+	Buying currency: %s
+	Selling currency: %s
+	Amount: %s
+	Address: %s
+	`, email, from, to, amount))
+
+	return m.DialAndSend(mes)
 }
 
-func OrderFinished(email, from, to, amount string) {
+func (m *Mailer) OrderFinished(email, amount, to, address string) error {
+	mes := gomail.NewMessage()
 
+	mes.SetHeader("From", m.Name)
+	mes.SetHeader("To", email)
+	mes.SetHeader("Subject", "Order have been finished.")
+	mes.SetBody("text/html", fmt.Sprintf(`%s %s were sent to address %s`, amount, to, address))
+
+	return m.DialAndSend(mes)
 }
 
-func UserVerifyEmail(email, uuid string) {
+func (m *Mailer) UserVerifyEmail(email, uuid string) {
 
 }
