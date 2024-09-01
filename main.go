@@ -5,14 +5,12 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
-	"fmt"
-	"os"
 	"strings"
 
-	"ion.lc/d1nhc8g/bitchange/bestchange"
-	"ion.lc/d1nhc8g/bitchange/email"
-	"ion.lc/d1nhc8g/bitchange/gen/database"
-	"ion.lc/d1nhc8g/bitchange/server"
+	"ion.lc/d1nhc8g/inswap/bestchange"
+	"ion.lc/d1nhc8g/inswap/email"
+	"ion.lc/d1nhc8g/inswap/gen/database"
+	"ion.lc/d1nhc8g/inswap/server"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -33,29 +31,12 @@ var opts struct {
 	ApiAddr         string `long:"apiaddr" env:"API_ADDRESS" default:"http://localhost:8080"`
 	EmailAddress    string `long:"emailaddr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailCreds      string `long:"emailcreds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
-	Help            bool   `long:"help" short:"h"`
 }
 
 func main() {
 	_, err := flags.NewParser(&opts, flags.IgnoreUnknown).Parse()
 	if err != nil {
 		panic(err)
-	}
-
-	if opts.Help {
-		fmt.Println(`Available modifiers:
-Port            - port 
-Database        - database 
-ServeDir        - serve-dir
-BestchangeToken - bestchange-token
-LetsEncryptAddr - lets-encryp-addr
-Admin           - admin 
-ApiAddr         - apiaddr 
-EmailAddress    - emailaddr 
-EmailCreds      - emailcreds 
-Help            - help
-`)
-		os.Exit(0)
 	}
 
 	m, err := migrate.New(

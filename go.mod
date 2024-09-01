@@ -1,4 +1,4 @@
-module ion.lc/d1nhc8g/bitchange
+module ion.lc/d1nhc8g/inswap
 
 go 1.23.0
 

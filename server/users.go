@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"ion.lc/d1nhc8g/bitchange/gen/database"
+	"ion.lc/d1nhc8g/inswap/gen/database"
 )
 
 type CreateUserRequest struct {

@@ -5,9 +5,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"ion.lc/d1nhc8g/bitchange/bestchange"
-	"ion.lc/d1nhc8g/bitchange/email"
-	"ion.lc/d1nhc8g/bitchange/gen/database"
+	"ion.lc/d1nhc8g/inswap/bestchange"
+	"ion.lc/d1nhc8g/inswap/email"
+	"ion.lc/d1nhc8g/inswap/gen/database"
 )
 
 type Endpoints struct {

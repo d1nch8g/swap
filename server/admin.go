@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"ion.lc/d1nhc8g/bitchange/gen/database"
+	"ion.lc/d1nhc8g/inswap/gen/database"
 )
 
 func (s *Endpoints) Login(c echo.Context) error {
@@ -91,7 +91,10 @@ func (s *Endpoints) RemoveCurrency(c echo.Context) error {
 	return nil
 }
 
-// create, remove and lists currencies
+func (s *Endpoints) ListCurrencies(c echo.Context) error {
+	return nil
+}
+
 // create, remove and list exchangers
 // create and update balance
 // execute order
