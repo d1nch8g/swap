@@ -16,13 +16,6 @@ type CreateUserRequest struct {
 	Password string `json:"password"`
 }
 
-// @Summary	Create new user
-// @ID			user.create
-// @Accept		json
-// @Produce	json
-// @Param		Body	body		CreateUserRequest	true	"Create user request"
-// @Success	200		{object}	Orders				"ok"
-// @Router		/createuser [get]
 func (e *Endpoints) CreateUser(c echo.Context) error {
 	var createUser CreateUserRequest
 	err := c.Bind(&createUser)
@@ -59,13 +52,6 @@ func (e *Endpoints) CreateUser(c echo.Context) error {
 	return nil
 }
 
-// @Summary	Create new user
-// @ID			user.verify
-// @Accept		json
-// @Produce	json
-// @Param		Body	body		CreateUserRequest	true	"Create user request"
-// @Success	200		{object}	Orders				"ok"
-// @Router		/verify/{uuid} [get]
 func (e *Endpoints) VerifyEmail(c echo.Context) error {
 	u, err := e.db.GetUserByToken(c.Request().Context(), c.Param("uuid"))
 	if err != nil {
@@ -94,13 +80,6 @@ type CreateOrderRequest struct {
 	Amount float64 `json:"amount"`
 }
 
-// @Summary	Create new order
-// @ID			order.create
-// @Accept		json
-// @Produce	json
-// @Param		Body	body		CreateOrderRequest	true	"Create order body"
-// @Success	200		{string}	string				"ok"
-// @Router		/createorder [post]
 func (e *Endpoints) CreateOrder(c echo.Context) error {
 
 	// Estimate exchange rate for order and create it for user with one free admin

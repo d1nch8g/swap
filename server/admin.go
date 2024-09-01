@@ -12,15 +12,6 @@ import (
 	"ion.lc/d1nhc8g/bitchange/gen/database"
 )
 
-// @Summary	Login to platform user account
-// @ID			login
-// @Accept		json
-// @Produce	json
-// @Param		Email		header		string	true	"Email login"
-// @Param		Password	header		string	true	"Password"
-// @Success	200			{string}	string	"ok"
-// @Failure	401			{object}	string	"Unautharized"
-// @Router		/login [post]
 func (s *Endpoints) Login(c echo.Context) error {
 	email := c.Request().Header["Email"]
 	password := c.Request().Header["Password"]
@@ -71,13 +62,6 @@ type Orders struct {
 	ActiveOrders []database.Order `json:"orders"`
 }
 
-// @Summary	Get active orders as administrator accout
-// @ID			admin.getorders
-// @Accept		json
-// @Produce	json
-// @Success	200	{object}	Orders	"Orders"
-// @Security	ApiKeyAuth
-// @Router		/admin/getorders [get]
 func (s *Endpoints) GetOrders(c echo.Context) error {
 	orders, err := s.db.OrdersUnfinished(c.Request().Context())
 	if err != nil {
@@ -91,14 +75,6 @@ func (s *Endpoints) GetOrders(c echo.Context) error {
 	})
 }
 
-// @Summary	Create new currency for exchangers
-// @ID			admin.createcurrency
-// @Accept		json
-// @Produce	json
-// @Param		Body	body		database.CreateCurrencyParams	true	"Create user request"
-// @Success	200		{object}	Orders							"Orders"
-// @Security	ApiKeyAuth
-// @Router		/admin/createcurrency [post]
 func (s *Endpoints) CreateCurrency(c echo.Context) error {
 	var curr database.CreateCurrencyParams
 	c.Bind(&curr)

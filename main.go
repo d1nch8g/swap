@@ -5,6 +5,8 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
+	"fmt"
+	"os"
 	"strings"
 
 	"ion.lc/d1nhc8g/bitchange/bestchange"
@@ -21,42 +23,39 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-//	@title			Bitchange API
-//	@version		1.0
-//	@description	Simple exchanger software API.
-//	@termsOfService	http://inswap.in/terms/
-
-//	@contact.name	API Support
-//	@contact.url	http://inswap.in/support
-//	@contact.email	support@inswap.in
-
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-
-//	@host		localhost:8080
-//	@BasePath	/api
-
-//	@securityDefinitions.apikey	ApiKeyAuth
-//	@in							header
-//	@name						Token
-//	@description				Security token
-
 var opts struct {
-	Port         string `long:"port" env:"PORT" default:"8080"`
-	Database     string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
-	Dir          string `long:"dir" env:"DIR" default:"dist"`
-	Bestchange   string `long:"bestchange" env:"BESTCHANGE"`
-	Tls          string `long:"tls" env:"TLS"`
-	Admin        string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
-	ApiAddr      string `long:"apiaddr" env:"API_ADDRESS" default:"http://localhost:8080"`
-	EmailAddress string `long:"emailaddr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
-	EmailCreds   string `long:"emailcreds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
+	Port            string `long:"port" env:"PORT" default:"8080"`
+	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
+	ServeDir        string `long:"serve-dir" env:"SERVE_DIR" default:"dist"`
+	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
+	LetsEncryptAddr string `long:"lets-encrypt-addr" env:"LETS_ENCRYPT_ADDR"`
+	Admin           string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
+	ApiAddr         string `long:"apiaddr" env:"API_ADDRESS" default:"http://localhost:8080"`
+	EmailAddress    string `long:"emailaddr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
+	EmailCreds      string `long:"emailcreds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
+	Help            bool   `long:"help" short:"h"`
 }
 
 func main() {
 	_, err := flags.NewParser(&opts, flags.IgnoreUnknown).Parse()
 	if err != nil {
 		panic(err)
+	}
+
+	if opts.Help {
+		fmt.Println(`Available modifiers:
+Port            - port 
+Database        - database 
+ServeDir        - serve-dir
+BestchangeToken - bestchange-token
+LetsEncryptAddr - lets-encryp-addr
+Admin           - admin 
+ApiAddr         - apiaddr 
+EmailAddress    - emailaddr 
+EmailCreds      - emailcreds 
+Help            - help
+`)
+		os.Exit(0)
 	}
 
 	m, err := migrate.New(
@@ -82,7 +81,7 @@ func main() {
 
 	e := echo.New()
 	sqlc := database.New(conn)
-	bc := bestchange.New(opts.Bestchange)
+	bc := bestchange.New(opts.BestchangeToken)
 	mail := email.New(
 		opts.EmailAddress,
 		strings.Split(opts.EmailCreds, ":")[0],
@@ -107,5 +106,5 @@ func main() {
 		panic(err)
 	}
 
-	server.Run(opts.Dir, opts.Port, opts.Tls, e, sqlc, bc, mail)
+	server.Run(opts.ServeDir, opts.Port, opts.LetsEncryptAddr, e, sqlc, bc, mail)
 }
