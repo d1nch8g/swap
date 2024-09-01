@@ -91,8 +91,8 @@ func (s *Endpoints) GetOrders(c echo.Context) error {
 	})
 }
 
-// @Summary	Get active orders as administrator accout
-// @ID			admin.getorders
+// @Summary	Create new currency for exchangers
+// @ID			admin.createcurrency
 // @Accept		json
 // @Produce	json
 // @Param		Body	body		database.CreateCurrencyParams	true	"Create user request"

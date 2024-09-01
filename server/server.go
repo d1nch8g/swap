@@ -33,6 +33,7 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 
 	api.POST("/createuser", endpoints.CreateUser)
 	api.POST("/createorder", endpoints.CreateOrder)
+	api.GET("/verify/:uuid", endpoints.VerifyEmail)
 
 	api.POST("/login", endpoints.Login)
 	admin := api.Group("/admin")

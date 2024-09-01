@@ -170,9 +170,9 @@ INSERT INTO users (
     email,
     verified,
     passwhash,
+    token,
     admin,
-    busy,
-    token
+    busy
   )
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id, email, verified, passwhash, admin, token, busy
@@ -182,9 +182,9 @@ type CreateUserParams struct {
 	Email     string `json:"email"`
 	Verified  bool   `json:"verified"`
 	Passwhash string `json:"passwhash"`
+	Token     string `json:"token"`
 	Admin     bool   `json:"admin"`
 	Busy      bool   `json:"busy"`
-	Token     string `json:"token"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -192,9 +192,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Email,
 		arg.Verified,
 		arg.Passwhash,
+		arg.Token,
 		arg.Admin,
 		arg.Busy,
-		arg.Token,
 	)
 	var i User
 	err := row.Scan(

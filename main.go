@@ -15,6 +15,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jessevdk/go-flags"
 	"github.com/labstack/echo/v4"
@@ -47,6 +48,7 @@ var opts struct {
 	Bestchange   string `long:"bestchange" env:"BESTCHANGE"`
 	Tls          string `long:"tls" env:"TLS"`
 	Admin        string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
+	ApiAddr      string `long:"apiaddr" env:"API_ADDRESS" default:"http://localhost:8080"`
 	EmailAddress string `long:"emailaddr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailCreds   string `long:"emailcreds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
 }
@@ -86,6 +88,7 @@ func main() {
 		strings.Split(opts.EmailCreds, ":")[0],
 		strings.Split(opts.EmailCreds, ":")[1],
 		"Inswap",
+		opts.ApiAddr,
 	)
 
 	hasher := sha512.New()
@@ -98,7 +101,7 @@ func main() {
 		Passwhash: passhash,
 		Admin:     true,
 		Busy:      false,
-		Token:     "nil",
+		Token:     uuid.New().String(),
 	})
 	if err != nil && !strings.Contains(err.Error(), "duplicate key value violates unique constraint ") {
 		panic(err)

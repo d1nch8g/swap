@@ -35,9 +35,9 @@ INSERT INTO users (
     email,
     verified,
     passwhash,
+    token,
     admin,
-    busy,
-    token
+    busy
   )
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
@@ -51,6 +51,10 @@ SELECT *
 FROM users
 WHERE email = $1
 LIMIT 1;
+-- name: GetUserByToken :one
+SELECT *
+FROM users
+WHERE token = $1;
 -- name: ListUsers :many
 SELECT *
 FROM users
@@ -65,10 +69,6 @@ UPDATE users
 SET token = $2
 WHERE id = $1
 RETURNING *;
--- name: GetUserByToken :one
-SELECT *
-FROM users
-WHERE token = $1;
 -- name: CreateUserBalance :one
 INSERT INTO user_balances (user_id, currency_id, balance, address)
 VALUES ($1, $2, $3, $4)

@@ -67,11 +67,11 @@ info:
   title: Bitchange API
   version: "1.0"
 paths:
-  /admin/getorders:
-    get:
+  /admin/createcurrency:
+    post:
       consumes:
       - application/json
-      operationId: admin.getorders
+      operationId: admin.createcurrency
       parameters:
       - description: Create user request
         in: body
@@ -79,6 +79,21 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/database.CreateCurrencyParams'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Orders
+          schema:
+            $ref: '#/definitions/server.Orders'
+      security:
+      - ApiKeyAuth: []
+      summary: Create new currency for exchangers
+  /admin/getorders:
+    get:
+      consumes:
+      - application/json
+      operationId: admin.getorders
       produces:
       - application/json
       responses:
@@ -157,6 +172,26 @@ paths:
           schema:
             type: string
       summary: Login to platform user account
+  /verify/{uuid}:
+    get:
+      consumes:
+      - application/json
+      operationId: user.verify
+      parameters:
+      - description: Create user request
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/server.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/server.Orders'
+      summary: Create new user
 securityDefinitions:
   ApiKeyAuth:
     description: Security token
