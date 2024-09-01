@@ -6,21 +6,23 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"ion.lc/d1nhc8g/bitchange/bestchange"
+	"ion.lc/d1nhc8g/bitchange/email"
 	"ion.lc/d1nhc8g/bitchange/gen/database"
 )
 
-// add endpoint to give exchangers info for bestchange
+type Endpoints struct {
+	db   *database.Queries
+	e    *echo.Echo
+	bc   *bestchange.Client
+	mail *email.Mailer
+}
 
-func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange.Client) {
-	userSvc := &UserService{
-		db: d,
-		e:  e,
-		bc: b,
-	}
-	orserSvc := &OrderService{
-		db: d,
-		e:  e,
-		bc: b,
+func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
+	endpoints := &Endpoints{
+		db:   d,
+		e:    e,
+		bc:   b,
+		mail: mail,
 	}
 
 	e.Use(middleware.Logger())
@@ -29,10 +31,10 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 
 	api := e.Group("/api")
 
-	api.POST("/login", userSvc.Login)
-	api.POST("/createuser", userSvc.CreateUser)
-	api.POST("/createorder", orserSvc.CreateOrder)
+	api.POST("/createuser", endpoints.CreateUser)
+	api.POST("/createorder", endpoints.CreateOrder)
 
+	api.POST("/login", endpoints.Login)
 	admin := api.Group("/admin")
 
 	admin.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
@@ -54,7 +56,8 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 		}
 		return true, nil
 	}))
-	admin.GET("/getorders", userSvc.GetOrders)
+	admin.GET("/getorders", endpoints.GetOrders)
+	admin.POST("/createcurrency", endpoints.CreateCurrency)
 
 	if tls != "" {
 		e.Logger.Fatal(e.StartAutoTLS(tls))

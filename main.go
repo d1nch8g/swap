@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"ion.lc/d1nhc8g/bitchange/bestchange"
+	"ion.lc/d1nhc8g/bitchange/email"
 	"ion.lc/d1nhc8g/bitchange/gen/database"
 	"ion.lc/d1nhc8g/bitchange/server"
 
@@ -40,12 +41,14 @@ import (
 //	@description				Security token
 
 var opts struct {
-	Port       string `long:"port" env:"PORT" default:"8080"`
-	Database   string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
-	Dir        string `long:"dir" env:"DIR" default:"dist"`
-	Bestchange string `long:"bestchange" env:"BESTCHANGE"`
-	Tls        string `long:"tls" env:"TLS"`
-	Admin      string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
+	Port         string `long:"port" env:"PORT" default:"8080"`
+	Database     string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
+	Dir          string `long:"dir" env:"DIR" default:"dist"`
+	Bestchange   string `long:"bestchange" env:"BESTCHANGE"`
+	Tls          string `long:"tls" env:"TLS"`
+	Admin        string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
+	EmailAddress string `long:"emailaddr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
+	EmailCreds   string `long:"emailcreds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
 }
 
 func main() {
@@ -78,6 +81,7 @@ func main() {
 	e := echo.New()
 	sqlc := database.New(conn)
 	bc := bestchange.New(opts.Bestchange)
+	mail := email.New(opts.EmailAddress, strings.Split(opts.EmailCreds, ":")[0], strings.Split(opts.EmailCreds, ":")[1])
 
 	hasher := sha512.New()
 	hasher.Write([]byte(strings.Split(opts.Admin, ":")[1]))
@@ -95,5 +99,5 @@ func main() {
 		panic(err)
 	}
 
-	server.Run(opts.Dir, opts.Port, opts.Tls, e, sqlc, bc)
+	server.Run(opts.Dir, opts.Port, opts.Tls, e, sqlc, bc, mail)
 }

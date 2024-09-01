@@ -1,115 +1,25 @@
 package server
 
 import (
-	"crypto/sha512"
-	"encoding/base64"
-	"errors"
-	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/labstack/echo/v4"
-	"ion.lc/d1nhc8g/bitchange/bestchange"
 	"ion.lc/d1nhc8g/bitchange/gen/database"
 )
-
-type UserService struct {
-	db *database.Queries
-	e  *echo.Echo
-	bc *bestchange.Client
-}
-
-//	@Summary	Login to platform user account
-//	@ID			login
-//	@Accept		json
-//	@Produce	json
-//	@Param		Email		header		string	true	"Email login"
-//	@Param		Password	header		string	true	"Password"
-//	@Success	200			{string}	string	"ok"
-//	@Failure	401			{object}	string	"Unautharized"
-//	@Router		/login [post]
-func (s *UserService) Login(c echo.Context) error {
-	email := c.Request().Header["Email"]
-	password := c.Request().Header["Password"]
-
-	if email == nil || password == nil {
-		c.Response().WriteHeader(http.StatusUnauthorized)
-		_, err := c.Response().Write([]byte("empty login or password"))
-		return err
-	}
-
-	user, err := s.db.GetUser(c.Request().Context(), email[0])
-	if err != nil {
-		c.Response().WriteHeader(http.StatusUnauthorized)
-		return errors.New("unable to login")
-	}
-
-	hasher := sha512.New()
-	hasher.Write([]byte(password[0]))
-	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
-
-	if user.Passwhash != sha {
-		c.Response().WriteHeader(http.StatusUnauthorized)
-		_, err := c.Response().Write([]byte("bad password"))
-		return err
-	}
-
-	tokenhasher := sha512.New()
-	tokenhasher.Write([]byte(fmt.Sprintf("%d", time.Now().UnixNano())))
-	token := base64.URLEncoding.EncodeToString(tokenhasher.Sum(nil))
-
-	_, err = s.db.UpdateUserToken(c.Request().Context(), database.UpdateUserTokenParams{
-		ID:    user.ID,
-		Token: token,
-	})
-	if err != nil {
-		c.Response().WriteHeader(http.StatusUnauthorized)
-		_, err := c.Response().Write([]byte("unable to update token"))
-		return err
-	}
-
-	_, err = c.Response().Write([]byte(token))
-	return err
-}
-
-type Orders struct {
-	ActiveOrders []database.Order `json:"orders"`
-}
-
-//	@Summary	Get active orders as administrator accout
-//	@ID			admin.getorders
-//	@Accept		json
-//	@Produce	json
-//	@Success	200	{object}	Orders	"Orders"
-//	@Security	ApiKeyAuth
-//	@Router		/admin/getorders [get]
-func (s *UserService) GetOrders(c echo.Context) error {
-	orders, err := s.db.OrdersUnfinished(c.Request().Context())
-	if err != nil {
-		c.Response().WriteHeader(http.StatusInternalServerError)
-		_, err := c.Response().Write([]byte("unable to access database"))
-		return err
-	}
-
-	return c.JSON(http.StatusOK, &Orders{
-		ActiveOrders: orders,
-	})
-}
 
 type CreateUserRequest struct {
 	Email string `json:"email"`
 }
 
-
-//	@Summary	Create new user
-//	@ID			user.create
-//	@Accept		json
-//	@Produce	json
-//	@Param		Body	body		CreateUserRequest	true	"Create user request"
-//	@Success	200		{object}	Orders				"ok"
-//	@Router		/createuser [get]
-func (s *UserService) CreateUser(c echo.Context) error {
+// @Summary	Create new user
+// @ID			user.create
+// @Accept		json
+// @Produce	json
+// @Param		Body	body		CreateUserRequest	true	"Create user request"
+// @Success	200		{object}	Orders				"ok"
+// @Router		/createuser [get]
+func (s *Endpoints) CreateUser(c echo.Context) error {
 	var createUser CreateUserRequest
 	err := c.Bind(&createUser)
 	if err != nil {
@@ -132,3 +42,29 @@ func (s *UserService) CreateUser(c echo.Context) error {
 	return nil
 }
 
+type CreateOrderRequest struct {
+	Email  string  `json:"email"`
+	Input  string  `json:"input"`
+	Ouput  string  `json:"output"`
+	Amount float64 `json:"amount"`
+}
+
+// @Summary	Create new order
+// @ID			order.create
+// @Accept		json
+// @Produce	json
+// @Param		Body	body		CreateOrderRequest	true	"Create order body"
+// @Success	200		{string}	string				"ok"
+// @Router		/createorder [post]
+func (m *Endpoints) CreateOrder(c echo.Context) error {
+	err := m.CreateUser(c)
+	if err != nil {
+		return err
+	}
+
+	// Estimate exchange rate for order and create it for user with one free admin
+	return nil
+}
+
+// verify card
+// payment approve

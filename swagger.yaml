@@ -1,5 +1,18 @@
 basePath: /api
 definitions:
+  database.CreateCurrencyParams:
+    properties:
+      accepted_window:
+        type: string
+      bestchange_id:
+        type: string
+      code:
+        type: string
+      description:
+        type: string
+      require_payment_verification:
+        type: boolean
+    type: object
   database.Order:
     properties:
       amount_in:
@@ -59,6 +72,13 @@ paths:
       consumes:
       - application/json
       operationId: admin.getorders
+      parameters:
+      - description: Create user request
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/database.CreateCurrencyParams'
       produces:
       - application/json
       responses:
