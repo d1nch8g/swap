@@ -24,4 +24,4 @@ run:
 gen:
 	sqlc generate
 	swag fmt
-	swag init
+	swag init -o . --ot yaml
