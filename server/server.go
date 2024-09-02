@@ -74,8 +74,8 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	admin.POST("/list-balances", endpoints.ListBalances)
 	admin.POST("/update-balance", endpoints.UpdateBalance)
 	admin.POST("/execute-order", endpoints.ExecuteOrder)
-	admin.POST("/execute-order", endpoints.ExecuteOrder)
-	admin.POST("/execute-order", endpoints.ExecuteOrder)
+	admin.POST("/get-image-confirmations", endpoints.GetImageConfirmations)
+	admin.POST("/approve-images", endpoints.ApproveImages)
 
 	if tls != "" {
 		e.Logger.Fatal(e.StartAutoTLS(tls))

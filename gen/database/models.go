@@ -32,8 +32,8 @@ type Exchanger struct {
 	Inmin                      float64 `json:"inmin"`
 	Description                string  `json:"description"`
 	RequirePaymentVerification bool    `json:"require_payment_verification"`
-	Input                      int64   `json:"input"`
-	Output                     int64   `json:"output"`
+	InCurrency                 int64   `json:"in_currency"`
+	OutCurrency                int64   `json:"out_currency"`
 }
 
 type Order struct {

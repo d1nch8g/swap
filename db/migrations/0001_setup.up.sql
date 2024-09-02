@@ -8,10 +8,10 @@ CREATE TABLE exchangers (
   inmin DOUBLE PRECISION NOT NULL,
   description TEXT NOT NULL,
   require_payment_verification BOOLEAN NOT NULL,
-  input BIGSERIAL NOT NULL,
-  CONSTRAINT fk_curr_in FOREIGN KEY(input) REFERENCES currencies(id),
-  output BIGSERIAL NOT NULL,
-  CONSTRAINT fk_curr_out FOREIGN KEY(output) REFERENCES currencies(id)
+  in_currency BIGSERIAL NOT NULL,
+  CONSTRAINT fk_curr_in FOREIGN KEY(in_currency) REFERENCES currencies(id),
+  out_currency BIGSERIAL NOT NULL,
+  CONSTRAINT fk_curr_out FOREIGN KEY(out_currency) REFERENCES currencies(id)
 );
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,

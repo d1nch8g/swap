@@ -169,8 +169,8 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	}
 
 	exch, err := e.db.GetExchangerByCurrencyIds(c.Request().Context(), database.GetExchangerByCurrencyIdsParams{
-		Input:  inCurr.ID,
-		Output: outCurr.ID,
+		InCurrency:  inCurr.ID,
+		OutCurrency: outCurr.ID,
 	})
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)

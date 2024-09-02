@@ -95,19 +95,19 @@ INSERT INTO exchangers (
     description,
     inmin,
     require_payment_verification,
-    input,
-    output
+    in_currency,
+    out_currency
   )
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, inmin, description, require_payment_verification, input, output
+RETURNING id, inmin, description, require_payment_verification, in_currency, out_currency
 `
 
 type CreateExchangerParams struct {
 	Description                string  `json:"description"`
 	Inmin                      float64 `json:"inmin"`
 	RequirePaymentVerification bool    `json:"require_payment_verification"`
-	Input                      int64   `json:"input"`
-	Output                     int64   `json:"output"`
+	InCurrency                 int64   `json:"in_currency"`
+	OutCurrency                int64   `json:"out_currency"`
 }
 
 func (q *Queries) CreateExchanger(ctx context.Context, arg CreateExchangerParams) (Exchanger, error) {
@@ -115,8 +115,8 @@ func (q *Queries) CreateExchanger(ctx context.Context, arg CreateExchangerParams
 		arg.Description,
 		arg.Inmin,
 		arg.RequirePaymentVerification,
-		arg.Input,
-		arg.Output,
+		arg.InCurrency,
+		arg.OutCurrency,
 	)
 	var i Exchanger
 	err := row.Scan(
@@ -124,8 +124,8 @@ func (q *Queries) CreateExchanger(ctx context.Context, arg CreateExchangerParams
 		&i.Inmin,
 		&i.Description,
 		&i.RequirePaymentVerification,
-		&i.Input,
-		&i.Output,
+		&i.InCurrency,
+		&i.OutCurrency,
 	)
 	return i, err
 }
@@ -258,27 +258,47 @@ func (q *Queries) GetCurrencyByCode(ctx context.Context, code string) (Currency,
 }
 
 const getExchangerByCurrencyIds = `-- name: GetExchangerByCurrencyIds :one
-SELECT id, inmin, description, require_payment_verification, input, output
+SELECT id, inmin, description, require_payment_verification, in_currency, out_currency
 FROM exchangers
-WHERE input = $1
-  AND output = $2
+WHERE in_currency = $1
+  AND out_currency = $2
 `
 
 type GetExchangerByCurrencyIdsParams struct {
-	Input  int64 `json:"input"`
-	Output int64 `json:"output"`
+	InCurrency  int64 `json:"in_currency"`
+	OutCurrency int64 `json:"out_currency"`
 }
 
 func (q *Queries) GetExchangerByCurrencyIds(ctx context.Context, arg GetExchangerByCurrencyIdsParams) (Exchanger, error) {
-	row := q.db.QueryRow(ctx, getExchangerByCurrencyIds, arg.Input, arg.Output)
+	row := q.db.QueryRow(ctx, getExchangerByCurrencyIds, arg.InCurrency, arg.OutCurrency)
 	var i Exchanger
 	err := row.Scan(
 		&i.ID,
 		&i.Inmin,
 		&i.Description,
 		&i.RequirePaymentVerification,
-		&i.Input,
-		&i.Output,
+		&i.InCurrency,
+		&i.OutCurrency,
+	)
+	return i, err
+}
+
+const getExchangerById = `-- name: GetExchangerById :one
+SELECT id, inmin, description, require_payment_verification, in_currency, out_currency
+FROM exchangers
+WHERE id = $1
+`
+
+func (q *Queries) GetExchangerById(ctx context.Context, id int64) (Exchanger, error) {
+	row := q.db.QueryRow(ctx, getExchangerById, id)
+	var i Exchanger
+	err := row.Scan(
+		&i.ID,
+		&i.Inmin,
+		&i.Description,
+		&i.RequirePaymentVerification,
+		&i.InCurrency,
+		&i.OutCurrency,
 	)
 	return i, err
 }
@@ -316,6 +336,27 @@ func (q *Queries) GetFreeAdmins(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getOrder = `-- name: GetOrder :one
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, finished
+FROM orders
+WHERE id = $1
+`
+
+func (q *Queries) GetOrder(ctx context.Context, id int64) (Order, error) {
+	row := q.db.QueryRow(ctx, getOrder, id)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.OperatorID,
+		&i.ExchangerID,
+		&i.AmountIn,
+		&i.AmountOut,
+		&i.Finished,
+	)
+	return i, err
 }
 
 const getOrders = `-- name: GetOrders :many
@@ -454,7 +495,7 @@ func (q *Queries) ListCurrencies(ctx context.Context) ([]Currency, error) {
 }
 
 const listExchangers = `-- name: ListExchangers :many
-SELECT id, inmin, description, require_payment_verification, input, output
+SELECT id, inmin, description, require_payment_verification, in_currency, out_currency
 FROM exchangers
 `
 
@@ -472,8 +513,8 @@ func (q *Queries) ListExchangers(ctx context.Context) ([]Exchanger, error) {
 			&i.Inmin,
 			&i.Description,
 			&i.RequirePaymentVerification,
-			&i.Input,
-			&i.Output,
+			&i.InCurrency,
+			&i.OutCurrency,
 		); err != nil {
 			return nil, err
 		}
@@ -531,17 +572,17 @@ func (q *Queries) RemoveCurrency(ctx context.Context, code string) error {
 
 const removeExchanger = `-- name: RemoveExchanger :exec
 DELETE FROM exchangers
-WHERE input = $1
-  AND output = $2
+WHERE in_currency = $1
+  AND out_currency = $2
 `
 
 type RemoveExchangerParams struct {
-	Input  int64 `json:"input"`
-	Output int64 `json:"output"`
+	InCurrency  int64 `json:"in_currency"`
+	OutCurrency int64 `json:"out_currency"`
 }
 
 func (q *Queries) RemoveExchanger(ctx context.Context, arg RemoveExchangerParams) error {
-	_, err := q.db.Exec(ctx, removeExchanger, arg.Input, arg.Output)
+	_, err := q.db.Exec(ctx, removeExchanger, arg.InCurrency, arg.OutCurrency)
 	return err
 }
 
@@ -596,6 +637,28 @@ func (q *Queries) UpdateCardConfirmationImage(ctx context.Context, arg UpdateCar
 		&i.Address,
 		&i.Verified,
 		&i.Image,
+	)
+	return i, err
+}
+
+const updateOrderFinished = `-- name: UpdateOrderFinished :one
+UPDATE orders
+SET finished = TRUE
+WHERE id = $1
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, finished
+`
+
+func (q *Queries) UpdateOrderFinished(ctx context.Context, id int64) (Order, error) {
+	row := q.db.QueryRow(ctx, updateOrderFinished, id)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.OperatorID,
+		&i.ExchangerID,
+		&i.AmountIn,
+		&i.AmountOut,
+		&i.Finished,
 	)
 	return i, err
 }

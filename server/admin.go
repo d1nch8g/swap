@@ -112,15 +112,15 @@ func (e *Endpoints) GetOrders(c echo.Context) error {
 }
 
 func (e *Endpoints) CreateCurrency(c echo.Context) error {
-	var curr database.CreateCurrencyParams
-	err := c.Bind(&curr)
+	var req database.CreateCurrencyParams
+	err := c.Bind(&req)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusBadRequest)
 		_, err := c.Response().Write([]byte("unable to unmarshal request"))
 		return err
 	}
 
-	_, err = e.db.CreateCurrency(c.Request().Context(), curr)
+	_, err = e.db.CreateCurrency(c.Request().Context(), req)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -135,15 +135,15 @@ type RemoveCurrencyRequest struct {
 }
 
 func (e *Endpoints) RemoveCurrency(c echo.Context) error {
-	var curr RemoveCurrencyRequest
-	err := c.Bind(&curr)
+	var req RemoveCurrencyRequest
+	err := c.Bind(&req)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusBadRequest)
 		_, err := c.Response().Write([]byte("unable to unmarshal request"))
 		return err
 	}
 
-	err = e.db.RemoveCurrency(c.Request().Context(), curr.Code)
+	err = e.db.RemoveCurrency(c.Request().Context(), req.Code)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -154,15 +154,15 @@ func (e *Endpoints) RemoveCurrency(c echo.Context) error {
 }
 
 func (e *Endpoints) CreateExchanger(c echo.Context) error {
-	var createExchanger database.CreateExchangerParams
-	err := c.Bind(&createExchanger)
+	var req database.CreateExchangerParams
+	err := c.Bind(&req)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusBadRequest)
 		_, err := c.Response().Write([]byte("unable to unmarshal request"))
 		return err
 	}
 
-	_, err = e.db.CreateExchanger(c.Request().Context(), createExchanger)
+	_, err = e.db.CreateExchanger(c.Request().Context(), req)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -172,15 +172,15 @@ func (e *Endpoints) CreateExchanger(c echo.Context) error {
 	return nil
 }
 func (e *Endpoints) RemoveExchanger(c echo.Context) error {
-	var rmexchanger database.RemoveExchangerParams
-	err := c.Bind(&rmexchanger)
+	var req database.RemoveExchangerParams
+	err := c.Bind(&req)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusBadRequest)
 		_, err := c.Response().Write([]byte("unable to unmarshal request"))
 		return err
 	}
 
-	err = e.db.RemoveExchanger(c.Request().Context(), rmexchanger)
+	err = e.db.RemoveExchanger(c.Request().Context(), req)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -296,12 +296,93 @@ type ExecuteOrderRequest struct {
 }
 
 func (e *Endpoints) ExecuteOrder(c echo.Context) error {
-	// this method should do following:
-	// lower operator balance on sold currency
-	// increase operator balance on topped currency
-	// mark operator as free
-	// mark transaction as finished
+	// Lower operator balance on sold currency and increase on bought
+	var req ExecuteOrderRequest
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
 
+	token := c.Request().Header["Token"][0]
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	balances, err := e.db.ListBalances(c.Request().Context(), u.ID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	order, err := e.db.GetOrder(c.Request().Context(), req.OrderId)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	for _, balance := range balances {
+		exch, err := e.db.GetExchangerById(c.Request().Context(), order.ExchangerID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		if balance.CurrencyID == exch.InCurrency {
+			_, err = e.db.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
+				ID:      balance.CurrencyID,
+				UserID:  u.ID,
+				Balance: balance.Balance + order.AmountIn,
+			})
+			if err != nil {
+				c.Response().WriteHeader(http.StatusInternalServerError)
+				_, err := c.Response().Write([]byte("unable to access database"))
+				return err
+			}
+		}
+
+		if balance.CurrencyID == exch.OutCurrency {
+			_, err = e.db.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
+				ID:      balance.CurrencyID,
+				UserID:  u.ID,
+				Balance: balance.Balance - order.AmountOut,
+			})
+			if err != nil {
+				c.Response().WriteHeader(http.StatusInternalServerError)
+				_, err := c.Response().Write([]byte("unable to access database"))
+				return err
+			}
+		}
+	}
+
+	// Mark operator as free.
+	_, err = e.db.UpdateUserBusy(c.Request().Context(), database.UpdateUserBusyParams{
+		Email: u.Email,
+		Busy:  false,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	// Mark transaction as finished.
+	_, err = e.db.UpdateOrderFinished(c.Request().Context(), order.ID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	// mb later wrap in transaction
 	return nil
 }
 
@@ -309,6 +390,6 @@ func (e *Endpoints) GetImageConfirmations(c echo.Context) error {
 	return nil
 }
 
-func (e *Endpoints) ApproveImage(c echo.Context) error {
+func (e *Endpoints) ApproveImages(c echo.Context) error {
 	return nil
 }

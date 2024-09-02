@@ -17,23 +17,27 @@ INSERT INTO exchangers (
     description,
     inmin,
     require_payment_verification,
-    input,
-    output
+    in_currency,
+    out_currency
   )
 VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 -- name: RemoveExchanger :exec
 DELETE FROM exchangers
-WHERE input = $1
-  AND output = $2;
+WHERE in_currency = $1
+  AND out_currency = $2;
 -- name: ListExchangers :many
 SELECT *
 FROM exchangers;
 -- name: GetExchangerByCurrencyIds :one
 SELECT *
 FROM exchangers
-WHERE input = $1
-  AND output = $2;
+WHERE in_currency = $1
+  AND out_currency = $2;
+-- name: GetExchangerById :one
+SELECT *
+FROM exchangers
+WHERE id = $1;
 -- name: CreateUser :one
 INSERT INTO users (
     email,
@@ -129,3 +133,12 @@ SELECT *
 FROM orders
 WHERE finished = false
   AND operator_id = $1;
+-- name: GetOrder :one
+SELECT *
+FROM orders
+WHERE id = $1;
+-- name: UpdateOrderFinished :one
+UPDATE orders
+SET finished = TRUE
+WHERE id = $1
+RETURNING *;
