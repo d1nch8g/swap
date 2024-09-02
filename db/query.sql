@@ -118,7 +118,8 @@ INSERT INTO orders (
   )
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
--- name: OrdersUnfinished :many
+-- name: GetOrders :many
 SELECT *
 FROM orders
-WHERE finished = false;
+WHERE finished = false
+  AND operator_id = $1;

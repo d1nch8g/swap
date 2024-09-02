@@ -73,19 +73,6 @@ func (e *Endpoints) VerifyEmail(c echo.Context) error {
 	return nil
 }
 
-type CreateOrderRequest struct {
-	Email  string  `json:"email"`
-	Input  string  `json:"input"`
-	Ouput  string  `json:"output"`
-	Amount float64 `json:"amount"`
-}
-
-func (e *Endpoints) CreateOrder(c echo.Context) error {
-
-	// Estimate exchange rate for order and create it for user with one free admin
-	return nil
-}
-
 type Currencies struct {
 	Currencies []database.Currency `json:"currencies"`
 }
@@ -118,6 +105,24 @@ func (e *Endpoints) ListExchangers(c echo.Context) error {
 	return c.JSON(http.StatusOK, &Exchangers{
 		Exchangers: exchangers,
 	})
+}
+
+type CreateOrderRequest struct {
+	Email  string  `json:"email"`
+	Input  string  `json:"input"`
+	Ouput  string  `json:"output"`
+	Amount float64 `json:"amount"`
+}
+
+func (e *Endpoints) CreateOrder(c echo.Context) error {
+	// This method should do following:
+	// estimate exchange rate based on bestchange API
+	// calculate output amount
+	// find free operator with proper amount for given currency
+	// mark operator as busy
+	// 
+
+	return nil
 }
 
 // verify card

@@ -273,6 +273,41 @@ func (q *Queries) GetCurrencyByCode(ctx context.Context, code string) ([]Currenc
 	return items, nil
 }
 
+const getOrders = `-- name: GetOrders :many
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, finished
+FROM orders
+WHERE finished = false
+  AND operator_id = $1
+`
+
+func (q *Queries) GetOrders(ctx context.Context, operatorID int64) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getOrders, operatorID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OperatorID,
+			&i.ExchangerID,
+			&i.AmountIn,
+			&i.AmountOut,
+			&i.Finished,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPaymentConfirmation = `-- name: GetPaymentConfirmation :one
 SELECT id, user_id, currency_id, address, verified, image
 FROM payment_confirmations
@@ -455,40 +490,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.Admin,
 			&i.Token,
 			&i.Busy,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const ordersUnfinished = `-- name: OrdersUnfinished :many
-SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, finished
-FROM orders
-WHERE finished = false
-`
-
-func (q *Queries) OrdersUnfinished(ctx context.Context) ([]Order, error) {
-	rows, err := q.db.Query(ctx, ordersUnfinished)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Order
-	for rows.Next() {
-		var i Order
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.OperatorID,
-			&i.ExchangerID,
-			&i.AmountIn,
-			&i.AmountOut,
-			&i.Finished,
 		); err != nil {
 			return nil, err
 		}

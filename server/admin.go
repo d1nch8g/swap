@@ -90,7 +90,16 @@ type Orders struct {
 }
 
 func (e *Endpoints) GetOrders(c echo.Context) error {
-	orders, err := e.db.OrdersUnfinished(c.Request().Context())
+	token := c.Request().Header["Token"][0]
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	orders, err := e.db.GetOrders(c.Request().Context(), u.ID)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -282,6 +291,16 @@ func (e *Endpoints) ListBalances(c echo.Context) error {
 	})
 }
 
+type ExecuteOrderRequest struct {
+	OrderId int64 `json:"order_id"`
+}
+
 func (e *Endpoints) ExecuteOrder(c echo.Context) error {
+	// this method should do following:
+	// lower operator balance on sold currency
+	// increase operator balance on topped currency
+	// mark operator as free
+	// mark transaction as finished
+
 	return nil
 }
