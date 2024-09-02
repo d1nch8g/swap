@@ -436,6 +436,16 @@ func (q *Queries) OrdersUnfinished(ctx context.Context) ([]Order, error) {
 	return items, nil
 }
 
+const removeCurrency = `-- name: RemoveCurrency :exec
+DELETE FROM currencies
+WHERE code = $1
+`
+
+func (q *Queries) RemoveCurrency(ctx context.Context, code string) error {
+	_, err := q.db.Exec(ctx, removeCurrency, code)
+	return err
+}
+
 const updateExchangerRate = `-- name: UpdateExchangerRate :one
 UPDATE exchangers
 set rate = $2

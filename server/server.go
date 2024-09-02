@@ -31,8 +31,8 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 
 	api := e.Group("/api")
 
-	api.POST("/createuser", endpoints.CreateUser)
-	api.POST("/createorder", endpoints.CreateOrder)
+	api.POST("/create-user", endpoints.CreateUser)
+	api.POST("/create-order", endpoints.CreateOrder)
 	api.GET("/verify/:uuid", endpoints.VerifyEmail)
 	api.POST("/login", endpoints.Login)
 
@@ -49,6 +49,12 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 			return false, nil
 		}
 
+		if !u.Verified {
+			c.Response().WriteHeader(http.StatusUnauthorized)
+			_, err = c.Response().Write([]byte("verify user email first"))
+			return false, err
+		}
+
 		if err != nil {
 			c.Response().WriteHeader(http.StatusUnauthorized)
 			return false, nil
@@ -56,10 +62,11 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 		return true, nil
 	}))
 
-	admin.GET("/getorders", endpoints.GetOrders)
-	admin.POST("/createcurrency", endpoints.CreateCurrency)
-	admin.POST("/removecurrency", endpoints.RemoveCurrency)
-	admin.POST("/listcurrencies", endpoints.ListCurrencies)
+	admin.GET("/get-orders", endpoints.GetOrders)
+	admin.POST("/create-currency", endpoints.CreateCurrency)
+	admin.POST("/remove-currency", endpoints.RemoveCurrency)
+	admin.POST("/list-currencies", endpoints.ListCurrencies)
+	admin.POST("/create-exchanger", endpoints.CreateExchanger)
 
 	if tls != "" {
 		e.Logger.Fatal(e.StartAutoTLS(tls))

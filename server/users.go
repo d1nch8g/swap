@@ -20,7 +20,7 @@ func (e *Endpoints) CreateUser(c echo.Context) error {
 	var createUser CreateUserRequest
 	err := c.Bind(&createUser)
 	if err != nil {
-		c.Response().WriteHeader(http.StatusForbidden)
+		c.Response().WriteHeader(http.StatusBadRequest)
 		_, err := c.Response().Write([]byte("unable to bind user request"))
 		return err
 	}
@@ -86,7 +86,24 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	return nil
 }
 
+type Currencies struct {
+	Currencies []database.Currency `json:"currencies"`
+}
+
+func (e *Endpoints) ListCurrencies(c echo.Context) error {
+	currs, err := e.db.ListCurrencies(c.Request().Context())
+	if err != nil {
+		c.Response().WriteHeader(http.StatusUnauthorized)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &Currencies{
+		Currencies: currs,
+	})
+}
+
 // func (m *Endpoints)
 
 // verify card
-// payment approve
+// approve payment operated

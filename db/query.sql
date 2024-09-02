@@ -15,6 +15,9 @@ FROM currencies;
 SELECT *
 FROM currencies
 WHERE code = $1;
+-- name: RemoveCurrency :exec
+DELETE FROM currencies
+WHERE code = $1;
 -- name: CreateExchanger :one
 INSERT INTO exchangers (
     rate,

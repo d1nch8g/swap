@@ -104,8 +104,14 @@ func (e *Endpoints) GetOrders(c echo.Context) error {
 
 func (e *Endpoints) CreateCurrency(c echo.Context) error {
 	var curr database.CreateCurrencyParams
-	c.Bind(&curr)
-	_, err := e.db.CreateCurrency(c.Request().Context(), curr)
+	err := c.Bind(&curr)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to get unmarshal request"))
+		return err
+	}
+
+	_, err = e.db.CreateCurrency(c.Request().Context(), curr)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -114,11 +120,45 @@ func (e *Endpoints) CreateCurrency(c echo.Context) error {
 	return nil
 }
 
+type RemoveCurrencyRequest struct {
+	Code string `json:"code"`
+}
+
 func (e *Endpoints) RemoveCurrency(c echo.Context) error {
+	var curr RemoveCurrencyRequest
+	err := c.Bind(&curr)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to get unmarshal request"))
+		return err
+	}
+
+	err = e.db.RemoveCurrency(c.Request().Context(), curr.Code)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
 	return nil
 }
 
-func (e *Endpoints) ListCurrencies(c echo.Context) error {
+func (e *Endpoints) CreateExchanger(c echo.Context) error {
+	var createExchanger database.CreateExchangerParams
+	err := c.Bind(&createExchanger)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to get unmarshal request"))
+		return err
+	}
+
+	_, err = e.db.CreateExchanger(c.Request().Context(), createExchanger)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
 	return nil
 }
 
