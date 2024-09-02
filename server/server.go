@@ -35,6 +35,8 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	api.POST("/create-order", endpoints.CreateOrder)
 	api.GET("/verify/:uuid", endpoints.VerifyEmail)
 	api.POST("/login", endpoints.Login)
+	api.GET("/list-currencies", endpoints.ListCurrencies)
+	api.GET("/list-exchangers", endpoints.ListExchangers)
 
 	admin := api.Group("/admin", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		token := c.Request().Header["Token"]
@@ -65,8 +67,8 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	admin.GET("/get-orders", endpoints.GetOrders)
 	admin.POST("/create-currency", endpoints.CreateCurrency)
 	admin.POST("/remove-currency", endpoints.RemoveCurrency)
-	admin.POST("/list-currencies", endpoints.ListCurrencies)
 	admin.POST("/create-exchanger", endpoints.CreateExchanger)
+	admin.POST("/remove-exchanger", endpoints.RemoveExchanger)
 
 	if tls != "" {
 		e.Logger.Fatal(e.StartAutoTLS(tls))

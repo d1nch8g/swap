@@ -33,6 +33,13 @@ UPDATE exchangers
 set rate = $2
 WHERE id = $1
 RETURNING *;
+-- name: RemoveExchanger :exec
+DELETE FROM exchangers
+WHERE input = $1
+  AND output = $2;
+-- name: ListExchangers :many
+SELECT *
+FROM exchangers;
 -- name: CreateUser :one
 INSERT INTO users (
     email,

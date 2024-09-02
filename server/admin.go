@@ -117,6 +117,7 @@ func (e *Endpoints) CreateCurrency(c echo.Context) error {
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
+
 	return nil
 }
 
@@ -161,7 +162,24 @@ func (e *Endpoints) CreateExchanger(c echo.Context) error {
 
 	return nil
 }
+func (e *Endpoints) RemoveExchanger(c echo.Context) error {
+	var rmexchanger database.RemoveExchangerParams
+	err := c.Bind(&rmexchanger)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to get unmarshal request"))
+		return err
+	}
 
-// create, remove and list exchangers
+	err = e.db.RemoveExchanger(c.Request().Context(), rmexchanger)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return nil
+}
+
 // create and update balance
 // execute order

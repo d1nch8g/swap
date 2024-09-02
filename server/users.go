@@ -93,7 +93,7 @@ type Currencies struct {
 func (e *Endpoints) ListCurrencies(c echo.Context) error {
 	currs, err := e.db.ListCurrencies(c.Request().Context())
 	if err != nil {
-		c.Response().WriteHeader(http.StatusUnauthorized)
+		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
@@ -103,7 +103,22 @@ func (e *Endpoints) ListCurrencies(c echo.Context) error {
 	})
 }
 
-// func (m *Endpoints)
+type Exchangers struct {
+	Exchangers []database.Exchanger `json:"exchangers"`
+}
+
+func (e *Endpoints) ListExchangers(c echo.Context) error {
+	exchangers, err := e.db.ListExchangers(c.Request().Context())
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &Exchangers{
+		Exchangers: exchangers,
+	})
+}
 
 // verify card
 // approve payment operated

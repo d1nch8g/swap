@@ -368,6 +368,38 @@ func (q *Queries) ListCurrencies(ctx context.Context) ([]Currency, error) {
 	return items, nil
 }
 
+const listExchangers = `-- name: ListExchangers :many
+SELECT id, rate, inmin, description, input, output
+FROM exchangers
+`
+
+func (q *Queries) ListExchangers(ctx context.Context) ([]Exchanger, error) {
+	rows, err := q.db.Query(ctx, listExchangers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Exchanger
+	for rows.Next() {
+		var i Exchanger
+		if err := rows.Scan(
+			&i.ID,
+			&i.Rate,
+			&i.Inmin,
+			&i.Description,
+			&i.Input,
+			&i.Output,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUsers = `-- name: ListUsers :many
 SELECT id, email, verified, passwhash, admin, token, busy
 FROM users
@@ -443,6 +475,22 @@ WHERE code = $1
 
 func (q *Queries) RemoveCurrency(ctx context.Context, code string) error {
 	_, err := q.db.Exec(ctx, removeCurrency, code)
+	return err
+}
+
+const removeExchanger = `-- name: RemoveExchanger :exec
+DELETE FROM exchangers
+WHERE input = $1
+  AND output = $2
+`
+
+type RemoveExchangerParams struct {
+	Input  int64 `json:"input"`
+	Output int64 `json:"output"`
+}
+
+func (q *Queries) RemoveExchanger(ctx context.Context, arg RemoveExchangerParams) error {
+	_, err := q.db.Exec(ctx, removeExchanger, arg.Input, arg.Output)
 	return err
 }
 
