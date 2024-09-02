@@ -79,15 +79,20 @@ UPDATE users
 SET token = $2
 WHERE id = $1
 RETURNING *;
--- name: CreateUserBalance :one
-INSERT INTO user_balances (user_id, currency_id, balance, address)
+-- name: CreateBalance :one
+INSERT INTO balances (user_id, currency_id, balance, address)
 VALUES ($1, $2, $3, $4)
 RETURNING *;
--- name: UpdateUserBalance :one
-UPDATE user_balances
-SET balance = $2
+-- name: UpdateBalance :one
+UPDATE balances
+SET balance = $3
 WHERE id = $1
+  AND user_id = $2
 RETURNING *;
+-- name: ListBalances :many
+SELECT *
+FROM balances
+WHERE user_id = $1;
 -- name: CreatePaymentConfirmation :one
 INSERT INTO payment_confirmations (user_id, currency_id, address, verified)
 VALUES ($1, $2, $3, $4)

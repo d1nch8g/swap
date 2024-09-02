@@ -69,6 +69,10 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	admin.POST("/remove-currency", endpoints.RemoveCurrency)
 	admin.POST("/create-exchanger", endpoints.CreateExchanger)
 	admin.POST("/remove-exchanger", endpoints.RemoveExchanger)
+	admin.POST("/create-balance", endpoints.CreateBalance)
+	admin.POST("/list-balances", endpoints.ListBalances)
+	admin.POST("/update-balance", endpoints.UpdateBalance)
+	admin.POST("/execute-order", endpoints.ExecuteOrder)
 
 	if tls != "" {
 		e.Logger.Fatal(e.StartAutoTLS(tls))

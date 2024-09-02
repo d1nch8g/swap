@@ -4,6 +4,14 @@
 
 package database
 
+type Balance struct {
+	ID         int64   `json:"id"`
+	UserID     int64   `json:"user_id"`
+	CurrencyID int64   `json:"currency_id"`
+	Balance    float64 `json:"balance"`
+	Address    string  `json:"address"`
+}
+
 type Currency struct {
 	ID                         int64  `json:"id"`
 	Code                       string `json:"code"`
@@ -49,12 +57,4 @@ type User struct {
 	Admin     bool   `json:"admin"`
 	Token     string `json:"token"`
 	Busy      bool   `json:"busy"`
-}
-
-type UserBalance struct {
-	ID         int64   `json:"id"`
-	UserID     int64   `json:"user_id"`
-	CurrencyID int64   `json:"currency_id"`
-	Balance    float64 `json:"balance"`
-	Address    string  `json:"address"`
 }

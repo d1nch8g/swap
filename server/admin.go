@@ -57,7 +57,7 @@ func (e *Endpoints) Login(c echo.Context) error {
 }
 
 type Busy struct {
-	Busy bool `json:""`
+	Busy bool `json:"busy"`
 }
 
 func (e *Endpoints) ChangeBusy(c echo.Context) error {
@@ -107,7 +107,7 @@ func (e *Endpoints) CreateCurrency(c echo.Context) error {
 	err := c.Bind(&curr)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusBadRequest)
-		_, err := c.Response().Write([]byte("unable to get unmarshal request"))
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
 		return err
 	}
 
@@ -130,7 +130,7 @@ func (e *Endpoints) RemoveCurrency(c echo.Context) error {
 	err := c.Bind(&curr)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusBadRequest)
-		_, err := c.Response().Write([]byte("unable to get unmarshal request"))
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
 		return err
 	}
 
@@ -149,7 +149,7 @@ func (e *Endpoints) CreateExchanger(c echo.Context) error {
 	err := c.Bind(&createExchanger)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusBadRequest)
-		_, err := c.Response().Write([]byte("unable to get unmarshal request"))
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
 		return err
 	}
 
@@ -167,7 +167,7 @@ func (e *Endpoints) RemoveExchanger(c echo.Context) error {
 	err := c.Bind(&rmexchanger)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusBadRequest)
-		_, err := c.Response().Write([]byte("unable to get unmarshal request"))
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
 		return err
 	}
 
@@ -181,5 +181,107 @@ func (e *Endpoints) RemoveExchanger(c echo.Context) error {
 	return nil
 }
 
-// create and update balance
-// execute order
+type CreateBalanceRequest struct {
+	CurrencyId int64
+	Balance    float64
+	Address    string
+}
+
+func (e *Endpoints) CreateBalance(c echo.Context) error {
+	var req CreateBalanceRequest
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
+
+	token := c.Request().Header["Token"][0]
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	_, err = e.db.CreateBalance(c.Request().Context(), database.CreateBalanceParams{
+		UserID:     u.ID,
+		CurrencyID: req.CurrencyId,
+		Balance:    req.Balance,
+		Address:    req.Address,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return nil
+}
+
+type UpdateBalanceRequest struct {
+	BalanceId int64   `json:"balance_id"`
+	Balance   float64 `json:"balance"`
+}
+
+func (e *Endpoints) UpdateBalance(c echo.Context) error {
+	var req UpdateBalanceRequest
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
+
+	token := c.Request().Header["Token"][0]
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	_, err = e.db.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
+		ID:      req.BalanceId,
+		UserID:  u.ID,
+		Balance: req.Balance,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+	return nil
+}
+
+type Balances struct {
+	Balances []database.Balance
+}
+
+func (e *Endpoints) ListBalances(c echo.Context) error {
+	token := c.Request().Header["Token"][0]
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	balances, err := e.db.ListBalances(c.Request().Context(), u.ID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &Balances{
+		Balances: balances,
+	})
+}
+
+func (e *Endpoints) ExecuteOrder(c echo.Context) error {
+	return nil
+}

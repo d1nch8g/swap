@@ -25,7 +25,7 @@ CREATE TABLE users (
   token TEXT NOT NULL,
   busy BOOLEAN NOT NULL
 );
-CREATE TABLE user_balances (
+CREATE TABLE balances (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGSERIAL NOT NULL,
   CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(id),
