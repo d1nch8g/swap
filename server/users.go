@@ -3,6 +3,7 @@ package server
 import (
 	"crypto/sha512"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -38,13 +39,34 @@ func (e *Endpoints) CreateUser(c echo.Context) error {
 	hasher.Write([]byte(req.Password))
 	passhash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
-	_, err = e.db.CreateUser(c.Request().Context(), database.CreateUserParams{
+	u, err := e.db.CreateUser(c.Request().Context(), database.CreateUserParams{
 		Email:     req.Email,
 		Passwhash: passhash,
 		Token:     uuid,
 		Verified:  false,
 	})
-	if err != nil && !strings.Contains(err.Error(), "duplicate key value violates unique constraint ") {
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint ") {
+			u, err = e.db.GetUser(c.Request().Context(), req.Email)
+			if err != nil {
+				c.Response().WriteHeader(http.StatusInternalServerError)
+				_, err := c.Response().Write([]byte("unable to create new user"))
+				return err
+			}
+			if u.Verified == false {
+				_, err := e.db.UpdateUserTokenAndPassHash(c.Request().Context(), database.UpdateUserTokenAndPassHashParams{
+					Email:     u.Email,
+					Token:     uuid,
+					Passwhash: passhash,
+				})
+				if err != nil {
+					c.Response().WriteHeader(http.StatusInternalServerError)
+					_, err := c.Response().Write([]byte("unable to create new user"))
+					return err
+				}
+				return nil
+			}
+		}
 		c.Response().WriteHeader(http.StatusForbidden)
 		_, err := c.Response().Write([]byte("unable to create new user"))
 		return err
@@ -108,21 +130,20 @@ func (e *Endpoints) ListExchangers(c echo.Context) error {
 }
 
 type CreateOrderRequest struct {
-	Email  string  `json:"email"`
-	Input  string  `json:"input"`
-	Ouput  string  `json:"output"`
-	Amount float64 `json:"amount"`
+	Email   string  `json:"email"`
+	Input   string  `json:"input"`
+	Ouput   string  `json:"output"`
+	Amount  float64 `json:"amount"`
+	Address string  `json:"address"`
+}
+
+type CreateOrderResponse struct {
+	InAmount  float64 `json:"in_amount"`
+	OutAmount float64 `json:"out_amount"`
+	InAddress string  `json:"in_addr"`
 }
 
 func (e *Endpoints) CreateOrder(c echo.Context) error {
-	// This method should do following:
-	// estimate exchange rate based on bestchange API
-	// calculate output amount
-	// find free operator with proper calculated amount for given currency
-	// if user email not exists create and bind to request
-	// mark operator as busy
-	// create new order
-
 	var req CreateOrderRequest
 	err := c.Bind(&req)
 	if err != nil {
@@ -163,12 +184,124 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	}
 
 	// Check if payment requires verification and check if user payment method is validated
-	if exch.RequirePaymentVerification {
-		
+	u, err := e.db.GetUser(c.Request().Context(), req.Email)
+	if err != nil {
+		u, err = e.db.CreateUser(c.Request().Context(), database.CreateUserParams{
+			Email:     req.Email,
+			Passwhash: "nil",
+			Token:     "nil",
+		})
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database or exchanger does not exist"))
+			return err
+		}
 	}
 
-	return nil
+	if exch.RequirePaymentVerification {
+		pc, err := e.db.GetCardConfirmation(c.Request().Context(), database.GetCardConfirmationParams{
+			UserID:     u.ID,
+			CurrencyID: inCurr.ID,
+		})
+		if err != nil {
+			_, err := e.db.CreateCardConfirmation(c.Request().Context(), database.CreateCardConfirmationParams{
+				UserID:     u.ID,
+				CurrencyID: inCurr.ID,
+				Address:    req.Address,
+				Verified:   false,
+			})
+			if err != nil {
+				c.Response().WriteHeader(http.StatusInternalServerError)
+				_, err := c.Response().Write([]byte("unable to access database or exchanger does not exist"))
+				return err
+			}
+			return c.String(http.StatusConflict, "required card confirmation")
+		}
+		if !pc.Verified {
+			return c.String(http.StatusConflict, "required card confirmation")
+		}
+	}
+
+	// Estimate exchange rate based on bestchange API and calculate output
+	rate, err := e.bc.EstimateOperation(inCurr.Code, outCurr.Code)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access bestchange API"))
+		return err
+	}
+
+	outAmount := req.Amount / rate
+
+	// Find free operator with proper calculated amount for given currency
+	admins, err := e.db.GetFreeAdmins(c.Request().Context())
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+	var operator *database.User
+	var addr string
+	for _, admin := range admins {
+		balances, err := e.db.ListBalances(c.Request().Context(), admin.ID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+		for _, balance := range balances {
+			if balance.CurrencyID == outCurr.ID && balance.Balance > outAmount {
+				addr = balance.Address
+				operator = &admin
+				break
+			}
+		}
+	}
+
+	if operator == nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("all operators are busy"))
+		return err
+	}
+
+	// Mark operator as busy and create new order
+	_, err = e.db.UpdateUserBusy(c.Request().Context(), database.UpdateUserBusyParams{
+		Email: operator.Email,
+		Busy:  true,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	_, err = e.db.CreateOrder(c.Request().Context(), database.CreateOrderParams{
+		UserID:      u.ID,
+		OperatorID:  operator.ID,
+		ExchangerID: exch.ID,
+		AmountIn:    req.Amount,
+		AmountOut:   outAmount,
+		Finished:    false,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	// Send email notification
+	err = e.mail.OrderCreated(req.Email, req.Input, req.Ouput, fmt.Sprintf("%d", req.Amount), req.Address)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to send email notification"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &CreateOrderResponse{
+		InAmount:  req.Amount,
+		OutAmount: outAmount,
+		InAddress: addr,
+	})
 }
 
-// verify card
+// validate card/ payment confirmation
 // approve payment operated

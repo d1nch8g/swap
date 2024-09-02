@@ -1,8 +1,5 @@
 -- name: CreateCurrency :one
-INSERT INTO currencies (
-    code,
-    description
-  )
+INSERT INTO currencies (code, description)
 VALUES ($1, $2)
 RETURNING *;
 -- name: ListCurrencies :many
@@ -76,6 +73,17 @@ UPDATE users
 SET token = $2
 WHERE id = $1
 RETURNING *;
+-- name: UpdateUserTokenAndPassHash :one
+UPDATE users
+SET token = $2,
+  passwhash = $3
+WHERE email = $1
+RETURNING *;
+-- name: GetFreeAdmins :many
+SELECT *
+FROM users
+WHERE admin = TRUE
+  AND busy = FALSE;
 -- name: CreateBalance :one
 INSERT INTO balances (user_id, currency_id, balance, address)
 VALUES ($1, $2, $3, $4)
@@ -90,16 +98,17 @@ RETURNING *;
 SELECT *
 FROM balances
 WHERE user_id = $1;
--- name: CreatePaymentConfirmation :one
-INSERT INTO payment_confirmations (user_id, currency_id, address, verified)
+-- name: CreateCardConfirmation :one
+INSERT INTO card_confirmations (user_id, currency_id, address, verified)
 VALUES ($1, $2, $3, $4)
 RETURNING *;
--- name: GetPaymentConfirmation :one
+-- name: GetCardConfirmation :one
 SELECT *
-FROM payment_confirmations
-WHERE id = $1;
--- name: UpdatePaymentConfirmationImage :one
-UPDATE payment_confirmations
+FROM card_confirmations
+WHERE user_id = $1
+  AND currency_id = $2;
+-- name: UpdateCardConfirmationImage :one
+UPDATE card_confirmations
 SET image = $2,
   verified = $3
 WHERE id = $1

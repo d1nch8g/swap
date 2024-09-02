@@ -31,7 +31,7 @@ CREATE TABLE balances (
   balance DOUBLE PRECISION NOT NULL,
   address TEXT UNIQUE NOT NULL
 );
-CREATE TABLE payment_confirmations (
+CREATE TABLE card_confirmations (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGSERIAL NOT NULL,
   CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(id),

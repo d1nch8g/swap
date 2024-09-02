@@ -40,11 +40,40 @@ func (q *Queries) CreateBalance(ctx context.Context, arg CreateBalanceParams) (B
 	return i, err
 }
 
+const createCardConfirmation = `-- name: CreateCardConfirmation :one
+INSERT INTO card_confirmations (user_id, currency_id, address, verified)
+VALUES ($1, $2, $3, $4)
+RETURNING id, user_id, currency_id, address, verified, image
+`
+
+type CreateCardConfirmationParams struct {
+	UserID     int64  `json:"user_id"`
+	CurrencyID int64  `json:"currency_id"`
+	Address    string `json:"address"`
+	Verified   bool   `json:"verified"`
+}
+
+func (q *Queries) CreateCardConfirmation(ctx context.Context, arg CreateCardConfirmationParams) (CardConfirmation, error) {
+	row := q.db.QueryRow(ctx, createCardConfirmation,
+		arg.UserID,
+		arg.CurrencyID,
+		arg.Address,
+		arg.Verified,
+	)
+	var i CardConfirmation
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.CurrencyID,
+		&i.Address,
+		&i.Verified,
+		&i.Image,
+	)
+	return i, err
+}
+
 const createCurrency = `-- name: CreateCurrency :one
-INSERT INTO currencies (
-    code,
-    description
-  )
+INSERT INTO currencies (code, description)
 VALUES ($1, $2)
 RETURNING id, code, description
 `
@@ -145,38 +174,6 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 	return i, err
 }
 
-const createPaymentConfirmation = `-- name: CreatePaymentConfirmation :one
-INSERT INTO payment_confirmations (user_id, currency_id, address, verified)
-VALUES ($1, $2, $3, $4)
-RETURNING id, user_id, currency_id, address, verified, image
-`
-
-type CreatePaymentConfirmationParams struct {
-	UserID     int64  `json:"user_id"`
-	CurrencyID int64  `json:"currency_id"`
-	Address    string `json:"address"`
-	Verified   bool   `json:"verified"`
-}
-
-func (q *Queries) CreatePaymentConfirmation(ctx context.Context, arg CreatePaymentConfirmationParams) (PaymentConfirmation, error) {
-	row := q.db.QueryRow(ctx, createPaymentConfirmation,
-		arg.UserID,
-		arg.CurrencyID,
-		arg.Address,
-		arg.Verified,
-	)
-	var i PaymentConfirmation
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.CurrencyID,
-		&i.Address,
-		&i.Verified,
-		&i.Image,
-	)
-	return i, err
-}
-
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     email,
@@ -221,6 +218,32 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const getCardConfirmation = `-- name: GetCardConfirmation :one
+SELECT id, user_id, currency_id, address, verified, image
+FROM card_confirmations
+WHERE user_id = $1
+  AND currency_id = $2
+`
+
+type GetCardConfirmationParams struct {
+	UserID     int64 `json:"user_id"`
+	CurrencyID int64 `json:"currency_id"`
+}
+
+func (q *Queries) GetCardConfirmation(ctx context.Context, arg GetCardConfirmationParams) (CardConfirmation, error) {
+	row := q.db.QueryRow(ctx, getCardConfirmation, arg.UserID, arg.CurrencyID)
+	var i CardConfirmation
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.CurrencyID,
+		&i.Address,
+		&i.Verified,
+		&i.Image,
+	)
+	return i, err
+}
+
 const getCurrencyByCode = `-- name: GetCurrencyByCode :one
 SELECT id, code, description
 FROM currencies
@@ -260,6 +283,41 @@ func (q *Queries) GetExchangerByCurrencyIds(ctx context.Context, arg GetExchange
 	return i, err
 }
 
+const getFreeAdmins = `-- name: GetFreeAdmins :many
+SELECT id, email, verified, passwhash, admin, token, busy
+FROM users
+WHERE admin = TRUE
+  AND busy = FALSE
+`
+
+func (q *Queries) GetFreeAdmins(ctx context.Context) ([]User, error) {
+	rows, err := q.db.Query(ctx, getFreeAdmins)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Verified,
+			&i.Passwhash,
+			&i.Admin,
+			&i.Token,
+			&i.Busy,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getOrders = `-- name: GetOrders :many
 SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, finished
 FROM orders
@@ -293,26 +351,6 @@ func (q *Queries) GetOrders(ctx context.Context, operatorID int64) ([]Order, err
 		return nil, err
 	}
 	return items, nil
-}
-
-const getPaymentConfirmation = `-- name: GetPaymentConfirmation :one
-SELECT id, user_id, currency_id, address, verified, image
-FROM payment_confirmations
-WHERE id = $1
-`
-
-func (q *Queries) GetPaymentConfirmation(ctx context.Context, id int64) (PaymentConfirmation, error) {
-	row := q.db.QueryRow(ctx, getPaymentConfirmation, id)
-	var i PaymentConfirmation
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.CurrencyID,
-		&i.Address,
-		&i.Verified,
-		&i.Image,
-	)
-	return i, err
 }
 
 const getUser = `-- name: GetUser :one
@@ -534,23 +572,23 @@ func (q *Queries) UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (B
 	return i, err
 }
 
-const updatePaymentConfirmationImage = `-- name: UpdatePaymentConfirmationImage :one
-UPDATE payment_confirmations
+const updateCardConfirmationImage = `-- name: UpdateCardConfirmationImage :one
+UPDATE card_confirmations
 SET image = $2,
   verified = $3
 WHERE id = $1
 RETURNING id, user_id, currency_id, address, verified, image
 `
 
-type UpdatePaymentConfirmationImageParams struct {
+type UpdateCardConfirmationImageParams struct {
 	ID       int64  `json:"id"`
 	Image    []byte `json:"image"`
 	Verified bool   `json:"verified"`
 }
 
-func (q *Queries) UpdatePaymentConfirmationImage(ctx context.Context, arg UpdatePaymentConfirmationImageParams) (PaymentConfirmation, error) {
-	row := q.db.QueryRow(ctx, updatePaymentConfirmationImage, arg.ID, arg.Image, arg.Verified)
-	var i PaymentConfirmation
+func (q *Queries) UpdateCardConfirmationImage(ctx context.Context, arg UpdateCardConfirmationImageParams) (CardConfirmation, error) {
+	row := q.db.QueryRow(ctx, updateCardConfirmationImage, arg.ID, arg.Image, arg.Verified)
+	var i CardConfirmation
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -603,6 +641,35 @@ type UpdateUserTokenParams struct {
 
 func (q *Queries) UpdateUserToken(ctx context.Context, arg UpdateUserTokenParams) (User, error) {
 	row := q.db.QueryRow(ctx, updateUserToken, arg.ID, arg.Token)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Verified,
+		&i.Passwhash,
+		&i.Admin,
+		&i.Token,
+		&i.Busy,
+	)
+	return i, err
+}
+
+const updateUserTokenAndPassHash = `-- name: UpdateUserTokenAndPassHash :one
+UPDATE users
+SET token = $2,
+  passwhash = $3
+WHERE email = $1
+RETURNING id, email, verified, passwhash, admin, token, busy
+`
+
+type UpdateUserTokenAndPassHashParams struct {
+	Email     string `json:"email"`
+	Token     string `json:"token"`
+	Passwhash string `json:"passwhash"`
+}
+
+func (q *Queries) UpdateUserTokenAndPassHash(ctx context.Context, arg UpdateUserTokenAndPassHashParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserTokenAndPassHash, arg.Email, arg.Token, arg.Passwhash)
 	var i User
 	err := row.Scan(
 		&i.ID,

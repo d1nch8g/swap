@@ -12,6 +12,15 @@ type Balance struct {
 	Address    string  `json:"address"`
 }
 
+type CardConfirmation struct {
+	ID         int64  `json:"id"`
+	UserID     int64  `json:"user_id"`
+	CurrencyID int64  `json:"currency_id"`
+	Address    string `json:"address"`
+	Verified   bool   `json:"verified"`
+	Image      []byte `json:"image"`
+}
+
 type Currency struct {
 	ID          int64  `json:"id"`
 	Code        string `json:"code"`
@@ -35,15 +44,6 @@ type Order struct {
 	AmountIn    float64 `json:"amount_in"`
 	AmountOut   float64 `json:"amount_out"`
 	Finished    bool    `json:"finished"`
-}
-
-type PaymentConfirmation struct {
-	ID         int64  `json:"id"`
-	UserID     int64  `json:"user_id"`
-	CurrencyID int64  `json:"currency_id"`
-	Address    string `json:"address"`
-	Verified   bool   `json:"verified"`
-	Image      []byte `json:"image"`
 }
 
 type User struct {
