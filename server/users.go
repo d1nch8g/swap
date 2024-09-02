@@ -17,17 +17,17 @@ type CreateUserRequest struct {
 }
 
 func (e *Endpoints) CreateUser(c echo.Context) error {
-	var createUser CreateUserRequest
-	err := c.Bind(&createUser)
+	var req CreateUserRequest
+	err := c.Bind(&req)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusBadRequest)
-		_, err := c.Response().Write([]byte("unable to bind user request"))
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
 		return err
 	}
 
 	uuid := uuid.New().String()
 
-	err = e.mail.UserVerifyEmail(createUser.Email, uuid)
+	err = e.mail.UserVerifyEmail(req.Email, uuid)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable send email notification"))
@@ -35,11 +35,11 @@ func (e *Endpoints) CreateUser(c echo.Context) error {
 	}
 
 	hasher := sha512.New()
-	hasher.Write([]byte(createUser.Password))
+	hasher.Write([]byte(req.Password))
 	passhash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
 	_, err = e.db.CreateUser(c.Request().Context(), database.CreateUserParams{
-		Email:     createUser.Email,
+		Email:     req.Email,
 		Passwhash: passhash,
 		Token:     uuid,
 		Verified:  false,
@@ -118,9 +118,54 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	// This method should do following:
 	// estimate exchange rate based on bestchange API
 	// calculate output amount
-	// find free operator with proper amount for given currency
+	// find free operator with proper calculated amount for given currency
+	// if user email not exists create and bind to request
 	// mark operator as busy
-	// 
+	// create new order
+
+	var req CreateOrderRequest
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
+
+	// Check if input is over minimum for given exchanger
+	inCurr, err := e.db.GetCurrencyByCode(c.Request().Context(), req.Input)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	outCurr, err := e.db.GetCurrencyByCode(c.Request().Context(), req.Ouput)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	exch, err := e.db.GetExchangerByCurrencyIds(c.Request().Context(), database.GetExchangerByCurrencyIdsParams{
+		Input:  inCurr.ID,
+		Output: outCurr.ID,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database or exchanger does not exist"))
+		return err
+	}
+
+	if req.Amount < exch.Inmin {
+		c.Response().WriteHeader(http.StatusConflict)
+		_, err := c.Response().Write([]byte("input is too small"))
+		return err
+	}
+
+	// Check if payment requires verification and check if user payment method is validated
+	if exch.RequirePaymentVerification {
+		
+	}
 
 	return nil
 }

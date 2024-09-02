@@ -13,21 +13,18 @@ type Balance struct {
 }
 
 type Currency struct {
-	ID                         int64  `json:"id"`
-	Code                       string `json:"code"`
-	Description                string `json:"description"`
-	BestchangeID               string `json:"bestchange_id"`
-	AcceptedWindow             string `json:"accepted_window"`
-	RequirePaymentVerification bool   `json:"require_payment_verification"`
+	ID          int64  `json:"id"`
+	Code        string `json:"code"`
+	Description string `json:"description"`
 }
 
 type Exchanger struct {
-	ID          int64   `json:"id"`
-	Rate        float64 `json:"rate"`
-	Inmin       float64 `json:"inmin"`
-	Description string  `json:"description"`
-	Input       int64   `json:"input"`
-	Output      int64   `json:"output"`
+	ID                         int64   `json:"id"`
+	Inmin                      float64 `json:"inmin"`
+	Description                string  `json:"description"`
+	RequirePaymentVerification bool    `json:"require_payment_verification"`
+	Input                      int64   `json:"input"`
+	Output                     int64   `json:"output"`
 }
 
 type Order struct {

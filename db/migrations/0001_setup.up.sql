@@ -1,16 +1,13 @@
 CREATE TABLE currencies (
   id BIGSERIAL PRIMARY KEY,
   code TEXT UNIQUE NOT NULL,
-  description TEXT UNIQUE NOT NULL,
-  bestchange_id TEXT UNIQUE NOT NULL,
-  accepted_window TEXT NOT NULL,
-  require_payment_verification BOOLEAN NOT NULL
+  description TEXT UNIQUE NOT NULL
 );
 CREATE TABLE exchangers (
   id BIGSERIAL PRIMARY KEY,
-  rate DOUBLE PRECISION NOT NULL,
   inmin DOUBLE PRECISION NOT NULL,
   description TEXT NOT NULL,
+  require_payment_verification BOOLEAN NOT NULL,
   input BIGSERIAL NOT NULL,
   CONSTRAINT fk_curr_in FOREIGN KEY(input) REFERENCES currencies(id),
   output BIGSERIAL NOT NULL,

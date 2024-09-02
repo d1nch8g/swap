@@ -181,6 +181,7 @@ func (c *Client) EstimateOver(r []Rate) (float64, float64) {
 }
 
 // Estimate exchane pair to get actual and reversed exchange rate for pair
+// Example input "TON", "RUB"
 func (c *Client) EstimateOperation(first, second string) (float64, error) {
 	m, err := c.CreateCurrencyMapper()
 	if err != nil {

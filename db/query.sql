@@ -1,17 +1,14 @@
 -- name: CreateCurrency :one
 INSERT INTO currencies (
     code,
-    description,
-    bestchange_id,
-    accepted_window,
-    require_payment_verification
+    description
   )
-VALUES ($1, $2, $3, $4, $5)
+VALUES ($1, $2)
 RETURNING *;
 -- name: ListCurrencies :many
 SELECT *
 FROM currencies;
--- name: GetCurrencyByCode :many
+-- name: GetCurrencyByCode :one
 SELECT *
 FROM currencies
 WHERE code = $1;
@@ -20,18 +17,13 @@ DELETE FROM currencies
 WHERE code = $1;
 -- name: CreateExchanger :one
 INSERT INTO exchangers (
-    rate,
     description,
     inmin,
+    require_payment_verification,
     input,
     output
   )
 VALUES ($1, $2, $3, $4, $5)
-RETURNING *;
--- name: UpdateExchangerRate :one
-UPDATE exchangers
-set rate = $2
-WHERE id = $1
 RETURNING *;
 -- name: RemoveExchanger :exec
 DELETE FROM exchangers
@@ -40,6 +32,11 @@ WHERE input = $1
 -- name: ListExchangers :many
 SELECT *
 FROM exchangers;
+-- name: GetExchangerByCurrencyIds :one
+SELECT *
+FROM exchangers
+WHERE input = $1
+  AND output = $2;
 -- name: CreateUser :one
 INSERT INTO users (
     email,
