@@ -304,3 +304,11 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 
 	return nil
 }
+
+func (e *Endpoints) GetImageConfirmations(c echo.Context) error {
+	return nil
+}
+
+func (e *Endpoints) ApproveImage(c echo.Context) error {
+	return nil
+}

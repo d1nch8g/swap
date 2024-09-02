@@ -4,6 +4,7 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -138,9 +139,9 @@ type CreateOrderRequest struct {
 }
 
 type CreateOrderResponse struct {
-	InAmount  float64 `json:"in_amount"`
-	OutAmount float64 `json:"out_amount"`
-	InAddress string  `json:"in_addr"`
+	InAmount        float64 `json:"in_amount"`
+	OutAmount       float64 `json:"out_amount"`
+	TransferAddress string  `json:"transfer_address"`
 }
 
 func (e *Endpoints) CreateOrder(c echo.Context) error {
@@ -193,7 +194,7 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 		})
 		if err != nil {
 			c.Response().WriteHeader(http.StatusInternalServerError)
-			_, err := c.Response().Write([]byte("unable to access database or exchanger does not exist"))
+			_, err := c.Response().Write([]byte("unable to access database"))
 			return err
 		}
 	}
@@ -297,11 +298,75 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, &CreateOrderResponse{
-		InAmount:  req.Amount,
-		OutAmount: outAmount,
-		InAddress: addr,
+		InAmount:        req.Amount,
+		OutAmount:       outAmount,
+		TransferAddress: addr,
 	})
 }
 
-// validate card/ payment confirmation
+type ValidateCardRequest struct {
+	Email      string `json:"email"`
+	CurrencyId int64  `json:"currency_id"`
+}
+
+func (e *Endpoints) ValidateCard(c echo.Context) error {
+	var req ValidateCardRequest
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to read file"))
+		return err
+	}
+	src, err := file.Open()
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to read file"))
+		return err
+	}
+
+	img, err := io.ReadAll(src)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to read file"))
+		return err
+	}
+
+	u, err := e.db.GetUser(c.Request().Context(), req.Email)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to read file"))
+		return err
+	}
+
+	cc, err := e.db.GetCardConfirmation(c.Request().Context(), database.GetCardConfirmationParams{
+		UserID:     u.ID,
+		CurrencyID: req.CurrencyId,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	_, err = e.db.UpdateCardConfirmationImage(c.Request().Context(), database.UpdateCardConfirmationImageParams{
+		ID:       cc.ID,
+		Image:    img,
+		Verified: false,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return nil
+}
+
 // approve payment operated

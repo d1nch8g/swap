@@ -33,6 +33,7 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 
 	api.POST("/create-user", endpoints.CreateUser)
 	api.POST("/create-order", endpoints.CreateOrder)
+	api.POST("/validate-card", endpoints.ValidateCard)
 	api.GET("/verify/:uuid", endpoints.VerifyEmail)
 	api.POST("/login", endpoints.Login)
 	api.GET("/list-currencies", endpoints.ListCurrencies)
@@ -72,6 +73,8 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	admin.POST("/create-balance", endpoints.CreateBalance)
 	admin.POST("/list-balances", endpoints.ListBalances)
 	admin.POST("/update-balance", endpoints.UpdateBalance)
+	admin.POST("/execute-order", endpoints.ExecuteOrder)
+	admin.POST("/execute-order", endpoints.ExecuteOrder)
 	admin.POST("/execute-order", endpoints.ExecuteOrder)
 
 	if tls != "" {

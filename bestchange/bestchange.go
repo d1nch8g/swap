@@ -8,6 +8,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"sync"
 	"text/tabwriter"
 	"time"
 )
@@ -15,6 +16,7 @@ import (
 type Client struct {
 	token string
 	cache map[string]Response
+	sync.Mutex
 }
 
 type Response struct {
@@ -47,7 +49,9 @@ func (c *Client) Rates(first, second string) ([]Rate, error) {
 
 	url := fmt.Sprintf("https://www.bestchange.app/v2/%s/rates/%s-%s", c.token, first, second)
 
+	c.Lock()
 	value, ok := c.cache[url]
+	c.Unlock()
 	if ok && time.Since(value.Time) < time.Minute {
 		body = value
 	} else {
@@ -68,10 +72,12 @@ func (c *Client) Rates(first, second string) ([]Rate, error) {
 		if err != nil {
 			return nil, fmt.Errorf("unable to read response: %v", err)
 		}
+		c.Lock()
 		c.cache[url] = Response{
 			Resp: cacheBody,
 			Time: time.Now(),
 		}
+		c.Unlock()
 		body = Response{Resp: cacheBody}
 	}
 
@@ -119,8 +125,10 @@ func (c *Client) CreateCurrencyMapper() (map[string]string, error) {
 
 	url := fmt.Sprintf("https://www.bestchange.app/v2/%s/currencies/ru", c.token)
 
+	c.Lock()
 	value, ok := c.cache[url]
-	if ok && time.Since(value.Time) < time.Minute {
+	c.Unlock()
+	if ok && time.Since(value.Time) < time.Minute*10 {
 		body = value
 	} else {
 		req, _ := http.NewRequest("GET", url, nil)
@@ -137,10 +145,12 @@ func (c *Client) CreateCurrencyMapper() (map[string]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("unable to read response: %v", err)
 		}
+		c.Lock()
 		c.cache[url] = Response{
 			Resp: cacheBody,
 			Time: time.Now(),
 		}
+		c.Unlock()
 		body = Response{Resp: cacheBody}
 	}
 
@@ -159,7 +169,7 @@ func (c *Client) CreateCurrencyMapper() (map[string]string, error) {
 
 // Function which takes rates and based on this rates estimates a good price
 // for exchange operations.
-func (c *Client) EstimateOver(r []Rate) (float64, float64) {
+func (c *Client) estimateOver(r []Rate) (float64, float64) {
 	var result float64
 	var resultrev float64
 	for i := range r {
@@ -192,6 +202,6 @@ func (c *Client) EstimateOperation(first, second string) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	rate, _ := c.EstimateOver(rates)
+	rate, _ := c.estimateOver(rates)
 	return rate, nil
 }
