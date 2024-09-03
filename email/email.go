@@ -14,8 +14,8 @@ type Mailer struct {
 	ApiAddress string
 }
 
-func New(addr, login, password, name, apiaddr string) *Mailer {
-	d := gomail.NewDialer(addr, 587, login, password)
+func New(addr, login, password, name, apiaddr string, port int) *Mailer {
+	d := gomail.NewDialer(addr, port, login, password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	mes := gomail.NewMessage()

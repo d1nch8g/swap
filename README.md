@@ -12,4 +12,4 @@ Configuration:
 - `ADMIN` - user:password of main admin account
 - `API_ADDR` - link to api should be self referenced api address
 - `EMAIL_ADDRESS` - host of email address
-- `EMAIL_CREDS` - 
+- `EMAIL_CREDS` - creds for email
