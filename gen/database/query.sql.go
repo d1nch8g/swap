@@ -137,19 +137,23 @@ INSERT INTO orders (
     exchanger_id,
     amount_in,
     amount_out,
+    cancelled,
+    receive_address,
     finished
   )
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, finished
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, cancelled, finished
 `
 
 type CreateOrderParams struct {
-	UserID      int64   `json:"user_id"`
-	OperatorID  int64   `json:"operator_id"`
-	ExchangerID int64   `json:"exchanger_id"`
-	AmountIn    float64 `json:"amount_in"`
-	AmountOut   float64 `json:"amount_out"`
-	Finished    bool    `json:"finished"`
+	UserID         int64   `json:"user_id"`
+	OperatorID     int64   `json:"operator_id"`
+	ExchangerID    int64   `json:"exchanger_id"`
+	AmountIn       float64 `json:"amount_in"`
+	AmountOut      float64 `json:"amount_out"`
+	Cancelled      bool    `json:"cancelled"`
+	ReceiveAddress string  `json:"receive_address"`
+	Finished       bool    `json:"finished"`
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
@@ -159,6 +163,8 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		arg.ExchangerID,
 		arg.AmountIn,
 		arg.AmountOut,
+		arg.Cancelled,
+		arg.ReceiveAddress,
 		arg.Finished,
 	)
 	var i Order
@@ -169,6 +175,8 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		&i.ExchangerID,
 		&i.AmountIn,
 		&i.AmountOut,
+		&i.ReceiveAddress,
+		&i.Cancelled,
 		&i.Finished,
 	)
 	return i, err
@@ -257,6 +265,19 @@ func (q *Queries) GetCurrencyByCode(ctx context.Context, code string) (Currency,
 	return i, err
 }
 
+const getCurrencyById = `-- name: GetCurrencyById :one
+SELECT id, code, description
+FROM currencies
+WHERE id = $1
+`
+
+func (q *Queries) GetCurrencyById(ctx context.Context, id int64) (Currency, error) {
+	row := q.db.QueryRow(ctx, getCurrencyById, id)
+	var i Currency
+	err := row.Scan(&i.ID, &i.Code, &i.Description)
+	return i, err
+}
+
 const getExchangerByCurrencyIds = `-- name: GetExchangerByCurrencyIds :one
 SELECT id, inmin, description, require_payment_verification, in_currency, out_currency
 FROM exchangers
@@ -339,7 +360,7 @@ func (q *Queries) GetFreeAdmins(ctx context.Context) ([]User, error) {
 }
 
 const getOrder = `-- name: GetOrder :one
-SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, finished
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, cancelled, finished
 FROM orders
 WHERE id = $1
 `
@@ -354,13 +375,15 @@ func (q *Queries) GetOrder(ctx context.Context, id int64) (Order, error) {
 		&i.ExchangerID,
 		&i.AmountIn,
 		&i.AmountOut,
+		&i.ReceiveAddress,
+		&i.Cancelled,
 		&i.Finished,
 	)
 	return i, err
 }
 
 const getOrders = `-- name: GetOrders :many
-SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, finished
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, cancelled, finished
 FROM orders
 WHERE finished = false
   AND operator_id = $1
@@ -382,6 +405,8 @@ func (q *Queries) GetOrders(ctx context.Context, operatorID int64) ([]Order, err
 			&i.ExchangerID,
 			&i.AmountIn,
 			&i.AmountOut,
+			&i.ReceiveAddress,
+			&i.Cancelled,
 			&i.Finished,
 		); err != nil {
 			return nil, err
@@ -403,6 +428,27 @@ LIMIT 1
 
 func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRow(ctx, getUser, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Verified,
+		&i.Passwhash,
+		&i.Admin,
+		&i.Token,
+		&i.Busy,
+	)
+	return i, err
+}
+
+const getUserById = `-- name: GetUserById :one
+SELECT id, email, verified, passwhash, admin, token, busy
+FROM users
+WHERE id = $1
+`
+
+func (q *Queries) GetUserById(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRow(ctx, getUserById, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -645,7 +691,7 @@ const updateOrderFinished = `-- name: UpdateOrderFinished :one
 UPDATE orders
 SET finished = TRUE
 WHERE id = $1
-RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, finished
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, cancelled, finished
 `
 
 func (q *Queries) UpdateOrderFinished(ctx context.Context, id int64) (Order, error) {
@@ -658,6 +704,8 @@ func (q *Queries) UpdateOrderFinished(ctx context.Context, id int64) (Order, err
 		&i.ExchangerID,
 		&i.AmountIn,
 		&i.AmountOut,
+		&i.ReceiveAddress,
+		&i.Cancelled,
 		&i.Finished,
 	)
 	return i, err

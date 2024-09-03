@@ -276,12 +276,14 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	}
 
 	_, err = e.db.CreateOrder(c.Request().Context(), database.CreateOrderParams{
-		UserID:      u.ID,
-		OperatorID:  operator.ID,
-		ExchangerID: exch.ID,
-		AmountIn:    req.Amount,
-		AmountOut:   outAmount,
-		Finished:    false,
+		UserID:         u.ID,
+		OperatorID:     operator.ID,
+		ExchangerID:    exch.ID,
+		AmountIn:       req.Amount,
+		AmountOut:      outAmount,
+		ReceiveAddress: req.Address,
+		Cancelled:      false,
+		Finished:       false,
 	})
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)

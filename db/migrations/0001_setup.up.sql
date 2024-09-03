@@ -51,5 +51,7 @@ CREATE TABLE orders (
   CONSTRAINT fk_exchanger_id FOREIGN KEY(exchanger_id) REFERENCES exchangers(id),
   amount_in DOUBLE PRECISION NOT NULL,
   amount_out DOUBLE PRECISION NOT NULL,
+  receive_address TEXT NOT NULL,
+  cancelled BOOLEAN NOT NULL,
   finished BOOLEAN NOT NULL
 );

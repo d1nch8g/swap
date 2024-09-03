@@ -12,6 +12,10 @@ WHERE code = $1;
 -- name: RemoveCurrency :exec
 DELETE FROM currencies
 WHERE code = $1;
+-- name: GetCurrencyById :one
+SELECT *
+FROM currencies
+WHERE id = $1;
 -- name: CreateExchanger :one
 INSERT INTO exchangers (
     description,
@@ -67,6 +71,10 @@ WHERE token = $1;
 SELECT *
 FROM users
 ORDER BY email;
+-- name: GetUserById :one
+SELECT *
+FROM users
+WHERE id = $1;
 -- name: UpdateUserVerified :one
 UPDATE users
 SET verified = $2
@@ -124,9 +132,11 @@ INSERT INTO orders (
     exchanger_id,
     amount_in,
     amount_out,
+    cancelled,
+    receive_address,
     finished
   )
-VALUES ($1, $2, $3, $4, $5, $6)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 -- name: GetOrders :many
 SELECT *

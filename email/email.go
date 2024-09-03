@@ -63,6 +63,17 @@ func (m *Mailer) OrderFinished(email, amount, to, address string) error {
 	return m.d.DialAndSend(mes)
 }
 
+func (m *Mailer) CancelOrder(email, from, to string) error {
+	mes := gomail.NewMessage()
+
+	mes.SetHeader("From", m.Name)
+	mes.SetHeader("To", email)
+	mes.SetHeader("Subject", "Your order have been cancelled.")
+	mes.SetBody("text/html", fmt.Sprintf("Your exchange order on %s to %s have been cancelled.", from, to))
+
+	return m.d.DialAndSend(mes)
+}
+
 func (m *Mailer) UserVerifyEmail(email, uuid string) error {
 	mes := gomail.NewMessage()
 

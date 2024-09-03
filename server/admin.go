@@ -307,14 +307,14 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 
 	token := c.Request().Header["Token"][0]
 
-	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	operator, err := e.db.GetUserByToken(c.Request().Context(), token)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
 
-	balances, err := e.db.ListBalances(c.Request().Context(), u.ID)
+	balances, err := e.db.ListBalances(c.Request().Context(), operator.ID)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -339,7 +339,7 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 		if balance.CurrencyID == exch.InCurrency {
 			_, err = e.db.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
 				ID:      balance.CurrencyID,
-				UserID:  u.ID,
+				UserID:  operator.ID,
 				Balance: balance.Balance + order.AmountIn,
 			})
 			if err != nil {
@@ -352,7 +352,7 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 		if balance.CurrencyID == exch.OutCurrency {
 			_, err = e.db.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
 				ID:      balance.CurrencyID,
-				UserID:  u.ID,
+				UserID:  operator.ID,
 				Balance: balance.Balance - order.AmountOut,
 			})
 			if err != nil {
@@ -365,7 +365,7 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 
 	// Mark operator as free.
 	_, err = e.db.UpdateUserBusy(c.Request().Context(), database.UpdateUserBusyParams{
-		Email: u.Email,
+		Email: operator.Email,
 		Busy:  false,
 	})
 	if err != nil {
@@ -382,7 +382,38 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 		return err
 	}
 
-	// mb later wrap in transaction
+	u, err := e.db.GetUserById(c.Request().Context(), order.UserID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	exch, err := e.db.GetExchangerById(c.Request().Context(), order.ExchangerID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	outCurr, err := e.db.GetCurrencyById(c.Request().Context(), exch.OutCurrency)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	err = e.mail.OrderFinished(u.Email, fmt.Sprintf("%f", order.AmountOut), outCurr.Code, order.ReceiveAddress)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to send email notification"))
+		return err
+	}
+
+	return nil
+}
+
+func (e *Endpoints) CancelOrder(c echo.Context) error {
 	return nil
 }
 
