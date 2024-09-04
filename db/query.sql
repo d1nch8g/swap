@@ -119,10 +119,17 @@ SELECT *
 FROM card_confirmations
 WHERE user_id = $1
   AND currency_id = $2;
+-- name: GetCardConfirmations :many
+SELECT *
+FROM card_confirmations;
 -- name: UpdateCardConfirmationImage :one
 UPDATE card_confirmations
-SET image = $2,
-  verified = $3
+SET image = $2
+WHERE id = $1
+RETURNING *;
+-- name: UpdateCardConfirmationVerified :one
+UPDATE card_confirmations
+SET verified = $2
 WHERE id = $1
 RETURNING *;
 -- name: CreateOrder :one
@@ -150,5 +157,11 @@ WHERE id = $1;
 -- name: UpdateOrderFinished :one
 UPDATE orders
 SET finished = TRUE
+WHERE id = $1
+RETURNING *;
+-- name: UpdateOrderCancelled :one
+UPDATE orders
+SET finished = TRUE,
+  cancelled = TRUE
 WHERE id = $1
 RETURNING *;

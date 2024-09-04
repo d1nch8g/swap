@@ -413,14 +413,87 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 	return nil
 }
 
+type CancelOrderRequest struct {
+	OrderId int64 `json:"order_id"`
+}
+
 func (e *Endpoints) CancelOrder(c echo.Context) error {
+	var req CancelOrderRequest
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
+
+	token := c.Request().Header["Token"][0]
+
+	operator, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	_, err = e.db.UpdateOrderCancelled(c.Request().Context(), req.OrderId)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	_, err = e.db.UpdateUserBusy(c.Request().Context(), database.UpdateUserBusyParams{
+		Email: operator.Email,
+		Busy:  false,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
 	return nil
+
 }
 
-func (e *Endpoints) GetImageConfirmations(c echo.Context) error {
-	return nil
+type GetCardConfirmationsResponse struct {
+	CardConfirmations []database.CardConfirmation `json:"card_confirmations"`
 }
 
-func (e *Endpoints) ApproveImages(c echo.Context) error {
+func (e *Endpoints) GetCardConfirmations(c echo.Context) error {
+	cc, err := e.db.GetCardConfirmations(c.Request().Context())
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &GetCardConfirmationsResponse{
+		CardConfirmations: cc,
+	})
+}
+
+type ApproveCardConfirmationRequest struct {
+	ConfirmationId int64 `json:"confirmation_id"`
+}
+
+func (e *Endpoints) ApproveCardConfirmation(c echo.Context) error {
+	var req ApproveCardConfirmationRequest
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
+
+	_, err = e.db.UpdateCardConfirmationVerified(c.Request().Context(), database.UpdateCardConfirmationVerifiedParams{
+		ID:       req.ConfirmationId,
+		Verified: true,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
 	return nil
 }

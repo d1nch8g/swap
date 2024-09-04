@@ -252,6 +252,38 @@ func (q *Queries) GetCardConfirmation(ctx context.Context, arg GetCardConfirmati
 	return i, err
 }
 
+const getCardConfirmations = `-- name: GetCardConfirmations :many
+SELECT id, user_id, currency_id, address, verified, image
+FROM card_confirmations
+`
+
+func (q *Queries) GetCardConfirmations(ctx context.Context) ([]CardConfirmation, error) {
+	rows, err := q.db.Query(ctx, getCardConfirmations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CardConfirmation
+	for rows.Next() {
+		var i CardConfirmation
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CurrencyID,
+			&i.Address,
+			&i.Verified,
+			&i.Image,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCurrencyByCode = `-- name: GetCurrencyByCode :one
 SELECT id, code, description
 FROM currencies
@@ -661,20 +693,18 @@ func (q *Queries) UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (B
 
 const updateCardConfirmationImage = `-- name: UpdateCardConfirmationImage :one
 UPDATE card_confirmations
-SET image = $2,
-  verified = $3
+SET image = $2
 WHERE id = $1
 RETURNING id, user_id, currency_id, address, verified, image
 `
 
 type UpdateCardConfirmationImageParams struct {
-	ID       int64  `json:"id"`
-	Image    []byte `json:"image"`
-	Verified bool   `json:"verified"`
+	ID    int64  `json:"id"`
+	Image []byte `json:"image"`
 }
 
 func (q *Queries) UpdateCardConfirmationImage(ctx context.Context, arg UpdateCardConfirmationImageParams) (CardConfirmation, error) {
-	row := q.db.QueryRow(ctx, updateCardConfirmationImage, arg.ID, arg.Image, arg.Verified)
+	row := q.db.QueryRow(ctx, updateCardConfirmationImage, arg.ID, arg.Image)
 	var i CardConfirmation
 	err := row.Scan(
 		&i.ID,
@@ -683,6 +713,57 @@ func (q *Queries) UpdateCardConfirmationImage(ctx context.Context, arg UpdateCar
 		&i.Address,
 		&i.Verified,
 		&i.Image,
+	)
+	return i, err
+}
+
+const updateCardConfirmationVerified = `-- name: UpdateCardConfirmationVerified :one
+UPDATE card_confirmations
+SET verified = $2
+WHERE id = $1
+RETURNING id, user_id, currency_id, address, verified, image
+`
+
+type UpdateCardConfirmationVerifiedParams struct {
+	ID       int64 `json:"id"`
+	Verified bool  `json:"verified"`
+}
+
+func (q *Queries) UpdateCardConfirmationVerified(ctx context.Context, arg UpdateCardConfirmationVerifiedParams) (CardConfirmation, error) {
+	row := q.db.QueryRow(ctx, updateCardConfirmationVerified, arg.ID, arg.Verified)
+	var i CardConfirmation
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.CurrencyID,
+		&i.Address,
+		&i.Verified,
+		&i.Image,
+	)
+	return i, err
+}
+
+const updateOrderCancelled = `-- name: UpdateOrderCancelled :one
+UPDATE orders
+SET finished = TRUE,
+  cancelled = TRUE
+WHERE id = $1
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, cancelled, finished
+`
+
+func (q *Queries) UpdateOrderCancelled(ctx context.Context, id int64) (Order, error) {
+	row := q.db.QueryRow(ctx, updateOrderCancelled, id)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.OperatorID,
+		&i.ExchangerID,
+		&i.AmountIn,
+		&i.AmountOut,
+		&i.ReceiveAddress,
+		&i.Cancelled,
+		&i.Finished,
 	)
 	return i, err
 }

@@ -358,9 +358,8 @@ func (e *Endpoints) ValidateCard(c echo.Context) error {
 	}
 
 	_, err = e.db.UpdateCardConfirmationImage(c.Request().Context(), database.UpdateCardConfirmationImageParams{
-		ID:       cc.ID,
-		Image:    img,
-		Verified: false,
+		ID:    cc.ID,
+		Image: img,
 	})
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
