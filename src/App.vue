@@ -7,11 +7,12 @@ import { RouterLink, RouterView } from 'vue-router'
     <img src="./assets/logo.png" alt="Company logo">
 
     <div class="header-right">
-      <a>
-        <RouterLink to="/">Мониторинг</RouterLink>
-      </a>
+      <a href="/">Мониторинг</a>
       <a>
         <RouterLink to="/contacts">Контакты</RouterLink>
+      </a>
+      <a>
+        <RouterLink to="/rules">Правила</RouterLink>
       </a>
       <a>
         <RouterLink to="/login">Войти</RouterLink>
@@ -19,6 +20,7 @@ import { RouterLink, RouterView } from 'vue-router'
       <a>
         <RouterLink to="/register">Регистрация</RouterLink>
       </a>
+      <!-- <RouterLink to="/">Мониторинг</RouterLink> -->
     </div>
   </div>
 

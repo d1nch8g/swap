@@ -25,6 +25,11 @@ const router = createRouter({
       name: "register",
       component: () => import("../views/Register.vue"),
     },
+    {
+      path: "/rules",
+      name: "rules",
+      component: () => import("../views/Rules.vue"),
+    },
     // Admin views
   ],
 });
