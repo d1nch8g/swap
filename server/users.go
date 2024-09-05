@@ -54,7 +54,7 @@ func (e *Endpoints) CreateUser(c echo.Context) error {
 				_, err := c.Response().Write([]byte("unable to create new user"))
 				return err
 			}
-			if u.Verified == false {
+			if !u.Verified {
 				_, err := e.db.UpdateUserTokenAndPassHash(c.Request().Context(), database.UpdateUserTokenAndPassHashParams{
 					Email:     u.Email,
 					Token:     uuid,
@@ -292,7 +292,7 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	}
 
 	// Send email notification
-	err = e.mail.OrderCreated(req.Email, req.Input, req.Ouput, fmt.Sprintf("%d", req.Amount), req.Address)
+	err = e.mail.OrderCreated(req.Email, req.Input, req.Ouput, fmt.Sprintf("%f", req.Amount), req.Address)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to send email notification"))

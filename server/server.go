@@ -35,9 +35,9 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	api.POST("/create-order", endpoints.CreateOrder)
 	api.POST("/validate-card", endpoints.ValidateCard)
 	api.GET("/verify/:uuid", endpoints.VerifyEmail)
-	api.POST("/login", endpoints.Login)
 	api.GET("/list-currencies", endpoints.ListCurrencies)
 	api.GET("/list-exchangers", endpoints.ListExchangers)
+	api.POST("/login", endpoints.Login)
 
 	admin := api.Group("/admin", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		token := c.Request().Header["Token"]
