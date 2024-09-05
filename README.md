@@ -13,3 +13,18 @@ Configuration:
 - `API_ADDR` - link to api should be self referenced api address
 - `EMAIL_ADDRESS` - host of email address
 - `EMAIL_CREDS` - creds for email
+
+<!--
+Implementation plan:
+
+- Create website navigation bar with following elements:
+    - Main (double list of currencies to navigate to exchanger)
+    - Contacts with description of contacts
+    - 
+    - Account
+    - Email link
+    - Telegram link
+
+-
+
+ -->
