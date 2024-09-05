@@ -33,8 +33,9 @@ img {
 
 .header {
   overflow: hidden;
-  background-color: #37aeb7;
+  background-color: #d4d8d9;
   padding: 10px 5px;
+  border-radius: 8px;
 }
 
 /* Style the header links */

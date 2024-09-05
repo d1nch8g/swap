@@ -5,4 +5,5 @@
     <h1>main monitoring page</h1>
 </template>
 
-<style></style>
+<style>
+</style>
