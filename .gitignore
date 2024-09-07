@@ -58,3 +58,6 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+.dart_tool
+build/**
+__debug_bin**

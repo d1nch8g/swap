@@ -39,14 +39,8 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	api.GET("/list-exchangers", endpoints.ListExchangers)
 	api.POST("/login", endpoints.Login)
 
-	admin := api.Group("/admin", middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
-		token := c.Request().Header["Token"]
-		if token == nil {
-			c.Response().WriteHeader(http.StatusUnauthorized)
-			return false, nil
-		}
-
-		u, err := d.GetUserByToken(c.Request().Context(), token[0])
+	admin := api.Group("/admin", middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {
+		u, err := d.GetUserByToken(c.Request().Context(), auth)
 		if !u.Admin {
 			c.Response().WriteHeader(http.StatusUnauthorized)
 			return false, nil
@@ -67,14 +61,14 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 
 	admin.GET("/get-orders", endpoints.GetOrders)
 	admin.POST("/create-currency", endpoints.CreateCurrency)
-	admin.POST("/remove-currency", endpoints.RemoveCurrency)
+	admin.DELETE("/remove-currency", endpoints.RemoveCurrency)
 	admin.POST("/create-exchanger", endpoints.CreateExchanger)
-	admin.POST("/remove-exchanger", endpoints.RemoveExchanger)
+	admin.DELETE("/remove-exchanger", endpoints.RemoveExchanger)
 	admin.POST("/create-balance", endpoints.CreateBalance)
-	admin.POST("/list-balances", endpoints.ListBalances)
+	admin.GET("/list-balances", endpoints.ListBalances)
 	admin.POST("/update-balance", endpoints.UpdateBalance)
 	admin.POST("/execute-order", endpoints.ExecuteOrder)
-	admin.POST("/get-card-confirmations", endpoints.GetCardConfirmations)
+	admin.GET("/get-card-confirmations", endpoints.GetCardConfirmations)
 	admin.POST("/approve-card", endpoints.ApproveCardConfirmation)
 
 	if tls != "" {
