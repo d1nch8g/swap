@@ -41,9 +41,16 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 
 	admin := api.Group("/admin", middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {
 		u, err := d.GetUserByToken(c.Request().Context(), auth)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusUnauthorized)
+			_, err = c.Response().Write([]byte("user is not found"))
+			return false, err
+		}
+
 		if !u.Admin {
 			c.Response().WriteHeader(http.StatusUnauthorized)
-			return false, nil
+			_, err = c.Response().Write([]byte("user is not an admin"))
+			return false, err
 		}
 
 		if !u.Verified {
@@ -52,10 +59,6 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 			return false, err
 		}
 
-		if err != nil {
-			c.Response().WriteHeader(http.StatusUnauthorized)
-			return false, nil
-		}
 		return true, nil
 	}))
 
