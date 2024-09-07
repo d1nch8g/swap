@@ -21,6 +21,26 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// @title           Swagger Example API
+// @version         1.0
+// @description     Inswap exchange api.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   Inswap Support
+// @contact.url    http://ion.lc/d1nch8g/inswap
+// @contact.email  support@swagger.io
+
+// @license.name  MIT
+// @license.url   https://ion.lc/d1nch8g/inswap/src/branch/main/LICENSE
+
+// @host      localhost:8080
+// @BasePath  /api
+
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
+//	@description				Description for what is this security definition being used``
+
 var opts struct {
 	Port            string `long:"port" env:"PORT" default:"8080"`
 	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`

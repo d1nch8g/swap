@@ -4,7 +4,7 @@ install:
 	go install -tags "postgres,mysql" github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-
+	go install github.com/swaggo/swag/cmd/swag@latest
 
 format:
 	gofmt -w .
@@ -22,4 +22,4 @@ run:
 .PHONY: gen
 gen:
 	sqlc generate
-
+	swag init -o . --ot yaml 

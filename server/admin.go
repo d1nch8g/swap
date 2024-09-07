@@ -12,6 +12,13 @@ import (
 	"ion.lc/d1nhc8g/inswap/gen/database"
 )
 
+// @Summary		Login
+// @Description	get auth key
+// @Produce		json
+// @Param		email	header	string	true	"Account ID"
+// @Param		password		header	string		true	"Account ID"
+// @Success		200		{string} string token
+// @Router		/login [post]
 func (e *Endpoints) Login(c echo.Context) error {
 	email := c.Request().Header["Email"]
 	password := c.Request().Header["Password"]

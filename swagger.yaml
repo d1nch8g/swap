@@ -1,0 +1,44 @@
+basePath: /api
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: Inswap Support
+    url: http://ion.lc/d1nch8g/inswap
+  description: Inswap exchange api.
+  license:
+    name: MIT
+    url: https://ion.lc/d1nch8g/inswap/src/branch/main/LICENSE
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      description: get auth key
+      parameters:
+      - description: Account ID
+        in: header
+        name: email
+        required: true
+        type: string
+      - description: Account ID
+        in: header
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Login
+securityDefinitions:
+  ApiKeyAuth:
+    description: Description for what is this security definition being used``
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
