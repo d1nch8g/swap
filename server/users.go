@@ -18,6 +18,12 @@ type CreateUserRequest struct {
 	Password string `json:"password"`
 }
 
+// CreateUser godoc
+//
+//	@Summary	Create new user request
+//	@Param		status	body	CreateUserRequest	true	"Create user request"
+//	@Success	200
+//	@Router		/create-user [post]
 func (e *Endpoints) CreateUser(c echo.Context) error {
 	var req CreateUserRequest
 	err := c.Bind(&req)
@@ -72,9 +78,16 @@ func (e *Endpoints) CreateUser(c echo.Context) error {
 		_, err := c.Response().Write([]byte("unable to create new user"))
 		return err
 	}
+
 	return nil
 }
 
+// VerifyEmail godoc
+//
+//	@Summary	Verify user email address
+//	@Param		uuid	path	string	true	"UUID sent by email"
+//	@Success	200
+//	@Router		/verify/{uuid} [get]
 func (e *Endpoints) VerifyEmail(c echo.Context) error {
 	u, err := e.db.GetUserByToken(c.Request().Context(), c.Param("uuid"))
 	if err != nil {

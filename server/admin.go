@@ -578,7 +578,7 @@ type ApproveCardConfirmationRequest struct {
 // ApproveCard godoc
 //
 //	@Summary	Mark user credit card as approved
-//	@Param		status	body	ApproveCardConfirmationRequst	true	"Approve card request"
+//	@Param		status	body	ApproveCardConfirmationRequest	true	"Approve card request"
 //	@Success	200
 //	@Security	ApiKeyAuth
 //	@Router		/admin/approve-card [post]
