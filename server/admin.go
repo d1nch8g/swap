@@ -6,19 +6,20 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"ion.lc/d1nhc8g/inswap/gen/database"
 )
 
-// @Summary		Login
-// @Description	get auth key
-// @Produce		json
-// @Param		email	header	string	true	"Account ID"
-// @Param		password		header	string		true	"Account ID"
-// @Success		200		{string} string token
-// @Router		/login [post]
+// Login godoc
+//
+//	@Summary	Login and get auth key
+//	@Param		email		header		string	true	"Email"
+//	@Param		password	header		string	true	"Password"
+//	@Success	200			{string}	string	token
+//	@Router		/login [post]
 func (e *Endpoints) Login(c echo.Context) error {
 	email := c.Request().Header["Email"]
 	password := c.Request().Header["Password"]
@@ -67,10 +68,25 @@ type Busy struct {
 	Busy bool `json:"busy"`
 }
 
+// ChangeBusy godoc
+//
+//	@Summary	Change busy status for admin operator
+//	@Param		status	body	Busy	true	"Busy status"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/change-busy [post]
 func (e *Endpoints) ChangeBusy(c echo.Context) error {
-	a := c.Request().Header["Token"]
+	var req Busy
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
 
-	u, err := e.db.GetUserByToken(c.Request().Context(), a[0])
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -79,7 +95,7 @@ func (e *Endpoints) ChangeBusy(c echo.Context) error {
 
 	u, err = e.db.UpdateUserBusy(c.Request().Context(), database.UpdateUserBusyParams{
 		Email: u.Email,
-		Busy:  !u.Busy,
+		Busy:  req.Busy,
 	})
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
@@ -87,17 +103,21 @@ func (e *Endpoints) ChangeBusy(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, &Busy{
-		Busy: u.Busy,
-	})
+	return nil
 }
 
 type Orders struct {
 	ActiveOrders []database.Order `json:"orders"`
 }
 
+// GetOrders godoc
+//
+//	@Summary	Get active orders bound to specific operator
+//	@Success	200	{object}	Orders
+//	@Security	ApiKeyAuth
+//	@Router		/admin/get-orders [get]
 func (e *Endpoints) GetOrders(c echo.Context) error {
-	token := c.Request().Header["Token"][0]
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
 
 	u, err := e.db.GetUserByToken(c.Request().Context(), token)
 	if err != nil {
@@ -118,6 +138,13 @@ func (e *Endpoints) GetOrders(c echo.Context) error {
 	})
 }
 
+// CreateCurrency godoc
+//
+//	@Summary	Create new currency in exchanger
+//	@Param		status	body	database.CreateCurrencyParams	true	"Create currency params"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/create-currency [post]
 func (e *Endpoints) CreateCurrency(c echo.Context) error {
 	var req database.CreateCurrencyParams
 	err := c.Bind(&req)
@@ -141,6 +168,13 @@ type RemoveCurrencyRequest struct {
 	Code string `json:"code"`
 }
 
+// RemoveCurrency godoc
+//
+//	@Summary	Remove currency from currency list
+//	@Param		status	body	RemoveCurrencyRequest	true	"Remove currency parameter"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/remove-currency [delete]
 func (e *Endpoints) RemoveCurrency(c echo.Context) error {
 	var req RemoveCurrencyRequest
 	err := c.Bind(&req)
@@ -160,6 +194,13 @@ func (e *Endpoints) RemoveCurrency(c echo.Context) error {
 	return nil
 }
 
+// CreateExchanger godoc
+//
+//	@Summary	Create new exchanger with provided currencies
+//	@Param		status	body	database.CreateExchangerParams	true	"Create exchanger parameters"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/create-exchanger [post]
 func (e *Endpoints) CreateExchanger(c echo.Context) error {
 	var req database.CreateExchangerParams
 	err := c.Bind(&req)
@@ -178,6 +219,14 @@ func (e *Endpoints) CreateExchanger(c echo.Context) error {
 
 	return nil
 }
+
+// RemoveExchanger godoc
+//
+//	@Summary	Remove existing exchanger from API
+//	@Param		status	body	database.RemoveExchangerParams	true	"Remove exchanger parameters"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/remove-exchanger [delete]
 func (e *Endpoints) RemoveExchanger(c echo.Context) error {
 	var req database.RemoveExchangerParams
 	err := c.Bind(&req)
@@ -212,7 +261,7 @@ func (e *Endpoints) CreateBalance(c echo.Context) error {
 		return err
 	}
 
-	token := c.Request().Header["Token"][0]
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
 
 	u, err := e.db.GetUserByToken(c.Request().Context(), token)
 	if err != nil {
@@ -250,7 +299,7 @@ func (e *Endpoints) UpdateBalance(c echo.Context) error {
 		return err
 	}
 
-	token := c.Request().Header["Token"][0]
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
 
 	u, err := e.db.GetUserByToken(c.Request().Context(), token)
 	if err != nil {
@@ -277,7 +326,7 @@ type Balances struct {
 }
 
 func (e *Endpoints) ListBalances(c echo.Context) error {
-	token := c.Request().Header["Token"][0]
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
 
 	u, err := e.db.GetUserByToken(c.Request().Context(), token)
 	if err != nil {
@@ -312,7 +361,7 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 		return err
 	}
 
-	token := c.Request().Header["Token"][0]
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
 
 	operator, err := e.db.GetUserByToken(c.Request().Context(), token)
 	if err != nil {
@@ -433,7 +482,7 @@ func (e *Endpoints) CancelOrder(c echo.Context) error {
 		return err
 	}
 
-	token := c.Request().Header["Token"][0]
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
 
 	operator, err := e.db.GetUserByToken(c.Request().Context(), token)
 	if err != nil {

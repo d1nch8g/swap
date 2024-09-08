@@ -21,25 +21,26 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// @title           Swagger Example API
-// @version         1.0
-// @description     Inswap exchange api.
-// @termsOfService  http://swagger.io/terms/
+//	@title			Inswap exchange api
+//	@version		1.0
+//	@description	Inswap exchange api.
+//	@termsOfService	http://github.com/d1nch8g/inswap
 
-// @contact.name   Inswap Support
-// @contact.url    http://ion.lc/d1nch8g/inswap
-// @contact.email  support@swagger.io
+//	@contact.name	Inswap Support
+//	@contact.url	http://github.com/d1nch8g/inswap
+//	@contact.email	support@swagger.io
 
-// @license.name  MIT
-// @license.url   https://ion.lc/d1nch8g/inswap/src/branch/main/LICENSE
+//	@license.name	MIT
+//	@license.url	https://github.com/d1nch8g/inswap/src/branch/main/LICENSE
 
-// @host      localhost:8080
-// @BasePath  /api
+//	@host		localhost:8080
+//	@BasePath	/api
+//	@schemes	http https
 
 //	@securityDefinitions.apikey	ApiKeyAuth
 //	@in							header
 //	@name						Authorization
-//	@description				Description for what is this security definition being used``
+//	@description				Token authorization for internal operations
 
 var opts struct {
 	Port            string `long:"port" env:"PORT" default:"8080"`

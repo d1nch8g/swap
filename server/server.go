@@ -62,6 +62,7 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 		return true, nil
 	}))
 
+	admin.POST("/change-busy", endpoints.ChangeBusy)
 	admin.GET("/get-orders", endpoints.GetOrders)
 	admin.POST("/create-currency", endpoints.CreateCurrency)
 	admin.DELETE("/remove-currency", endpoints.RemoveCurrency)

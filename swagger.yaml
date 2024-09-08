@@ -1,43 +1,194 @@
 basePath: /api
+definitions:
+  database.CreateCurrencyParams:
+    properties:
+      code:
+        type: string
+      description:
+        type: string
+    type: object
+  database.CreateExchangerParams:
+    properties:
+      description:
+        type: string
+      in_currency:
+        type: integer
+      inmin:
+        type: number
+      out_currency:
+        type: integer
+      require_payment_verification:
+        type: boolean
+    type: object
+  database.Order:
+    properties:
+      amount_in:
+        type: number
+      amount_out:
+        type: number
+      cancelled:
+        type: boolean
+      exchanger_id:
+        type: integer
+      finished:
+        type: boolean
+      id:
+        type: integer
+      operator_id:
+        type: integer
+      receive_address:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  database.RemoveExchangerParams:
+    properties:
+      in_currency:
+        type: integer
+      out_currency:
+        type: integer
+    type: object
+  server.Busy:
+    properties:
+      busy:
+        type: boolean
+    type: object
+  server.Orders:
+    properties:
+      orders:
+        items:
+          $ref: '#/definitions/database.Order'
+        type: array
+    type: object
+  server.RemoveCurrencyRequest:
+    properties:
+      code:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
     email: support@swagger.io
     name: Inswap Support
-    url: http://ion.lc/d1nch8g/inswap
+    url: http://github.com/d1nch8g/inswap
   description: Inswap exchange api.
   license:
     name: MIT
-    url: https://ion.lc/d1nch8g/inswap/src/branch/main/LICENSE
-  termsOfService: http://swagger.io/terms/
-  title: Swagger Example API
+    url: https://github.com/d1nch8g/inswap/src/branch/main/LICENSE
+  termsOfService: http://github.com/d1nch8g/inswap
+  title: Inswap exchange api
   version: "1.0"
 paths:
+  /admin/change-busy:
+    post:
+      parameters:
+      - description: Busy status
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.Busy'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Change busy status for admin operator
+  /admin/create-currency:
+    post:
+      parameters:
+      - description: Create currency params
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/database.CreateCurrencyParams'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Create new currency in exchanger
+  /admin/create-exchanger:
+    post:
+      parameters:
+      - description: Create exchanger parameters
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/database.CreateExchangerParams'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Create new exchanger with provided currencies
+  /admin/get-orders:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.Orders'
+      security:
+      - ApiKeyAuth: []
+      summary: Get active orders bound to specific operator
+  /admin/remove-currency:
+    delete:
+      parameters:
+      - description: Remove currency parameter
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.RemoveCurrencyRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Remove currency from currency list
+  /admin/remove-exchanger:
+    delete:
+      parameters:
+      - description: Remove exchanger parameters
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/database.RemoveExchangerParams'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Remove existing exchanger from API
   /login:
     post:
-      description: get auth key
       parameters:
-      - description: Account ID
+      - description: Email
         in: header
         name: email
         required: true
         type: string
-      - description: Account ID
+      - description: Password
         in: header
         name: password
         required: true
         type: string
-      produces:
-      - application/json
       responses:
         "200":
           description: OK
           schema:
             type: string
-      summary: Login
+      summary: Login and get auth key
+schemes:
+- http
+- https
 securityDefinitions:
   ApiKeyAuth:
-    description: Description for what is this security definition being used``
+    description: Token authorization for internal operations
     in: header
     name: Authorization
     type: apiKey

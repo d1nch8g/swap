@@ -23,3 +23,5 @@ run:
 gen:
 	sqlc generate
 	swag init -o . --ot yaml 
+
+# swagger-codegen generate -i swagger.yaml -l javascript -o gen/client
