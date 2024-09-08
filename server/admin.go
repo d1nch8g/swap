@@ -252,6 +252,13 @@ type CreateBalanceRequest struct {
 	Address    string
 }
 
+// CreateBalance godoc
+//
+//	@Summary	Create new operator balance
+//	@Param		status	body	CreateBalanceRequest	true	"Create balance parameters"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/create-balance [post]
 func (e *Endpoints) CreateBalance(c echo.Context) error {
 	var req CreateBalanceRequest
 	err := c.Bind(&req)
@@ -290,6 +297,13 @@ type UpdateBalanceRequest struct {
 	Balance   float64 `json:"balance"`
 }
 
+// UpdateBalance godoc
+//
+//	@Summary	Update operator currency balance
+//	@Param		status	body	UpdateBalanceRequest	true	"Update balance parameters"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/update-balance [post]
 func (e *Endpoints) UpdateBalance(c echo.Context) error {
 	var req UpdateBalanceRequest
 	err := c.Bind(&req)
@@ -325,6 +339,12 @@ type Balances struct {
 	Balances []database.Balance
 }
 
+// ListBalances godoc
+//
+//	@Summary	List operator currency balances
+//	@Success	200 {object}	Balances
+//	@Security	ApiKeyAuth
+//	@Router		/admin/list-balances [get]
 func (e *Endpoints) ListBalances(c echo.Context) error {
 	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
 
@@ -351,6 +371,13 @@ type ExecuteOrderRequest struct {
 	OrderId int64 `json:"order_id"`
 }
 
+// ExecuteOrder godoc
+//
+//	@Summary	Execute order and change operator balances, update busy
+//	@Param		status	body	ExecuteOrderRequest	true	"Execute order parameters"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/execute-order [post]
 func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 	// Lower operator balance on sold currency and increase on bought
 	var req ExecuteOrderRequest
@@ -459,6 +486,7 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 		return err
 	}
 
+	// Send email notification about order being finished.
 	err = e.mail.OrderFinished(u.Email, fmt.Sprintf("%f", order.AmountOut), outCurr.Code, order.ReceiveAddress)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
@@ -473,6 +501,13 @@ type CancelOrderRequest struct {
 	OrderId int64 `json:"order_id"`
 }
 
+// CancelOrder godoc
+//
+//	@Summary	Cancel user order and mark it as cancelled
+//	@Param		status	body	CancelOrderRequest	true	"Cancel order parameters"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/cancel-order [post]
 func (e *Endpoints) CancelOrder(c echo.Context) error {
 	var req CancelOrderRequest
 	err := c.Bind(&req)
@@ -507,14 +542,20 @@ func (e *Endpoints) CancelOrder(c echo.Context) error {
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
-	return nil
 
+	return nil
 }
 
 type GetCardConfirmationsResponse struct {
 	CardConfirmations []database.CardConfirmation `json:"card_confirmations"`
 }
 
+// GetCardConfirmations godoc
+//
+//	@Summary	Get user credit card approval images with parameters
+//	@Success	200 {object}	GetCardConfirmationsResponse
+//	@Security	ApiKeyAuth
+//	@Router		/admin/get-card-confirmations [get]
 func (e *Endpoints) GetCardConfirmations(c echo.Context) error {
 	cc, err := e.db.GetCardConfirmations(c.Request().Context())
 	if err != nil {
@@ -532,7 +573,14 @@ type ApproveCardConfirmationRequest struct {
 	ConfirmationId int64 `json:"confirmation_id"`
 }
 
-func (e *Endpoints) ApproveCardConfirmation(c echo.Context) error {
+// ApproveCard godoc
+//
+//	@Summary	Mark user credit card as approved
+//	@Param		status	body	ApproveCardConfirmationRequst	true	"Approve card request"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/approve-card [post]
+func (e *Endpoints) ApproveCard(c echo.Context) error {
 	var req ApproveCardConfirmationRequest
 	err := c.Bind(&req)
 	if err != nil {

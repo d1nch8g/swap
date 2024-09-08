@@ -1,5 +1,35 @@
 basePath: /api
 definitions:
+  database.Balance:
+    properties:
+      address:
+        type: string
+      balance:
+        type: number
+      currency_id:
+        type: integer
+      id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  database.CardConfirmation:
+    properties:
+      address:
+        type: string
+      currency_id:
+        type: integer
+      id:
+        type: integer
+      image:
+        items:
+          type: integer
+        type: array
+      user_id:
+        type: integer
+      verified:
+        type: boolean
+    type: object
   database.CreateCurrencyParams:
     properties:
       code:
@@ -48,10 +78,43 @@ definitions:
       out_currency:
         type: integer
     type: object
+  server.Balances:
+    properties:
+      balances:
+        items:
+          $ref: '#/definitions/database.Balance'
+        type: array
+    type: object
   server.Busy:
     properties:
       busy:
         type: boolean
+    type: object
+  server.CancelOrderRequest:
+    properties:
+      order_id:
+        type: integer
+    type: object
+  server.CreateBalanceRequest:
+    properties:
+      address:
+        type: string
+      balance:
+        type: number
+      currencyId:
+        type: integer
+    type: object
+  server.ExecuteOrderRequest:
+    properties:
+      order_id:
+        type: integer
+    type: object
+  server.GetCardConfirmationsResponse:
+    properties:
+      card_confirmations:
+        items:
+          $ref: '#/definitions/database.CardConfirmation'
+        type: array
     type: object
   server.Orders:
     properties:
@@ -64,6 +127,13 @@ definitions:
     properties:
       code:
         type: string
+    type: object
+  server.UpdateBalanceRequest:
+    properties:
+      balance:
+        type: number
+      balance_id:
+        type: integer
     type: object
 host: localhost:8080
 info:
@@ -79,6 +149,21 @@ info:
   title: Inswap exchange api
   version: "1.0"
 paths:
+  /admin/cancel-order:
+    post:
+      parameters:
+      - description: Cancel order parameters
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.CancelOrderRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Cancel user order and mark it as cancelled
   /admin/change-busy:
     post:
       parameters:
@@ -94,6 +179,21 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Change busy status for admin operator
+  /admin/create-balance:
+    post:
+      parameters:
+      - description: Create balance parameters
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.CreateBalanceRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Create new operator balance
   /admin/create-currency:
     post:
       parameters:
@@ -124,6 +224,31 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create new exchanger with provided currencies
+  /admin/execute-order:
+    post:
+      parameters:
+      - description: Execute order parameters
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.ExecuteOrderRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Execute order and change operator balances, update busy
+  /admin/get-card-confirmations:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.GetCardConfirmationsResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user credit card approval images with parameters
   /admin/get-orders:
     get:
       responses:
@@ -134,6 +259,16 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get active orders bound to specific operator
+  /admin/list-balances:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.Balances'
+      security:
+      - ApiKeyAuth: []
+      summary: List operator currency balances
   /admin/remove-currency:
     delete:
       parameters:
@@ -164,6 +299,21 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Remove existing exchanger from API
+  /admin/update-balance:
+    post:
+      parameters:
+      - description: Update balance parameters
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.UpdateBalanceRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Update operator currency balance
   /login:
     post:
       parameters:
