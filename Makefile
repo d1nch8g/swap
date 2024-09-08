@@ -24,4 +24,8 @@ gen:
 	sqlc generate
 	swag init -o . --ot yaml 
 
+watch:
+	for number in 1 2 3 4 ; do \
+        echo $$number ; \
+    done
 # swagger-codegen generate -i swagger.yaml -l javascript --disable-examples --flatten-inline-schema -o gen/client

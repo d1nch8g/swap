@@ -26,6 +26,9 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	}
 
 	e.Use(middleware.Logger())
+	e.RouteNotFound("/notfound", func(c echo.Context) error {
+		return c.Redirect(http.StatusNotFound, mail.ApiAddress)
+	})
 
 	e.Static("/", dir)
 

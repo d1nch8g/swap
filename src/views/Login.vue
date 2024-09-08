@@ -3,7 +3,9 @@ export default {
     data() {
         return {
             email: "",
-            password: ""
+            password: "",
+            incorrect: false,
+            logged: false
         }
     },
     methods: {
@@ -18,15 +20,29 @@ export default {
                 headers: headersList
             });
 
-            let data = await response.text();
-            localStorage.setItem("token", data);
-            
+            if (response.ok) {
+                let data = await response.text();
+                localStorage.setItem("token", data);
+                this.incorrect = false;
+                this.logged = true;
+                return;
+            }
+            this.incorrect = true;
+            this.logged = false;
         }
     }
 }
 </script>
 
 <template>
+    <div class="alert" v-if="incorrect">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        Неправильный логин или пароль
+    </div>
+    <div class="alert-green" v-if="logged">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        Вы успешно вошли!
+    </div>
     <form method="post">
         <div class="container">
             <label for="uname"><b>Почта</b></label>
@@ -113,5 +129,41 @@ span.psw {
     .cancelbtn {
         width: 100%;
     }
+}
+
+/* The alert message box */
+.alert {
+    padding: 20px;
+    background-color: #f44336;
+    /* Red */
+    color: white;
+    margin-bottom: 15px;
+}
+
+
+/* The alert message box */
+.alert-green {
+    padding: 20px;
+    background-color: green;
+    /* Red */
+    color: white;
+    margin-bottom: 15px;
+}
+
+/* The close button */
+.closebtn {
+    margin-left: 15px;
+    color: white;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* When moving the mouse over the close button */
+.closebtn:hover {
+    color: black;
 }
 </style>

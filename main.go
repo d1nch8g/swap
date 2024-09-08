@@ -5,6 +5,8 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
+	"os"
+	"path"
 	"strings"
 
 	"ion.lc/d1nhc8g/inswap/bestchange"
@@ -53,7 +55,7 @@ var opts struct {
 	EmailAddress    string `long:"emailaddr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailName       string `long:"email-name" env:"EMAIL_NAME" default:"inswap.in"`
-	EmailCreds      string `long:"emailcreds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
+	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
 }
 
 func main() {
@@ -109,6 +111,24 @@ func main() {
 	})
 	if err != nil && !strings.Contains(err.Error(), "duplicate key value violates unique constraint ") {
 		panic(err)
+	}
+
+	// Swap all API endpoint pathes to current API
+	des, err := os.ReadDir(path.Join(opts.ServeDir, "assets"))
+	if err != nil {
+		panic(err)
+	}
+	for _, de := range des {
+		filepath := path.Join(opts.ServeDir, "assets", de.Name())
+		filebytes, err := os.ReadFile(filepath)
+		if err != nil {
+			panic(err)
+		}
+		newcontent := strings.ReplaceAll(string(filebytes), "http://localhost:8080", opts.ApiAddr)
+		err = os.WriteFile(filepath, []byte(newcontent), os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	server.Run(opts.ServeDir, opts.Port, opts.LetsEncryptAddr, e, sqlc, bc, mail)
