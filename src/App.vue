@@ -1,5 +1,19 @@
-<script setup>
+<script>
 import { RouterLink, RouterView } from 'vue-router'
+
+export default {
+  data() {
+    return {
+      showLogin: true
+    }
+  },
+  mounted() {
+    let token = localStorage.getItem("token");
+    if (token) {
+      this.showLogin = false;
+    }
+  },
+}
 </script>
 
 <template>
@@ -16,11 +30,14 @@ import { RouterLink, RouterView } from 'vue-router'
       <a>
         <RouterLink to="/rules">Правила</RouterLink>
       </a>
-      <a>
+      <a v-if="showLogin">
         <RouterLink to="/login">Войти</RouterLink>
       </a>
-      <a>
+      <a v-if="showLogin">
         <RouterLink to="/register">Регистрация</RouterLink>
+      </a>
+      <a v-if="!showLogin">
+        <RouterLink to="/orders">Заявки</RouterLink>
       </a>
     </div>
   </div>

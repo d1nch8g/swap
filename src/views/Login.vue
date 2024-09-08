@@ -25,6 +25,7 @@ export default {
                 localStorage.setItem("token", data);
                 this.incorrect = false;
                 this.logged = true;
+                window.location.href = '/';
                 return;
             }
             this.incorrect = true;
