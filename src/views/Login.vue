@@ -1,33 +1,46 @@
 <script>
-let headersList = {
-    "email": "support@inswap.in",
-    "password": "password"
+export default {
+    data() {
+        return {
+            email: "",
+            password: ""
+        }
+    },
+    methods: {
+        async login() {
+            let headersList = {
+                "email": this.email,
+                "password": this.password
+            }
+
+            let response = await fetch("http://localhost:8080/api/login?Email=support%40inswap.in&Password=password", {
+                method: "POST",
+                headers: headersList
+            });
+
+            let data = await response.text();
+            localStorage.setItem("token", data);
+            
+        }
+    }
 }
-
-let response = await fetch("http://127.0.0.1:8080/api/login", {
-    method: "POST",
-    headers: headersList
-});
-
-let data = await response.text();
-
 </script>
 
 <template>
-    <form action="action_page.php" method="post">
+    <form method="post">
         <div class="container">
             <label for="uname"><b>Почта</b></label>
-            <input type="text" placeholder="example@email.com" name="uname" required>
+            <input type="text" placeholder="example@email.com" name="uname" required v-model="email">
 
             <label for="psw"><b>Пароль</b></label>
-            <input type="password" placeholder="Ваш пароль" name="psw" required>
+            <input type="password" placeholder="Ваш пароль" name="psw" required v-model="password">
 
-            <button type="submit">Войти</button>
+            <button type="submit" @click.prevent="login">Войти</button>
         </div>
     </form>
 </template>
 
-<style>
+<style scoped>
 /* Bordered form */
 form {
     border: 3px solid #f1f1f1;

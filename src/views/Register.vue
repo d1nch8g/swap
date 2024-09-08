@@ -17,7 +17,8 @@
             <label for="psw-repeat"><b>Повторите пароль</b></label>
             <input type="password" placeholder="Повторите пароль" name="psw-repeat" required>
 
-            <p>Создавая аккаунт вы соглашаетесь с правилами использования <a href="#" style="color:dodgerblue">Правила
+            <p>Создавая аккаунт вы соглашаетесь с правилами использования: <a href="/rules"
+                    style="color:dodgerblue">Правила
                     использования</a>.</p>
 
             <div class="clearfix">

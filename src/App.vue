@@ -8,7 +8,7 @@ import { RouterLink, RouterView } from 'vue-router'
 
     <div class="header-right">
       <a>
-        <RouterLink to="/">Мониторинг</RouterLink>
+        <RouterLink to="/">Обмен</RouterLink>
       </a>
       <a>
         <RouterLink to="/contacts">Контакты</RouterLink>
