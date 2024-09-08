@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"ion.lc/d1nhc8g/inswap/gen/database"
 )
@@ -46,10 +46,12 @@ func (e *Endpoints) Login(c echo.Context) error {
 		return err
 	}
 
-	tokenhasher := sha512.New()
-	tokenhasher.Write([]byte(fmt.Sprintf("%d", time.Now().UnixNano())))
-	token := base64.URLEncoding.EncodeToString(tokenhasher.Sum(nil))
+	if user.Token != "nil" {
+		_, err = c.Response().Write([]byte(user.Token))
+		return err
+	}
 
+	token := uuid.New().String()
 	_, err = e.db.UpdateUserToken(c.Request().Context(), database.UpdateUserTokenParams{
 		ID:    user.ID,
 		Token: token,
