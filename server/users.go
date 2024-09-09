@@ -113,6 +113,11 @@ type Currencies struct {
 	Currencies []database.Currency `json:"currencies"`
 }
 
+// ListCurrencies godoc
+//
+//	@Summary	Verify user email address
+//	@Success	200 {object} Currencies
+//	@Router		/list-currencies [get]
 func (e *Endpoints) ListCurrencies(c echo.Context) error {
 	currs, err := e.db.ListCurrencies(c.Request().Context())
 	if err != nil {
