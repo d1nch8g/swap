@@ -105,8 +105,8 @@ func (e *Endpoints) VerifyEmail(c echo.Context) error {
 		_, err := c.Response().Write([]byte("unable to get user access"))
 		return err
 	}
-	c.Response().WriteHeader(http.StatusCreated)
-	return nil
+
+	return c.String(http.StatusCreated, "email have been verified")
 }
 
 type Currencies struct {

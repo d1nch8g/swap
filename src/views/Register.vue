@@ -4,18 +4,25 @@ export default {
         return {
             email: "",
             password: "",
-            repeatPassword: ""
+            repeatPassword: "",
+            showPasswordNotification: false,
+            emailSent: false
         }
     },
     methods: {
         async register() {
+            if (this.password !== this.repeatPassword) {
+                this.showPasswordNotification = true;
+                return;
+            }
+
             let headersList = {
                 "Content-Type": "application/json"
             }
 
             let bodyContent = JSON.stringify({
-                "email": "d1nch8g@ion.lc",
-                "password": "password"
+                "email": this.email,
+                "password": this.password
             });
 
             let response = await fetch("http://localhost:8080/api/create-user", {
@@ -24,8 +31,9 @@ export default {
                 headers: headersList
             });
 
-            let data = await response.text();
-            console.log(data);
+            if (response.ok) {
+                this.emailSent = true;
+            }
 
         }
     }
@@ -33,6 +41,17 @@ export default {
 </script>
 
 <template>
+    <div class="alert" v-if="showPasswordNotification">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        Пароли не совпадают
+    </div>
+
+    <div class="alert-green" v-if="emailSent">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        Уведомление отправлено на почту, перейдите по ссылке что бы подтвердить email
+    </div>
+
+
     <form action="action_page.php" style="border:1px solid #ccc">
         <div class="container">
             <h1>Регистрация</h1>
@@ -135,5 +154,42 @@ button:hover {
     .signupbtn {
         width: 100%;
     }
+}
+
+
+/* The alert message box */
+.alert {
+    padding: 20px;
+    background-color: #f44336;
+    /* Red */
+    color: white;
+    margin-bottom: 15px;
+}
+
+
+/* The alert message box */
+.alert-green {
+    padding: 20px;
+    background-color: green;
+    /* Red */
+    color: white;
+    margin-bottom: 15px;
+}
+
+/* The close button */
+.closebtn {
+    margin-left: 15px;
+    color: white;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* When moving the mouse over the close button */
+.closebtn:hover {
+    color: black;
 }
 </style>

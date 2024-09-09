@@ -83,8 +83,8 @@ func (m *Mailer) UserVerifyEmail(email, uuid string) error {
 	mes.SetHeader("Subject", "Verify email address.")
 	mes.SetBody("text/html", fmt.Sprintf(`Verify email address on the platform:
 	follow the link:
-	
-	%s/api/verify/%s`, m.ApiAddress, uuid))
+
+	<a href="%s/api/verify/%s">Подтвердить email адрес.</a>`, m.ApiAddress, uuid))
 
 	return m.d.DialAndSend(mes)
 }
