@@ -54,7 +54,7 @@ var opts struct {
 	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:8080"`
 	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
-	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@inswap.in:mail@Pass77"`
+	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
 }
 
 func main() {
