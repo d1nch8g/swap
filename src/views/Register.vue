@@ -1,4 +1,35 @@
 <script>
+export default {
+    data() {
+        return {
+            email: "",
+            password: "",
+            repeatPassword: ""
+        }
+    },
+    methods: {
+        async register() {
+            let headersList = {
+                "Content-Type": "application/json"
+            }
+
+            let bodyContent = JSON.stringify({
+                "email": "d1nch8g@ion.lc",
+                "password": "password"
+            });
+
+            let response = await fetch("http://localhost:8080/api/create-user", {
+                method: "POST",
+                body: bodyContent,
+                headers: headersList
+            });
+
+            let data = await response.text();
+            console.log(data);
+
+        }
+    }
+}
 </script>
 
 <template>
@@ -9,20 +40,20 @@
             <hr>
 
             <label for="email"><b>Почта</b></label>
-            <input type="text" placeholder="example@email.com" name="email" required>
+            <input type="email" placeholder="example@email.com" name="email" required v-model="email">
 
             <label for="psw"><b>Пароль</b></label>
-            <input type="password" placeholder="Введите пароль" name="psw" required>
+            <input type="password" placeholder="Введите пароль" name="psw" required v-model="password">
 
             <label for="psw-repeat"><b>Повторите пароль</b></label>
-            <input type="password" placeholder="Повторите пароль" name="psw-repeat" required>
+            <input type="password" placeholder="Повторите пароль" name="psw-repeat" required v-model="repeatPassword">
 
             <p>Создавая аккаунт вы соглашаетесь с правилами использования: <a href="/rules"
                     style="color:dodgerblue">Правила
                     использования</a>.</p>
 
             <div class="clearfix">
-                <button type="submit" class="signupbtn">Регистрация</button>
+                <button type="submit" class="signupbtn" @click.prevent="register">Регистрация</button>
             </div>
         </div>
     </form>
@@ -35,7 +66,7 @@
 }
 
 /* Full-width input fields */
-input[type=text],
+input[type=email],
 input[type=password] {
     width: 100%;
     padding: 15px;
@@ -45,7 +76,7 @@ input[type=password] {
     background: #f1f1f1;
 }
 
-input[type=text]:focus,
+input[type=email]:focus,
 input[type=password]:focus {
     background-color: #ddd;
     outline: none;

@@ -51,11 +51,10 @@ var opts struct {
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
 	LetsEncryptAddr string `long:"lets-encrypt-addr" env:"LETS_ENCRYPT_ADDR"`
 	Admin           string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
-	ApiAddr         string `long:"apiaddr" env:"API_ADDRESS" default:"http://localhost:8080"`
-	EmailAddress    string `long:"emailaddr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
+	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:8080"`
+	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
-	EmailName       string `long:"email-name" env:"EMAIL_NAME" default:"inswap.in"`
-	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
+	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@inswap.in:mail@Pass77"`
 }
 
 func main() {
@@ -92,7 +91,6 @@ func main() {
 		opts.EmailAddress,
 		strings.Split(opts.EmailCreds, ":")[0],
 		strings.Split(opts.EmailCreds, ":")[1],
-		opts.EmailName,
 		opts.ApiAddr,
 		opts.EmailPort,
 	)

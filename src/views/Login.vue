@@ -47,7 +47,7 @@ export default {
     <form method="post">
         <div class="container">
             <label for="uname"><b>Почта</b></label>
-            <input type="text" placeholder="example@email.com" name="uname" required v-model="email">
+            <input type="email" placeholder="example@email.com" name="uname" required v-model="email">
 
             <label for="psw"><b>Пароль</b></label>
             <input type="password" placeholder="Ваш пароль" name="psw" required v-model="password">
@@ -64,7 +64,7 @@ form {
 }
 
 /* Full-width inputs */
-input[type=text],
+input[type=email],
 input[type=password] {
     width: 100%;
     padding: 12px 20px;

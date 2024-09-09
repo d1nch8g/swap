@@ -10,11 +10,11 @@ import (
 
 type Mailer struct {
 	d          *gomail.Dialer
-	Name       string
+	Sender     string
 	ApiAddress string
 }
 
-func New(addr, login, password, name, apiaddr string, port int) *Mailer {
+func New(addr, login, password, apiaddr string, port int) *Mailer {
 	d := gomail.NewDialer(addr, port, login, password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
@@ -30,15 +30,16 @@ func New(addr, login, password, name, apiaddr string, port int) *Mailer {
 		echo.New().Logger.Errorf("unable to send email notification: %v", err)
 	}
 	return &Mailer{
-		d:    d,
-		Name: name,
+		d:          d,
+		Sender:     login,
+		ApiAddress: apiaddr,
 	}
 }
 
 func (m *Mailer) OrderCreated(email, from, to, amount, address string) error {
 	mes := gomail.NewMessage()
 
-	mes.SetHeader("From", m.Name)
+	mes.SetHeader("From", m.Sender)
 	mes.SetHeader("To", email)
 	mes.SetHeader("Subject", "Order have been created.")
 	mes.SetBody("text/html", fmt.Sprintf(`Created exchange order:
@@ -47,7 +48,7 @@ func (m *Mailer) OrderCreated(email, from, to, amount, address string) error {
 	Selling currency: %s
 	Amount: %s
 	Address: %s
-	`, email, from, to, amount))
+	`, email, from, to, amount, address))
 
 	return m.d.DialAndSend(mes)
 }
@@ -55,7 +56,7 @@ func (m *Mailer) OrderCreated(email, from, to, amount, address string) error {
 func (m *Mailer) OrderFinished(email, amount, to, address string) error {
 	mes := gomail.NewMessage()
 
-	mes.SetHeader("From", m.Name)
+	mes.SetHeader("From", m.Sender)
 	mes.SetHeader("To", email)
 	mes.SetHeader("Subject", "Order have been finished.")
 	mes.SetBody("text/html", fmt.Sprintf(`%s %s were sent to address %s`, amount, to, address))
@@ -66,7 +67,7 @@ func (m *Mailer) OrderFinished(email, amount, to, address string) error {
 func (m *Mailer) CancelOrder(email, from, to string) error {
 	mes := gomail.NewMessage()
 
-	mes.SetHeader("From", m.Name)
+	mes.SetHeader("From", m.Sender)
 	mes.SetHeader("To", email)
 	mes.SetHeader("Subject", "Your order have been cancelled.")
 	mes.SetBody("text/html", fmt.Sprintf("Your exchange order on %s to %s have been cancelled.", from, to))
@@ -77,7 +78,7 @@ func (m *Mailer) CancelOrder(email, from, to string) error {
 func (m *Mailer) UserVerifyEmail(email, uuid string) error {
 	mes := gomail.NewMessage()
 
-	mes.SetHeader("From", m.Name)
+	mes.SetHeader("From", m.Sender)
 	mes.SetHeader("To", email)
 	mes.SetHeader("Subject", "Verify email address.")
 	mes.SetBody("text/html", fmt.Sprintf(`Verify email address on the platform:
