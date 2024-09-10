@@ -34,7 +34,7 @@ export default {
             this.currencyIn = "TON";
         }
         if (!this.currencyOut) {
-            this.currencyOut = "RUB";
+            this.currencyOut = "SBPRUB";
         }
     },
     async updated() {

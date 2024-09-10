@@ -31,9 +31,9 @@ const router = createRouter({
       component: () => import("../views/Rules.vue"),
     },
     {
-      path: "/orders",
-      name: "orders",
-      component: () => import("../views/Orders.vue"),
+      path: "/profile",
+      name: "profile",
+      component: () => import("../views/Profile.vue"),
     },
     {
       path: "/transfer",

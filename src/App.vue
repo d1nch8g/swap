@@ -37,7 +37,7 @@ export default {
         <RouterLink to="/register">Регистрация</RouterLink>
       </a>
       <a v-if="!showLogin">
-        <RouterLink to="/orders">Заявки</RouterLink>
+        <RouterLink to="/profile">Профиль</RouterLink>
       </a>
     </div>
   </div>
