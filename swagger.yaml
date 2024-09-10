@@ -82,6 +82,8 @@ definitions:
         type: number
       cancelled:
         type: boolean
+      created_at:
+        type: string
       exchanger_id:
         type: integer
       finished:

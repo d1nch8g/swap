@@ -4,6 +4,10 @@
 
 package database
 
+import (
+	"time"
+)
+
 type Balance struct {
 	ID         int64   `json:"id"`
 	UserID     int64   `json:"user_id"`
@@ -37,15 +41,16 @@ type Exchanger struct {
 }
 
 type Order struct {
-	ID             int64   `json:"id"`
-	UserID         int64   `json:"user_id"`
-	OperatorID     int64   `json:"operator_id"`
-	ExchangerID    int64   `json:"exchanger_id"`
-	AmountIn       float64 `json:"amount_in"`
-	AmountOut      float64 `json:"amount_out"`
-	ReceiveAddress string  `json:"receive_address"`
-	Cancelled      bool    `json:"cancelled"`
-	Finished       bool    `json:"finished"`
+	ID             int64     `json:"id"`
+	UserID         int64     `json:"user_id"`
+	OperatorID     int64     `json:"operator_id"`
+	ExchangerID    int64     `json:"exchanger_id"`
+	AmountIn       float64   `json:"amount_in"`
+	AmountOut      float64   `json:"amount_out"`
+	ReceiveAddress string    `json:"receive_address"`
+	CreatedAt      time.Time `json:"created_at"`
+	Cancelled      bool      `json:"cancelled"`
+	Finished       bool      `json:"finished"`
 }
 
 type User struct {

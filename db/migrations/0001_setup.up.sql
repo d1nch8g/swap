@@ -52,6 +52,7 @@ CREATE TABLE orders (
   amount_in DOUBLE PRECISION NOT NULL,
   amount_out DOUBLE PRECISION NOT NULL,
   receive_address TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT now(),
   cancelled BOOLEAN NOT NULL,
   finished BOOLEAN NOT NULL
 );

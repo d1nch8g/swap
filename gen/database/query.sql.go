@@ -142,7 +142,7 @@ INSERT INTO orders (
     finished
   )
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, cancelled, finished
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
 `
 
 type CreateOrderParams struct {
@@ -176,6 +176,7 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		&i.AmountIn,
 		&i.AmountOut,
 		&i.ReceiveAddress,
+		&i.CreatedAt,
 		&i.Cancelled,
 		&i.Finished,
 	)
@@ -392,7 +393,7 @@ func (q *Queries) GetFreeAdmins(ctx context.Context) ([]User, error) {
 }
 
 const getOrder = `-- name: GetOrder :one
-SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, cancelled, finished
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
 FROM orders
 WHERE id = $1
 `
@@ -408,6 +409,7 @@ func (q *Queries) GetOrder(ctx context.Context, id int64) (Order, error) {
 		&i.AmountIn,
 		&i.AmountOut,
 		&i.ReceiveAddress,
+		&i.CreatedAt,
 		&i.Cancelled,
 		&i.Finished,
 	)
@@ -415,7 +417,7 @@ func (q *Queries) GetOrder(ctx context.Context, id int64) (Order, error) {
 }
 
 const getOrders = `-- name: GetOrders :many
-SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, cancelled, finished
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
 FROM orders
 WHERE finished = false
   AND operator_id = $1
@@ -438,6 +440,7 @@ func (q *Queries) GetOrders(ctx context.Context, operatorID int64) ([]Order, err
 			&i.AmountIn,
 			&i.AmountOut,
 			&i.ReceiveAddress,
+			&i.CreatedAt,
 			&i.Cancelled,
 			&i.Finished,
 		); err != nil {
@@ -748,7 +751,7 @@ UPDATE orders
 SET finished = TRUE,
   cancelled = TRUE
 WHERE id = $1
-RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, cancelled, finished
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
 `
 
 func (q *Queries) UpdateOrderCancelled(ctx context.Context, id int64) (Order, error) {
@@ -762,6 +765,7 @@ func (q *Queries) UpdateOrderCancelled(ctx context.Context, id int64) (Order, er
 		&i.AmountIn,
 		&i.AmountOut,
 		&i.ReceiveAddress,
+		&i.CreatedAt,
 		&i.Cancelled,
 		&i.Finished,
 	)
@@ -772,7 +776,7 @@ const updateOrderFinished = `-- name: UpdateOrderFinished :one
 UPDATE orders
 SET finished = TRUE
 WHERE id = $1
-RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, cancelled, finished
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
 `
 
 func (q *Queries) UpdateOrderFinished(ctx context.Context, id int64) (Order, error) {
@@ -786,6 +790,7 @@ func (q *Queries) UpdateOrderFinished(ctx context.Context, id int64) (Order, err
 		&i.AmountIn,
 		&i.AmountOut,
 		&i.ReceiveAddress,
+		&i.CreatedAt,
 		&i.Cancelled,
 		&i.Finished,
 	)
