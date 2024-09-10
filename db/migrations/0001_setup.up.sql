@@ -19,6 +19,7 @@ CREATE TABLE users (
   verified BOOLEAN NOT NULL,
   passwhash TEXT NOT NULL,
   admin BOOLEAN NOT NULL,
+  operator BOOLEAN NOT NULL,
   token TEXT NOT NULL,
   busy BOOLEAN NOT NULL
 );

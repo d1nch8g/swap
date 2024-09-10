@@ -15,7 +15,7 @@ export default {
                 "password": this.password
             }
 
-            let response = await fetch("http://localhost:8080/api/login?Email=support%40inswap.in&Password=password", {
+            let response = await fetch("http://localhost:8080/api/login", {
                 method: "POST",
                 headers: headersList
             });
@@ -30,15 +30,18 @@ export default {
                     "Authorization": `Bearer ${data}`
                 }
 
-                let response = await fetch("http://localhost:8080/api/admin/get-orders", {
+                // check if user is admin and set admin localstorage value
+                let resp = await fetch("http://localhost:8080/api/admin/get-orders", {
                     method: "GET",
                     headers: headersList
                 });
-                if (response.ok) {
+                if (resp.ok) {
                     localStorage.setItem("admin", "true");
+                } else {
+                    localStorage.setItem("admin", "");
                 }
-                // check if user is admin and set admin localstorage value
-                window.location.href = '/';
+
+                window.location.href = "/";
                 return;
             }
             this.incorrect = true;

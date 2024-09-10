@@ -87,7 +87,7 @@ export default {
                 }
             }
         },
-        async handleSubmit() {
+        async createOrder() {
             let headersList = {
                 "Content-Type": "application/json"
             }
@@ -100,17 +100,17 @@ export default {
                 "address": this.address
             });
 
+            localStorage.setItem("order", bodyContent);
+
             let response = await fetch("http://localhost:8080/api/create-order", {
                 method: "POST",
                 body: bodyContent,
                 headers: headersList
             });
 
-            let data = await response.text();
-            console.log(data);
-
             if (response.ok) {
-                // read response parameters and process to payment page
+                let resp = await response.json();
+                this.$router.push(`/transfer/?addr=${resp.transfer_address}&inamount=${resp.in_amount}&outamount=${resp.out_amount}&ordernum=${resp.order_number}`);
                 return;
             }
 
@@ -121,14 +121,20 @@ export default {
                 this.allOperatorsAreBusyNotification = true;
                 return;
             }
-            // show unknown error message
+
+            if (response.status === 403) {
+                let resp = await response.json();
+
+                this.$router.push(`/validate-card`);
+                // handle validate card operation
+            }
         }
     }
 }
 </script>
 
 <template>
-    <form @submit.prevent="handleSubmit">
+    <form @submit.prevent="createOrder">
         <label for="currin">Отдаете:</label>
         <select id="currin" name="currin" v-model="currencyIn">
             <option v-for="currency in currencies" :value="currency.code">{{ currency.code }} -

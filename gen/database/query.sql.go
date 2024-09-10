@@ -188,20 +188,22 @@ INSERT INTO users (
     email,
     verified,
     passwhash,
-    token,
     admin,
+    operator,
+    token,
     busy
   )
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, email, verified, passwhash, admin, token, busy
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, email, verified, passwhash, admin, operator, token, busy
 `
 
 type CreateUserParams struct {
 	Email     string `json:"email"`
 	Verified  bool   `json:"verified"`
 	Passwhash string `json:"passwhash"`
-	Token     string `json:"token"`
 	Admin     bool   `json:"admin"`
+	Operator  bool   `json:"operator"`
+	Token     string `json:"token"`
 	Busy      bool   `json:"busy"`
 }
 
@@ -210,8 +212,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Email,
 		arg.Verified,
 		arg.Passwhash,
-		arg.Token,
 		arg.Admin,
+		arg.Operator,
+		arg.Token,
 		arg.Busy,
 	)
 	var i User
@@ -221,6 +224,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
+		&i.Operator,
 		&i.Token,
 		&i.Busy,
 	)
@@ -358,7 +362,7 @@ func (q *Queries) GetExchangerById(ctx context.Context, id int64) (Exchanger, er
 }
 
 const getFreeAdmins = `-- name: GetFreeAdmins :many
-SELECT id, email, verified, passwhash, admin, token, busy
+SELECT id, email, verified, passwhash, admin, operator, token, busy
 FROM users
 WHERE admin = TRUE
   AND busy = FALSE
@@ -379,6 +383,7 @@ func (q *Queries) GetFreeAdmins(ctx context.Context) ([]User, error) {
 			&i.Verified,
 			&i.Passwhash,
 			&i.Admin,
+			&i.Operator,
 			&i.Token,
 			&i.Busy,
 		); err != nil {
@@ -454,8 +459,45 @@ func (q *Queries) GetOrders(ctx context.Context, operatorID int64) ([]Order, err
 	return items, nil
 }
 
+const getOrdersForUser = `-- name: GetOrdersForUser :many
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
+FROM orders
+WHERE user_id = $1
+`
+
+func (q *Queries) GetOrdersForUser(ctx context.Context, userID int64) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getOrdersForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OperatorID,
+			&i.ExchangerID,
+			&i.AmountIn,
+			&i.AmountOut,
+			&i.ReceiveAddress,
+			&i.CreatedAt,
+			&i.Cancelled,
+			&i.Finished,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUser = `-- name: GetUser :one
-SELECT id, email, verified, passwhash, admin, token, busy
+SELECT id, email, verified, passwhash, admin, operator, token, busy
 FROM users
 WHERE email = $1
 LIMIT 1
@@ -470,6 +512,7 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
+		&i.Operator,
 		&i.Token,
 		&i.Busy,
 	)
@@ -477,7 +520,7 @@ func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, email, verified, passwhash, admin, token, busy
+SELECT id, email, verified, passwhash, admin, operator, token, busy
 FROM users
 WHERE id = $1
 `
@@ -491,6 +534,7 @@ func (q *Queries) GetUserById(ctx context.Context, id int64) (User, error) {
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
+		&i.Operator,
 		&i.Token,
 		&i.Busy,
 	)
@@ -498,7 +542,7 @@ func (q *Queries) GetUserById(ctx context.Context, id int64) (User, error) {
 }
 
 const getUserByToken = `-- name: GetUserByToken :one
-SELECT id, email, verified, passwhash, admin, token, busy
+SELECT id, email, verified, passwhash, admin, operator, token, busy
 FROM users
 WHERE token = $1
 `
@@ -512,6 +556,7 @@ func (q *Queries) GetUserByToken(ctx context.Context, token string) (User, error
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
+		&i.Operator,
 		&i.Token,
 		&i.Busy,
 	)
@@ -608,7 +653,7 @@ func (q *Queries) ListExchangers(ctx context.Context) ([]Exchanger, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, verified, passwhash, admin, token, busy
+SELECT id, email, verified, passwhash, admin, operator, token, busy
 FROM users
 ORDER BY email
 `
@@ -628,6 +673,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.Verified,
 			&i.Passwhash,
 			&i.Admin,
+			&i.Operator,
 			&i.Token,
 			&i.Busy,
 		); err != nil {
@@ -801,7 +847,7 @@ const updateUserBusy = `-- name: UpdateUserBusy :one
 UPDATE users
 SET busy = $2
 WHERE email = $1
-RETURNING id, email, verified, passwhash, admin, token, busy
+RETURNING id, email, verified, passwhash, admin, operator, token, busy
 `
 
 type UpdateUserBusyParams struct {
@@ -818,6 +864,7 @@ func (q *Queries) UpdateUserBusy(ctx context.Context, arg UpdateUserBusyParams) 
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
+		&i.Operator,
 		&i.Token,
 		&i.Busy,
 	)
@@ -828,7 +875,7 @@ const updateUserToken = `-- name: UpdateUserToken :one
 UPDATE users
 SET token = $2
 WHERE id = $1
-RETURNING id, email, verified, passwhash, admin, token, busy
+RETURNING id, email, verified, passwhash, admin, operator, token, busy
 `
 
 type UpdateUserTokenParams struct {
@@ -845,6 +892,7 @@ func (q *Queries) UpdateUserToken(ctx context.Context, arg UpdateUserTokenParams
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
+		&i.Operator,
 		&i.Token,
 		&i.Busy,
 	)
@@ -856,7 +904,7 @@ UPDATE users
 SET token = $2,
   passwhash = $3
 WHERE email = $1
-RETURNING id, email, verified, passwhash, admin, token, busy
+RETURNING id, email, verified, passwhash, admin, operator, token, busy
 `
 
 type UpdateUserTokenAndPassHashParams struct {
@@ -874,6 +922,7 @@ func (q *Queries) UpdateUserTokenAndPassHash(ctx context.Context, arg UpdateUser
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
+		&i.Operator,
 		&i.Token,
 		&i.Busy,
 	)
@@ -884,7 +933,7 @@ const updateUserVerified = `-- name: UpdateUserVerified :one
 UPDATE users
 SET verified = $2
 WHERE email = $1
-RETURNING id, email, verified, passwhash, admin, token, busy
+RETURNING id, email, verified, passwhash, admin, operator, token, busy
 `
 
 type UpdateUserVerifiedParams struct {
@@ -901,6 +950,7 @@ func (q *Queries) UpdateUserVerified(ctx context.Context, arg UpdateUserVerified
 		&i.Verified,
 		&i.Passwhash,
 		&i.Admin,
+		&i.Operator,
 		&i.Token,
 		&i.Busy,
 	)

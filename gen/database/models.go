@@ -59,6 +59,7 @@ type User struct {
 	Verified  bool   `json:"verified"`
 	Passwhash string `json:"passwhash"`
 	Admin     bool   `json:"admin"`
+	Operator  bool   `json:"operator"`
 	Token     string `json:"token"`
 	Busy      bool   `json:"busy"`
 }

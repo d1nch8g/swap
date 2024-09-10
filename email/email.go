@@ -42,12 +42,12 @@ func (m *Mailer) OrderCreated(email, from, to, amount, address string) error {
 	mes.SetHeader("From", m.Sender)
 	mes.SetHeader("To", email)
 	mes.SetHeader("Subject", "Order have been created.")
-	mes.SetBody("text/html", fmt.Sprintf(`Created exchange order:
-	Order email: %s
-	Buying currency: %s
-	Selling currency: %s
-	Amount: %s
-	Address: %s
+	mes.SetBody("text/html", fmt.Sprintf(`Created exchange order: <br>
+	Order email: %s <br>
+	Buying currency: %s <br>
+	Selling currency: %s <br>
+	Amount: %s <br>
+	Address: %s <br>
 	`, email, from, to, amount, address))
 
 	return m.d.DialAndSend(mes)
@@ -81,9 +81,8 @@ func (m *Mailer) UserVerifyEmail(email, uuid string) error {
 	mes.SetHeader("From", m.Sender)
 	mes.SetHeader("To", email)
 	mes.SetHeader("Subject", "Verify email address.")
-	mes.SetBody("text/html", fmt.Sprintf(`Verify email address on the platform:
-	follow the link:
-
+	mes.SetBody("text/html", fmt.Sprintf(`To verify email address on the platform follow the link: <br>
+	<br>
 	<a href="%s/api/verify/%s">Подтвердить email адрес.</a>`, m.ApiAddress, uuid))
 
 	return m.d.DialAndSend(mes)

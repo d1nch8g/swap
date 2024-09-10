@@ -132,7 +132,7 @@ definitions:
         type: string
       balance:
         type: number
-      currencyId:
+      currency_id:
         type: integer
     type: object
   server.CreateOrderRequest:
@@ -152,6 +152,8 @@ definitions:
     properties:
       in_amount:
         type: number
+      order_number:
+        type: integer
       out_amount:
         type: number
       transfer_address:

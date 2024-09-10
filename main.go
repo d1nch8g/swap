@@ -18,7 +18,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jessevdk/go-flags"
 	"github.com/labstack/echo/v4"
 )
@@ -45,13 +45,13 @@ import (
 //	@description				Token authorization for internal operations
 
 var opts struct {
-	Port            string `long:"port" env:"PORT" default:"8080"`
+	Port            string `long:"port" env:"PORT" default:"80"`
 	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
 	ServeDir        string `long:"serve-dir" env:"SERVE_DIR" default:"dist"`
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
 	LetsEncryptAddr string `long:"lets-encrypt-addr" env:"LETS_ENCRYPT_ADDR"`
 	Admin           string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
-	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:8080"`
+	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:80"`
 	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
@@ -78,11 +78,11 @@ func main() {
 		}
 	}
 
-	conn, err := pgx.Connect(context.Background(), opts.Database)
+	conn, err := pgxpool.New(context.Background(), opts.Database)
 	if err != nil {
 		panic(err)
 	}
-	defer conn.Close(context.Background())
+	defer conn.Close()
 
 	e := echo.New()
 	sqlc := database.New(conn)
@@ -104,6 +104,7 @@ func main() {
 		Verified:  true,
 		Passwhash: passhash,
 		Admin:     true,
+		Operator:  true,
 		Busy:      false,
 		Token:     uuid.New().String(),
 	})

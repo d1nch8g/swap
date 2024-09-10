@@ -26,7 +26,7 @@
             <td>Germany</td>
         </tr>
     </table>
-    
+
 
 </template>
 

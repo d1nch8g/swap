@@ -12,12 +12,12 @@ export default {
     let token = localStorage.getItem("token");
     if (token) {
       this.showLogin = false;
+      let admin = localStorage.getItem("admin");
+      if (admin) {
+        this.showAdmin = true;
+      }
     }
-    let admin = localStorage.getItem("admin");
-    if (admin) {
-      this.showAdmin = true;
-    }
-  },
+  }
 }
 </script>
 
@@ -44,7 +44,7 @@ export default {
       <a v-if="!showLogin">
         <RouterLink to="/profile">Профиль</RouterLink>
       </a>
-      <a v-if="!showAdmin">
+      <a v-if="showAdmin">
         <RouterLink to="/admin">Управление</RouterLink>
       </a>
     </div>

@@ -47,11 +47,12 @@ INSERT INTO users (
     email,
     verified,
     passwhash,
-    token,
     admin,
+    operator,
+    token,
     busy
   )
-VALUES ($1, $2, $3, $4, $5, $6)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 -- name: UpdateUserBusy :one
 UPDATE users
@@ -165,3 +166,7 @@ SET finished = TRUE,
   cancelled = TRUE
 WHERE id = $1
 RETURNING *;
+-- name: GetOrdersForUser :many
+SELECT *
+FROM orders
+WHERE user_id = $1;

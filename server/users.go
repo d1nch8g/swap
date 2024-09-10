@@ -3,6 +3,7 @@ package server
 import (
 	"crypto/sha512"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +14,87 @@ import (
 	"github.com/labstack/echo/v4"
 	"ion.lc/d1nhc8g/inswap/gen/database"
 )
+
+// Login godoc
+//
+//	@Summary	Login and get auth key
+//	@Param		email		header		string	true	"Email"
+//	@Param		password	header		string	true	"Password"
+//	@Success	200			{string}	string	token
+//	@Router		/login [post]
+func (e *Endpoints) Login(c echo.Context) error {
+	email := c.Request().Header["Email"]
+	password := c.Request().Header["Password"]
+
+	if email == nil || password == nil {
+		c.Response().WriteHeader(http.StatusUnauthorized)
+		_, err := c.Response().Write([]byte("empty login or password"))
+		return err
+	}
+
+	user, err := e.db.GetUser(c.Request().Context(), email[0])
+	if err != nil {
+		c.Response().WriteHeader(http.StatusUnauthorized)
+		return errors.New("unable to login")
+	}
+
+	hasher := sha512.New()
+	hasher.Write([]byte(password[0]))
+	sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
+	if user.Passwhash != sha {
+		c.Response().WriteHeader(http.StatusUnauthorized)
+		_, err := c.Response().Write([]byte("bad password"))
+		return err
+	}
+
+	if user.Token != "nil" {
+		_, err = c.Response().Write([]byte(user.Token))
+		return err
+	}
+
+	token := uuid.New().String()
+	_, err = e.db.UpdateUserToken(c.Request().Context(), database.UpdateUserTokenParams{
+		ID:    user.ID,
+		Token: token,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusUnauthorized)
+		_, err := c.Response().Write([]byte("unable to update token"))
+		return err
+	}
+
+	_, err = c.Response().Write([]byte(token))
+	return err
+}
+
+// ListOrders godoc
+//
+//	@Summary	List user's orders
+//	@Success	200			{object}	Orders	orders
+//	@Security	ApiKeyAuth
+//	@Router		/user/list-orders [post]
+func (e *Endpoints) ListOrders(c echo.Context) error {
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	orders, err := e.db.GetOrdersForUser(c.Request().Context(), u.ID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &Orders{
+		Orders: orders,
+	})
+}
 
 type CreateUserRequest struct {
 	Email    string `json:"email"`
@@ -236,6 +318,7 @@ type CreateOrderResponse struct {
 	InAmount        float64 `json:"in_amount"`
 	OutAmount       float64 `json:"out_amount"`
 	TransferAddress string  `json:"transfer_address"`
+	OrderNumber     int64   `json:"order_number"`
 }
 
 // ListExchangers godoc
@@ -316,10 +399,10 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 				_, err := c.Response().Write([]byte("unable to access database or exchanger does not exist"))
 				return err
 			}
-			return c.String(http.StatusConflict, "required card confirmation")
+			return c.String(http.StatusForbidden, "required card confirmation")
 		}
 		if !pc.Verified {
-			return c.String(http.StatusConflict, "required card confirmation")
+			return c.String(http.StatusForbidden, "required card confirmation")
 		}
 	}
 
@@ -383,7 +466,7 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 		return err
 	}
 
-	_, err = e.db.CreateOrder(c.Request().Context(), database.CreateOrderParams{
+	order, err := e.db.CreateOrder(c.Request().Context(), database.CreateOrderParams{
 		UserID:         u.ID,
 		OperatorID:     operator.ID,
 		ExchangerID:    exch.ID,
@@ -411,6 +494,7 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 		InAmount:        req.Amount,
 		OutAmount:       outAmount,
 		TransferAddress: addr,
+		OrderNumber:     order.ID,
 	})
 }
 
