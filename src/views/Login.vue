@@ -25,6 +25,19 @@ export default {
                 localStorage.setItem("token", data);
                 this.incorrect = false;
                 this.logged = true;
+
+                let headersList = {
+                    "Authorization": `Bearer ${data}`
+                }
+
+                let response = await fetch("http://localhost:8080/api/admin/get-orders", {
+                    method: "GET",
+                    headers: headersList
+                });
+                if (response.ok) {
+                    localStorage.setItem("admin", "true");
+                }
+                // check if user is admin and set admin localstorage value
                 window.location.href = '/';
                 return;
             }

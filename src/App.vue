@@ -4,13 +4,18 @@ import { RouterLink, RouterView } from 'vue-router'
 export default {
   data() {
     return {
-      showLogin: true
+      showLogin: true,
+      showAdmin: false
     }
   },
   mounted() {
     let token = localStorage.getItem("token");
     if (token) {
       this.showLogin = false;
+    }
+    let admin = localStorage.getItem("admin");
+    if (admin) {
+      this.showAdmin = true;
     }
   },
 }
@@ -38,6 +43,9 @@ export default {
       </a>
       <a v-if="!showLogin">
         <RouterLink to="/profile">Профиль</RouterLink>
+      </a>
+      <a v-if="!showAdmin">
+        <RouterLink to="/admin">Управление</RouterLink>
       </a>
     </div>
   </div>
