@@ -35,6 +35,16 @@ const router = createRouter({
       name: "orders",
       component: () => import("../views/Orders.vue"),
     },
+    {
+      path: "/transfer",
+      name: "transfer",
+      component: () => import("../views/Transfer.vue"),
+    },
+    {
+      path: "/validate-card",
+      name: "validate-card",
+      component: () => import("../views/ValidateCard.vue"),
+    },
   ],
 });
 

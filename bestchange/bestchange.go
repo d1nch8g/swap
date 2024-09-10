@@ -163,6 +163,9 @@ func (c *Client) CreateCurrencyMapper() (map[string]string, error) {
 	result := map[string]string{}
 	for _, curr := range currencies.Currencies {
 		result[curr.Code] = fmt.Sprintf("%d", curr.Id)
+		if curr.Code == "SBPRUB" {
+			result["RUB"] = fmt.Sprintf("%d", curr.Id)
+		}
 	}
 	return result, nil
 }

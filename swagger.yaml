@@ -59,6 +59,21 @@ definitions:
       id:
         type: integer
     type: object
+  database.Exchanger:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      in_currency:
+        type: integer
+      inmin:
+        type: number
+      out_currency:
+        type: integer
+      require_payment_verification:
+        type: boolean
+    type: object
   database.Order:
     properties:
       amount_in:
@@ -118,6 +133,28 @@ definitions:
       currencyId:
         type: integer
     type: object
+  server.CreateOrderRequest:
+    properties:
+      address:
+        type: string
+      amount:
+        type: number
+      email:
+        type: string
+      in_currency:
+        type: string
+      out_currency:
+        type: string
+    type: object
+  server.CreateOrderResponse:
+    properties:
+      in_amount:
+        type: number
+      out_amount:
+        type: number
+      transfer_address:
+        type: string
+    type: object
   server.CreateUserRequest:
     properties:
       email:
@@ -130,6 +167,18 @@ definitions:
       currencies:
         items:
           $ref: '#/definitions/database.Currency'
+        type: array
+    type: object
+  server.CurrentRateResponse:
+    properties:
+      amount:
+        type: number
+    type: object
+  server.Exchangers:
+    properties:
+      exchangers:
+        items:
+          $ref: '#/definitions/database.Exchanger'
         type: array
     type: object
   server.ExecuteOrderRequest:
@@ -357,6 +406,21 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update operator currency balance
+  /create-order:
+    post:
+      parameters:
+      - description: Request parameters
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.CreateOrderRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.CreateOrderResponse'
+      summary: Create order to exchange specific currency
   /create-user:
     post:
       parameters:
@@ -370,6 +434,30 @@ paths:
         "200":
           description: OK
       summary: Create new user request
+  /current-rate:
+    get:
+      parameters:
+      - description: Currency in
+        in: path
+        name: currency_in
+        required: true
+        type: string
+      - description: Currency out
+        in: path
+        name: currency_out
+        required: true
+        type: string
+      - description: Amount in
+        in: path
+        name: amount
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.CurrentRateResponse'
+      summary: Current rate at specific currency
   /list-currencies:
     get:
       responses:
@@ -378,6 +466,14 @@ paths:
           schema:
             $ref: '#/definitions/server.Currencies'
       summary: Verify user email address
+  /list-exchangers:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.Exchangers'
+      summary: List existing exchangers
   /login:
     post:
       parameters:

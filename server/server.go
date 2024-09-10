@@ -37,6 +37,7 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 	api.GET("/verify/:uuid", endpoints.VerifyEmail)
 	api.GET("/list-currencies", endpoints.ListCurrencies)
 	api.GET("/list-exchangers", endpoints.ListExchangers)
+	api.GET("/current-rate", endpoints.CurrentRate)
 	api.POST("/login", endpoints.Login)
 
 	admin := api.Group("/admin", middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {

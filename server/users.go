@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -116,7 +117,7 @@ type Currencies struct {
 // ListCurrencies godoc
 //
 //	@Summary	Verify user email address
-//	@Success	200 {object} Currencies
+//	@Success	200	{object}	Currencies
 //	@Router		/list-currencies [get]
 func (e *Endpoints) ListCurrencies(c echo.Context) error {
 	currs, err := e.db.ListCurrencies(c.Request().Context())
@@ -131,10 +132,79 @@ func (e *Endpoints) ListCurrencies(c echo.Context) error {
 	})
 }
 
+type CurrentRateResponse struct {
+	Amount float64 `json:"amount"`
+}
+
+// CurrentRate godoc
+//
+//	@Summary	Current rate at specific currency
+//	@Param		currency_in		path		string	true	"Currency in"
+//	@Param		currency_out	path		string	true	"Currency out"
+//	@Param		amount			path		int		true	"Amount in"
+//	@Success	200				{object}	CurrentRateResponse
+//	@Router		/current-rate [get]
+func (e *Endpoints) CurrentRate(c echo.Context) error {
+	currencyIn := c.QueryParam("currency_in")
+	currencyOut := c.QueryParam("currency_out")
+	amountString := c.QueryParam("amount")
+	amount, err := strconv.ParseFloat(amountString, 64)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to parse amount"))
+		return err
+	}
+
+	currIn, err := e.db.GetCurrencyByCode(c.Request().Context(), currencyIn)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	currOut, err := e.db.GetCurrencyByCode(c.Request().Context(), currencyOut)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	exch, err := e.db.GetExchangerByCurrencyIds(c.Request().Context(), database.GetExchangerByCurrencyIdsParams{
+		InCurrency:  currIn.ID,
+		OutCurrency: currOut.ID,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+	if amount < exch.Inmin {
+		c.Response().WriteHeader(http.StatusConflict)
+		_, err := c.Response().Write([]byte(fmt.Sprintf("not over minimum operation %f", exch.Inmin)))
+		return err
+	}
+
+	rez, err := e.bc.EstimateOperation(currencyIn, currencyOut)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access bestchange API"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &CurrentRateResponse{
+		Amount: amount / rez,
+	})
+}
+
 type Exchangers struct {
 	Exchangers []database.Exchanger `json:"exchangers"`
 }
 
+// ListExchangers godoc
+//
+//	@Summary	List existing exchangers
+//	@Success	200	{object}	Exchangers
+//	@Router		/list-exchangers [get]
 func (e *Endpoints) ListExchangers(c echo.Context) error {
 	exchangers, err := e.db.ListExchangers(c.Request().Context())
 	if err != nil {
@@ -149,11 +219,11 @@ func (e *Endpoints) ListExchangers(c echo.Context) error {
 }
 
 type CreateOrderRequest struct {
-	Email   string  `json:"email"`
-	Input   string  `json:"input"`
-	Ouput   string  `json:"output"`
-	Amount  float64 `json:"amount"`
-	Address string  `json:"address"`
+	Email       string  `json:"email"`
+	InCurrency  string  `json:"in_currency"`
+	OutCurrency string  `json:"out_currency"`
+	Amount      float64 `json:"amount"`
+	Address     string  `json:"address"`
 }
 
 type CreateOrderResponse struct {
@@ -162,6 +232,12 @@ type CreateOrderResponse struct {
 	TransferAddress string  `json:"transfer_address"`
 }
 
+// ListExchangers godoc
+//
+//	@Summary	Create order to exchange specific currency
+//	@Param		status	body		CreateOrderRequest	true	"Request parameters"
+//	@Success	200		{object}	CreateOrderResponse
+//	@Router		/create-order [post]
 func (e *Endpoints) CreateOrder(c echo.Context) error {
 	var req CreateOrderRequest
 	err := c.Bind(&req)
@@ -172,14 +248,14 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	}
 
 	// Check if input is over minimum for given exchanger
-	inCurr, err := e.db.GetCurrencyByCode(c.Request().Context(), req.Input)
+	inCurr, err := e.db.GetCurrencyByCode(c.Request().Context(), req.InCurrency)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
 
-	outCurr, err := e.db.GetCurrencyByCode(c.Request().Context(), req.Ouput)
+	outCurr, err := e.db.GetCurrencyByCode(c.Request().Context(), req.OutCurrency)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -310,7 +386,7 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	}
 
 	// Send email notification
-	err = e.mail.OrderCreated(req.Email, req.Input, req.Ouput, fmt.Sprintf("%f", req.Amount), req.Address)
+	err = e.mail.OrderCreated(req.Email, req.InCurrency, req.OutCurrency, fmt.Sprintf("%f", req.Amount), req.Address)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to send email notification"))
