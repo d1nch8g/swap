@@ -249,9 +249,9 @@ func (e *Endpoints) RemoveExchanger(c echo.Context) error {
 }
 
 type CreateBalanceRequest struct {
-	CurrencyId int64
-	Balance    float64
-	Address    string
+	CurrencyId int64   `json:"currency_id"`
+	Balance    float64 `json:"balance"`
+	Address    string  `json:"address"`
 }
 
 // CreateBalance godoc

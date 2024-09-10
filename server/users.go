@@ -349,21 +349,24 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 			_, err := c.Response().Write([]byte("unable to access database"))
 			return err
 		}
-		var found bool
+		var goodOutBalance bool
+		var existInBalance bool
 		for _, balance := range balances {
 			if balance.CurrencyID == outCurr.ID && balance.Balance > outAmount {
-				addr = balance.Address
 				operator = &admin
-				found = true
-				break
+				goodOutBalance = true
+			}
+			if balance.CurrencyID == inCurr.ID {
+				addr = balance.Address
+				existInBalance = true
 			}
 		}
-		if found {
+		if goodOutBalance && existInBalance {
 			break
 		}
 	}
 
-	if operator == nil {
+	if operator == nil || addr == "" {
 		c.Response().WriteHeader(http.StatusConflict)
 		_, err := c.Response().Write([]byte("all operators are busy"))
 		return err
