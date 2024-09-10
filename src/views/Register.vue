@@ -52,7 +52,7 @@ export default {
     </div>
 
 
-    <form action="action_page.php" style="border:1px solid #ccc">
+    <form>
         <div class="container">
             <h1>Регистрация</h1>
             <p>Заполните поля ниже для создания аккаунта.</p>

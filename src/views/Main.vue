@@ -12,7 +12,8 @@ export default {
             minAmountToExchnage: 0,
             showCreateOrderButton: true,
             showMinAmountNotification: false,
-            showPairNotSupportedNotfication: false
+            showPairNotSupportedNotfication: false,
+            allOperatorsAreBusyNotification: false
         }
     },
     async mounted() {
@@ -114,8 +115,11 @@ export default {
             }
 
             if (response.status === 409) {
-                // check if all operators are busy and show message
-
+                this.showCreateOrderButton = false;
+                this.showMinAmountNotification = false;
+                this.showPairNotSupportedNotfication = false;
+                this.allOperatorsAreBusyNotification = true;
+                return;
             }
             // show unknown error message
         }
@@ -156,6 +160,11 @@ export default {
     <div class="alert" v-if="showPairNotSupportedNotfication">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
         Выбранная валютная пара не поддерживается обменником
+    </div>
+
+    <div class="alert" v-if="allOperatorsAreBusyNotification">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        Все операторы в данный момент заняты, создайсте заявку позже.
     </div>
 </template>
 

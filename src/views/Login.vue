@@ -58,11 +58,6 @@ export default {
 </template>
 
 <style scoped>
-/* Bordered form */
-form {
-    border: 3px solid #f1f1f1;
-}
-
 /* Full-width inputs */
 input[type=email],
 input[type=password] {
