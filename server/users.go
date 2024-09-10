@@ -149,6 +149,7 @@ func (e *Endpoints) CurrentRate(c echo.Context) error {
 	currencyOut := c.QueryParam("currency_out")
 	amountString := c.QueryParam("amount")
 	amount, err := strconv.ParseFloat(amountString, 64)
+
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to parse amount"))
@@ -174,6 +175,11 @@ func (e *Endpoints) CurrentRate(c echo.Context) error {
 		OutCurrency: currOut.ID,
 	})
 	if err != nil {
+		if err.Error() == "no rows in result set" {
+			c.Response().WriteHeader(http.StatusForbidden)
+			_, err := c.Response().Write([]byte("selected exchangers pair does not exist"))
+			return err
+		}
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
@@ -343,17 +349,22 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 			_, err := c.Response().Write([]byte("unable to access database"))
 			return err
 		}
+		var found bool
 		for _, balance := range balances {
 			if balance.CurrencyID == outCurr.ID && balance.Balance > outAmount {
 				addr = balance.Address
 				operator = &admin
+				found = true
 				break
 			}
+		}
+		if found {
+			break
 		}
 	}
 
 	if operator == nil {
-		c.Response().WriteHeader(http.StatusInternalServerError)
+		c.Response().WriteHeader(http.StatusConflict)
 		_, err := c.Response().Write([]byte("all operators are busy"))
 		return err
 	}

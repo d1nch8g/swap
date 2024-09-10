@@ -9,8 +9,10 @@ export default {
             amountOut: 0,
             email: "",
             address: "",
-            notovermin: false,
-            minvalue: 0
+            minAmountToExchnage: 0,
+            showCreateOrderButton: true,
+            showMinAmountNotification: false,
+            showPairNotSupportedNotfication: false
         }
     },
     async mounted() {
@@ -40,20 +42,33 @@ export default {
             headers: {}
         });
 
+        // handle normal response
         if (response.ok) {
             let amount = await response.json();
             this.amountOut = amount.amount;
-            this.notovermin = false;
-            this.amount = 0;
+            this.showCreateOrderButton = true;
+            this.showMinAmountNotification = false;
+            this.showPairNotSupportedNotfication = false;
             return;
         }
 
+        // handle not over required minimum error
         if (response.status === 409) {
             let rsp = await response.text();
-            this.notovermin = true;
-            this.amount = 0;
-            this.minvalue = Number(rsp.replace("not over minimum operation ", ""));
+            this.showCreateOrderButton = false;
+            this.showMinAmountNotification = true;
+            this.showPairNotSupportedNotfication = false;
+            this.amountOut = 0;
+            this.minAmountToExchnage = Number(rsp.replace("not over minimum operation ", ""));
             return;
+        }
+
+        // handle exchangers pair not supported
+        if (response.status === 403) {
+            this.showCreateOrderButton = false;
+            this.showMinAmountNotification = false;
+            this.showPairNotSupportedNotfication = true;
+            this.amountOut = 0;
         }
 
     },
@@ -93,6 +108,16 @@ export default {
             let data = await response.text();
             console.log(data);
 
+            if (response.ok) {
+                // read response parameters and process to payment page
+                return;
+            }
+
+            if (response.status === 409) {
+                // check if all operators are busy and show message
+
+            }
+            // show unknown error message
         }
     }
 }
@@ -105,33 +130,39 @@ export default {
             <option v-for="currency in currencies" :value="currency.code">{{ currency.code }} -
                 {{ currency.description }}</option>
         </select>
-        <input type="text" id="currin" name="currency-in" v-model="amountIn">
+        <input type="number" id="currin" name="currency-in" v-model="amountIn">
 
         <label for="currout">Получаете:</label>
         <select id="currout" name="currout" v-model="currencyOut">
             <option v-for="currency in currencies" :value="currency.code">{{ currency.code }} -
                 {{ currency.description }}</option>
         </select>
-        <input type="text" id="currout" name="currency-out" v-model="amountOut" readonly>
+        <input type="number" id="currout" name="currency-out" v-model="amountOut" readonly>
 
         <label for="email">Электронная почта:</label>
         <input type="email" id="email" name="email" v-model="email">
 
-        <label for="address">Адрес получения (карта/кошелек):</label>
+        <label for="address">Адрес получения (номер карты/кошелек):</label>
         <input type="text" id="address" name="address" v-model="address">
 
-        <input type="submit" value="Создать заявку" @click="createOrder">
+        <input type="submit" value="Создать заявку" @click="createOrder" v-if="showCreateOrderButton">
     </form>
 
-    <div class="alert" v-if="notovermin">
+    <div class="alert" v-if="showMinAmountNotification">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
-        Слишком маленькая сумма для совершения операции, минимум - {{ this.minvalue }}
+        Слишком маленькая сумма для совершения операции, минимум - {{ this.minAmountToExchnage }}
+    </div>
+
+    <div class="alert" v-if="showPairNotSupportedNotfication">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        Выбранная валютная пара не поддерживается обменником
     </div>
 </template>
 
 <style scoped>
 input[type=text],
 input[type=email],
+input[type=number],
 select {
     width: 100%;
     padding: 12px 20px;
