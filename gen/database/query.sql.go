@@ -139,21 +139,25 @@ INSERT INTO orders (
     amount_out,
     cancelled,
     receive_address,
-    finished
+    finished,
+    confirm_image,
+    payment_confirmed
   )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished, confirm_image, payment_confirmed
 `
 
 type CreateOrderParams struct {
-	UserID         int64   `json:"user_id"`
-	OperatorID     int64   `json:"operator_id"`
-	ExchangerID    int64   `json:"exchanger_id"`
-	AmountIn       float64 `json:"amount_in"`
-	AmountOut      float64 `json:"amount_out"`
-	Cancelled      bool    `json:"cancelled"`
-	ReceiveAddress string  `json:"receive_address"`
-	Finished       bool    `json:"finished"`
+	UserID           int64   `json:"user_id"`
+	OperatorID       int64   `json:"operator_id"`
+	ExchangerID      int64   `json:"exchanger_id"`
+	AmountIn         float64 `json:"amount_in"`
+	AmountOut        float64 `json:"amount_out"`
+	Cancelled        bool    `json:"cancelled"`
+	ReceiveAddress   string  `json:"receive_address"`
+	Finished         bool    `json:"finished"`
+	ConfirmImage     []byte  `json:"confirm_image"`
+	PaymentConfirmed bool    `json:"payment_confirmed"`
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
@@ -166,6 +170,8 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		arg.Cancelled,
 		arg.ReceiveAddress,
 		arg.Finished,
+		arg.ConfirmImage,
+		arg.PaymentConfirmed,
 	)
 	var i Order
 	err := row.Scan(
@@ -179,6 +185,8 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		&i.CreatedAt,
 		&i.Cancelled,
 		&i.Finished,
+		&i.ConfirmImage,
+		&i.PaymentConfirmed,
 	)
 	return i, err
 }
@@ -398,7 +406,7 @@ func (q *Queries) GetFreeAdmins(ctx context.Context) ([]User, error) {
 }
 
 const getOrder = `-- name: GetOrder :one
-SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished, confirm_image, payment_confirmed
 FROM orders
 WHERE id = $1
 `
@@ -417,12 +425,14 @@ func (q *Queries) GetOrder(ctx context.Context, id int64) (Order, error) {
 		&i.CreatedAt,
 		&i.Cancelled,
 		&i.Finished,
+		&i.ConfirmImage,
+		&i.PaymentConfirmed,
 	)
 	return i, err
 }
 
 const getOrders = `-- name: GetOrders :many
-SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished, confirm_image, payment_confirmed
 FROM orders
 WHERE finished = false
   AND operator_id = $1
@@ -448,6 +458,8 @@ func (q *Queries) GetOrders(ctx context.Context, operatorID int64) ([]Order, err
 			&i.CreatedAt,
 			&i.Cancelled,
 			&i.Finished,
+			&i.ConfirmImage,
+			&i.PaymentConfirmed,
 		); err != nil {
 			return nil, err
 		}
@@ -460,7 +472,7 @@ func (q *Queries) GetOrders(ctx context.Context, operatorID int64) ([]Order, err
 }
 
 const getOrdersForUser = `-- name: GetOrdersForUser :many
-SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished, confirm_image, payment_confirmed
 FROM orders
 WHERE user_id = $1
 `
@@ -485,6 +497,8 @@ func (q *Queries) GetOrdersForUser(ctx context.Context, userID int64) ([]Order, 
 			&i.CreatedAt,
 			&i.Cancelled,
 			&i.Finished,
+			&i.ConfirmImage,
+			&i.PaymentConfirmed,
 		); err != nil {
 			return nil, err
 		}
@@ -797,7 +811,7 @@ UPDATE orders
 SET finished = TRUE,
   cancelled = TRUE
 WHERE id = $1
-RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished, confirm_image, payment_confirmed
 `
 
 func (q *Queries) UpdateOrderCancelled(ctx context.Context, id int64) (Order, error) {
@@ -814,6 +828,8 @@ func (q *Queries) UpdateOrderCancelled(ctx context.Context, id int64) (Order, er
 		&i.CreatedAt,
 		&i.Cancelled,
 		&i.Finished,
+		&i.ConfirmImage,
+		&i.PaymentConfirmed,
 	)
 	return i, err
 }
@@ -822,7 +838,7 @@ const updateOrderFinished = `-- name: UpdateOrderFinished :one
 UPDATE orders
 SET finished = TRUE
 WHERE id = $1
-RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished, confirm_image, payment_confirmed
 `
 
 func (q *Queries) UpdateOrderFinished(ctx context.Context, id int64) (Order, error) {
@@ -839,6 +855,8 @@ func (q *Queries) UpdateOrderFinished(ctx context.Context, id int64) (Order, err
 		&i.CreatedAt,
 		&i.Cancelled,
 		&i.Finished,
+		&i.ConfirmImage,
+		&i.PaymentConfirmed,
 	)
 	return i, err
 }

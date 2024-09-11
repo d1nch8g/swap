@@ -74,9 +74,6 @@ export default {
 
     },
     methods: {
-        createOrder() {
-            console.log("create order triggered")
-        },
         getQueryVariable(variable) {
             var query = window.location.search.substring(1);
             var vars = query.split("&");

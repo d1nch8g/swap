@@ -36,19 +36,23 @@ func New(addr, login, password, apiaddr string, port int) *Mailer {
 	}
 }
 
-func (m *Mailer) OrderCreated(email, from, to, amount, address string) error {
+func (m *Mailer) OrderCreated(email, currIn, amountIn, addressIn, currOut, amountOut, addressOut string) error {
 	mes := gomail.NewMessage()
 
 	mes.SetHeader("From", m.Sender)
 	mes.SetHeader("To", email)
-	mes.SetHeader("Subject", "Order have been created.")
-	mes.SetBody("text/html", fmt.Sprintf(`Created exchange order: <br>
-	Order email: %s <br>
-	Buying currency: %s <br>
-	Selling currency: %s <br>
-	Amount: %s <br>
-	Address: %s <br>
-	`, email, from, to, amount, address))
+	mes.SetHeader("Subject", "Заявка была создана.")
+	mes.SetBody("text/html", fmt.Sprintf(`<b>Заявка была создана:</b><br>
+	Email заявки: %s <br>
+	<br>
+	Продаваемая валюта: %s <br>
+	Количество: %s <br>
+	Адрес отправки: %s <br>
+	<br>
+	Покупаемая валюта: %s <br>
+	Количество: %s <br>
+	Адрес получения: %s <br>
+	`, email, currIn, amountIn, addressIn, currOut, amountOut, addressOut))
 
 	return m.d.DialAndSend(mes)
 }

@@ -3,7 +3,6 @@ package server
 import (
 	"crypto/sha512"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,7 +34,8 @@ func (e *Endpoints) Login(c echo.Context) error {
 	user, err := e.db.GetUser(c.Request().Context(), email[0])
 	if err != nil {
 		c.Response().WriteHeader(http.StatusUnauthorized)
-		return errors.New("unable to login")
+		_, err := c.Response().Write([]byte("account does not exist"))
+		return err
 	}
 
 	hasher := sha512.New()
@@ -68,12 +68,27 @@ func (e *Endpoints) Login(c echo.Context) error {
 	return err
 }
 
+type UserOrdersResponse struct {
+	UserOrders []UserOrder `json:"orders"`
+}
+
+type UserOrder struct {
+	Id          int64   `json:"id"`
+	InCurrency  string  `json:"in_currency"`
+	InAmount    float64 `json:"in_amount"`
+	RecvAddr    string  `json:"recv_addr"`
+	OutCurrency string  `json:"out_currency"`
+	OutAmount   float64 `json:"out_amount"`
+	OutAddr     string  `json:"out_addr"`
+	Status      string  `json:"status"`
+}
+
 // ListOrders godoc
 //
 //	@Summary	List user's orders
-//	@Success	200			{object}	Orders	orders
+//	@Success	200	{object}	UserOrdersResponse
 //	@Security	ApiKeyAuth
-//	@Router		/user/list-orders [post]
+//	@Router		/user/list-orders [get]
 func (e *Endpoints) ListOrders(c echo.Context) error {
 	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
 
@@ -84,15 +99,81 @@ func (e *Endpoints) ListOrders(c echo.Context) error {
 		return err
 	}
 
-	orders, err := e.db.GetOrdersForUser(c.Request().Context(), u.ID)
+	dborders, err := e.db.GetOrdersForUser(c.Request().Context(), u.ID)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
 
-	return c.JSON(http.StatusOK, &Orders{
-		Orders: orders,
+	var orders []UserOrder
+	for _, order := range dborders {
+		exch, err := e.db.GetExchangerById(c.Request().Context(), order.ExchangerID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		inCurr, err := e.db.GetCurrencyById(c.Request().Context(), exch.InCurrency)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		outCurr, err := e.db.GetCurrencyById(c.Request().Context(), exch.OutCurrency)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		operator, err := e.db.GetUserById(c.Request().Context(), order.OperatorID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		var outAddr string
+		balances, err := e.db.ListBalances(c.Request().Context(), operator.ID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+		for _, balance := range balances {
+			if balance.CurrencyID == inCurr.ID {
+				outAddr = balance.Address
+			}
+		}
+
+		status := "ожидает платежа"
+		if order.PaymentConfirmed {
+			status = "платеж пользователем осуществлен"
+		}
+		if order.Finished {
+			status = "завершен, обратный платеж отправлен"
+		}
+		if order.Cancelled {
+			status = "отменен, платеж не поступил"
+		}
+
+		orders = append(orders, UserOrder{
+			Id:          order.ID,
+			InCurrency:  inCurr.Code,
+			InAmount:    order.AmountIn,
+			RecvAddr:    order.ReceiveAddress,
+			OutCurrency: outCurr.Code,
+			OutAmount:   order.AmountOut,
+			OutAddr:     outAddr,
+			Status:      status,
+		})
+	}
+
+	return c.JSON(http.StatusOK, &UserOrdersResponse{
+		UserOrders: orders,
 	})
 }
 
@@ -475,6 +556,7 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 		ReceiveAddress: req.Address,
 		Cancelled:      false,
 		Finished:       false,
+		ConfirmImage:   nil,
 	})
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
@@ -483,7 +565,7 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	}
 
 	// Send email notification
-	err = e.mail.OrderCreated(req.Email, req.InCurrency, req.OutCurrency, fmt.Sprintf("%f", req.Amount), req.Address)
+	err = e.mail.OrderCreated(req.Email, req.InCurrency, fmt.Sprintf("%f", req.Amount), addr, req.OutCurrency, fmt.Sprintf("%f", outAmount), req.Address)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to send email notification"))
@@ -561,5 +643,3 @@ func (e *Endpoints) ValidateCard(c echo.Context) error {
 
 	return nil
 }
-
-// approve payment operated

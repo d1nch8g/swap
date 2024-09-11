@@ -82,6 +82,10 @@ definitions:
         type: number
       cancelled:
         type: boolean
+      confirm_image:
+        items:
+          type: integer
+        type: array
       created_at:
         type: string
       exchanger_id:
@@ -92,6 +96,8 @@ definitions:
         type: integer
       operator_id:
         type: integer
+      payment_confirmed:
+        type: boolean
       receive_address:
         type: string
       user_id:
@@ -215,6 +221,20 @@ definitions:
         type: number
       balance_id:
         type: integer
+    type: object
+  server.UserOrders:
+    properties:
+      sell_currency:
+        type: string
+      sellAmount:
+        type: number
+    type: object
+  server.UserOrdersResponse:
+    properties:
+      orders:
+        items:
+          $ref: '#/definitions/server.UserOrders'
+        type: array
     type: object
 host: localhost:8080
 info:
@@ -345,16 +365,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get user credit card approval images with parameters
-  /admin/get-orders:
-    get:
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/server.Orders'
-      security:
-      - ApiKeyAuth: []
-      summary: Get active orders bound to specific operator
   /admin/list-balances:
     get:
       responses:
@@ -497,6 +507,26 @@ paths:
           schema:
             type: string
       summary: Login and get auth key
+  /operator/get-orders:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.Orders'
+      security:
+      - ApiKeyAuth: []
+      summary: Get active orders bound to specific operator
+  /user/list-orders:
+    post:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.UserOrdersResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List user's orders
   /verify/{uuid}:
     get:
       parameters:

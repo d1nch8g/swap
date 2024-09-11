@@ -8,11 +8,25 @@ export default {
             currencyIn: "",
             amountOut: 0,
             currencyOut: "",
-            receiveAddr: ""
+            receiveAddr: "",
+            fileUpload: null,
         }
     },
+    mounted() {
+        let orderString = localStorage.getItem("order");
+        let order = JSON.parse(orderString);
+
+        this.orderNumber = this.getQueryVariable("ordernum");
+        this.transferAddr = this.getQueryVariable("addr");
+        this.amountIn = order.amount;
+        this.currencyIn = order.in_currency;
+        this.amountOut = this.getQueryVariable("outamount");
+        this.currencyOut = order.out_currency;
+        this.receiveAddr = order.address;
+
+    },
     methods: {
-        getQueryVariablel(variable) {
+        getQueryVariable(variable) {
             var query = window.location.search.substring(1);
             var vars = query.split("&");
             for (var i = 0; i < vars.length; i++) {
@@ -21,19 +35,12 @@ export default {
                     return pair[1];
                 }
             }
+        },
+        fileChosen(f) {
+            // let file = this.$refs.file.files[0];
+            console.log(f);
+            console.log(f.target.files[0]);
         }
-    },
-    mounted() {
-        let orderString = localStorage.getItem("order");
-        let order = JSON.parse(orderString);
-
-        this.orderNumber = this.getQueryVariable("ordernum");
-        this.amountIn = order.amount;
-        this.currencyIn = order.in_currency;
-        this.amountOut = this.getQueryVariablel("outamount");
-        this.currencyOut = order.out_currency;
-        this.receiveAddr = order.address;
-
     }
 }
 </script>
@@ -43,11 +50,16 @@ export default {
     <p>Выполните перевод {{ amountIn }} {{ currencyIn }} на следующий адрес
         <b>{{ transferAddr }}</b> в течении следующих 15 минут, что бы получить
         {{ amountOut }} {{ currencyOut }} по следующему адресу {{ receiveAddr }}.
-        Все заявки обрабатываются оператором в ручном режиме и занимают до 10 минут.
-        Как только платеж будет выполнен нажмите кнопку платеж отправлен, приложив
-        скриншот или чек перевода.
+        Как только платеж будет выполнен нажмите приложите чек перевода. Все
+        заявки обрабатываются оператором в ручном режиме и занимают до 10 минут.
     </p>
-    <button>Прикрепить скриншот</button>
+    <form>
+        <label for="file-upload" class="custom-file-upload">
+            Прикрепить скриншот:
+        </label>
+        <br>
+        <input id="file-upload" type="file" v-on:change="fileChosen">
+    </form>
 </template>
 
 <style></style>

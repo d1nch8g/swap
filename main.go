@@ -45,13 +45,13 @@ import (
 //	@description				Token authorization for internal operations
 
 var opts struct {
-	Port            string `long:"port" env:"PORT" default:"80"`
+	Port            string `long:"port" env:"PORT" default:"8080"`
 	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
 	ServeDir        string `long:"serve-dir" env:"SERVE_DIR" default:"dist"`
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
 	LetsEncryptAddr string `long:"lets-encrypt-addr" env:"LETS_ENCRYPT_ADDR"`
 	Admin           string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
-	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:80"`
+	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:8080"`
 	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
@@ -130,5 +130,5 @@ func main() {
 		}
 	}
 
-	server.Run(opts.ServeDir, opts.Port, opts.LetsEncryptAddr, e, sqlc, bc, mail)
+	server.Run(opts.ServeDir, opts.Port, opts.LetsEncryptAddr, e, conn, sqlc, bc, mail)
 }

@@ -55,5 +55,7 @@ CREATE TABLE orders (
   receive_address TEXT NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT now(),
   cancelled BOOLEAN NOT NULL,
-  finished BOOLEAN NOT NULL
+  finished BOOLEAN NOT NULL,
+  confirm_image BYTEA,
+  payment_confirmed BOOLEAN NOT NULL
 );

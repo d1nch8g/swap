@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"ion.lc/d1nhc8g/inswap/bestchange"
@@ -15,13 +16,15 @@ type Endpoints struct {
 	e    *echo.Echo
 	bc   *bestchange.Client
 	mail *email.Mailer
+	pgx  *pgxpool.Pool
 }
 
-func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
+func Run(dir, port, tls string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
 	endpoints := &Endpoints{
 		db:   d,
 		e:    e,
 		bc:   b,
+		pgx:  p,
 		mail: mail,
 	}
 
@@ -57,7 +60,7 @@ func Run(dir, port, tls string, e *echo.Echo, d *database.Queries, b *bestchange
 		return true, nil
 	}))
 
-	user.GET("/orders", endpoints.ListOrders)
+	user.GET("/list-orders", endpoints.ListOrders)
 
 	operator := api.Group("/operator", middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {
 		u, err := d.GetUserByToken(c.Request().Context(), auth)

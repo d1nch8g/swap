@@ -1,5 +1,10 @@
 <script>
 export default {
+    data() {
+        return {
+            orders: [],
+        }
+    },
     methods: {
         logout() {
             localStorage.setItem("token", "");
@@ -8,7 +13,18 @@ export default {
         addCurrency() { }
     },
     async mounted() {
-        // list executed or processed orders
+        let token = localStorage.getItem("token");
+        let headersList = {
+            "Authorization": `Bearer ${token}`
+        }
+
+        let response = await fetch("http://localhost:8080/api/user/list-orders", {
+            method: "GET",
+            headers: headersList
+        });
+
+        let resp = await response.json();
+        this.orders = resp.orders;
 
     }
 }
@@ -18,14 +34,24 @@ export default {
     <h2>Ваши заявки</h2>
     <table id="table">
         <tr>
-            <th>id</th>
-            <th>Exchanger </th>
-            <th>Требуется подтверждение платежа</th>
+            <th>Номер заявки</th>
+            <th>Принимаемая валюта</th>
+            <th>Количество отправки</th>
+            <th>Адрес отправки</th>
+            <th>Отправляемая валюта</th>
+            <th>Количество получения</th>
+            <th>Адрес получения</th>
+            <th>Статус</th>
         </tr>
-        <tr>
-            <td>0</td>
-            <td>Maria Anders</td>
-            <td>Germany</td>
+        <tr v-for="order in orders">
+            <td>{{ order.id }}</td>
+            <td>{{ order.in_currency }}</td>
+            <td>{{ order.in_amount }}</td>
+            <td>{{ order.out_addr }}</td>
+            <td>{{ order.out_currency }}</td>
+            <td>{{ order.out_amount }}</td>
+            <td>{{ order.recv_addr }}</td>
+            <td>{{ order.status }}</td>
         </tr>
     </table>
 
