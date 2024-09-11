@@ -10,7 +10,9 @@ export default {
             localStorage.setItem("token", "");
             window.location.href = '/';
         },
-        addCurrency() { }
+        navigateToOrder(id) {
+            this.$router.push(`/order?orderid=${id}`);
+        }
     },
     async mounted() {
         let token = localStorage.getItem("token");
@@ -25,7 +27,6 @@ export default {
 
         let resp = await response.json();
         this.orders = resp.orders;
-
     }
 }
 </script>
@@ -42,6 +43,7 @@ export default {
             <th>Количество получения</th>
             <th>Адрес получения</th>
             <th>Статус</th>
+            <th>Страница заявки</th>
         </tr>
         <tr v-for="order in orders">
             <td>{{ order.id }}</td>
@@ -52,6 +54,7 @@ export default {
             <td>{{ order.out_amount }}</td>
             <td>{{ order.recv_addr }}</td>
             <td>{{ order.status }}</td>
+            <td><button @click="navigateToOrder(order.id)">link</button></td>
         </tr>
     </table>
 

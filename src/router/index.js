@@ -50,6 +50,12 @@ const router = createRouter({
       name: "validate-card",
       component: () => import("../views/ValidateCard.vue"),
     },
+    ,
+    {
+      path: "/order",
+      name: "order",
+      component: () => import("../views/Order.vue"),
+    },
   ],
 });
 

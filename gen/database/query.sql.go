@@ -861,6 +861,40 @@ func (q *Queries) UpdateOrderFinished(ctx context.Context, id int64) (Order, err
 	return i, err
 }
 
+const updateOrderPaymentConfirmed = `-- name: UpdateOrderPaymentConfirmed :one
+UPDATE orders
+SET payment_confirmed = $2,
+  confirm_image = $3
+WHERE id = $1
+RETURNING id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished, confirm_image, payment_confirmed
+`
+
+type UpdateOrderPaymentConfirmedParams struct {
+	ID               int64  `json:"id"`
+	PaymentConfirmed bool   `json:"payment_confirmed"`
+	ConfirmImage     []byte `json:"confirm_image"`
+}
+
+func (q *Queries) UpdateOrderPaymentConfirmed(ctx context.Context, arg UpdateOrderPaymentConfirmedParams) (Order, error) {
+	row := q.db.QueryRow(ctx, updateOrderPaymentConfirmed, arg.ID, arg.PaymentConfirmed, arg.ConfirmImage)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.OperatorID,
+		&i.ExchangerID,
+		&i.AmountIn,
+		&i.AmountOut,
+		&i.ReceiveAddress,
+		&i.CreatedAt,
+		&i.Cancelled,
+		&i.Finished,
+		&i.ConfirmImage,
+		&i.PaymentConfirmed,
+	)
+	return i, err
+}
+
 const updateUserBusy = `-- name: UpdateUserBusy :one
 UPDATE users
 SET busy = $2

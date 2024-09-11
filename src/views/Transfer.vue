@@ -10,6 +10,7 @@ export default {
             currencyOut: "",
             receiveAddr: "",
             fileUpload: null,
+            incorrect: false,
         }
     },
     mounted() {
@@ -36,30 +37,61 @@ export default {
                 }
             }
         },
-        fileChosen(f) {
-            // let file = this.$refs.file.files[0];
-            console.log(f);
-            console.log(f.target.files[0]);
+        async fileChosen() {
+            var input = document.querySelector('input[type="file"]');
+
+            var data = new FormData();
+            data.append('file', input.files[0]);
+
+            let response = await fetch(`http://localhost:8080/api/confirm-payment?order_id=${this.orderNumber}`, {
+                method: "POST",
+                body: data,
+                headers: {}
+            });
+
+            if (response.ok) {
+                this.$router.push(`/order?orderid=${this.orderNumber}`);
+                return;
+            }
+            this.incorrect = true;
         }
     }
 }
 </script>
 
 <template>
+    <div class="alert" v-if="incorrect">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        Ошибка при загрузке файла, попробуйте еще раз
+    </div>
     <h2>Заявка номер {{ orderNumber }} создана.</h2>
     <p>Выполните перевод {{ amountIn }} {{ currencyIn }} на следующий адрес
         <b>{{ transferAddr }}</b> в течении следующих 15 минут, что бы получить
         {{ amountOut }} {{ currencyOut }} по следующему адресу {{ receiveAddr }}.
-        Как только платеж будет выполнен нажмите приложите чек перевода. Все
+        Как только платеж будет выполнен - приложите чек перевода. Все
         заявки обрабатываются оператором в ручном режиме и занимают до 10 минут.
+        Как только файл будет прикреплен нажмите кнопку отправить данные.
     </p>
     <form>
         <label for="file-upload" class="custom-file-upload">
             Прикрепить скриншот:
         </label>
         <br>
-        <input id="file-upload" type="file" v-on:change="fileChosen">
+        <input id="file-upload" type="file">
     </form>
+    <button @click="fileChosen">Отправить данные</button>
 </template>
 
-<style></style>
+<style>
+.button {
+    background-color: grey;
+    /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+</style>

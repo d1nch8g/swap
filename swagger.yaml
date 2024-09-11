@@ -203,6 +203,11 @@ definitions:
           $ref: '#/definitions/database.CardConfirmation'
         type: array
     type: object
+  server.OrderStatusResponse:
+    properties:
+      status:
+        type: string
+    type: object
   server.Orders:
     properties:
       orders:
@@ -222,19 +227,38 @@ definitions:
       balance_id:
         type: integer
     type: object
-  server.UserOrders:
+  server.UserOrder:
     properties:
-      sell_currency:
-        type: string
-      sellAmount:
+      id:
+        type: integer
+      in_amount:
         type: number
+      in_currency:
+        type: string
+      out_addr:
+        type: string
+      out_amount:
+        type: number
+      out_currency:
+        type: string
+      recv_addr:
+        type: string
+      status:
+        type: string
     type: object
   server.UserOrdersResponse:
     properties:
       orders:
         items:
-          $ref: '#/definitions/server.UserOrders'
+          $ref: '#/definitions/server.UserOrder'
         type: array
+    type: object
+  server.ValidateCardRequest:
+    properties:
+      currency_id:
+        type: integer
+      email:
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -420,6 +444,23 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update operator currency balance
+  /confirm-payment:
+    post:
+      parameters:
+      - description: Order id
+        in: query
+        name: order_id
+        required: true
+        type: string
+      - description: File with operation check
+        in: formData
+        name: file
+        required: true
+        type: file
+      responses:
+        "200":
+          description: OK
+      summary: Confirm that payment operation is approved and provide check
   /create-order:
     post:
       parameters:
@@ -517,8 +558,22 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get active orders bound to specific operator
+  /order-status:
+    get:
+      parameters:
+      - description: orderid
+        in: header
+        name: Orderid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.OrderStatusResponse'
+      summary: Check order status and return info about order
   /user/list-orders:
-    post:
+    get:
       responses:
         "200":
           description: OK
@@ -527,6 +582,24 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List user's orders
+  /validate-card:
+    post:
+      parameters:
+      - description: Request parameters
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.ValidateCardRequest'
+      - description: this is a test file
+        in: formData
+        name: file
+        required: true
+        type: file
+      responses:
+        "200":
+          description: OK
+      summary: Create order to exchange specific currency
   /verify/{uuid}:
     get:
       parameters:

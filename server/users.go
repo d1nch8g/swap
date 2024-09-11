@@ -311,8 +311,8 @@ func (e *Endpoints) CurrentRate(c echo.Context) error {
 	currencyIn := c.QueryParam("currency_in")
 	currencyOut := c.QueryParam("currency_out")
 	amountString := c.QueryParam("amount")
-	amount, err := strconv.ParseFloat(amountString, 64)
 
+	amount, err := strconv.ParseFloat(amountString, 64)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to parse amount"))
@@ -585,6 +585,13 @@ type ValidateCardRequest struct {
 	CurrencyId int64  `json:"currency_id"`
 }
 
+// ValidateCard godoc
+//
+//	@Summary	Create order to exchange specific currency
+//	@Param		status	body		ValidateCardRequest	true	"Request parameters"
+//	@Param		file	formData	file				true	"this is a test file"
+//	@Success	200
+//	@Router		/validate-card [post]
 func (e *Endpoints) ValidateCard(c echo.Context) error {
 	var req ValidateCardRequest
 	err := c.Bind(&req)
@@ -642,4 +649,96 @@ func (e *Endpoints) ValidateCard(c echo.Context) error {
 	}
 
 	return nil
+}
+
+// ConfirmPayment godoc
+//
+//	@Summary	Confirm that payment operation is approved and provide check
+//	@Param		order_id	query		string	true	"Order id"
+//	@Param		file		formData	file	true	"File with operation check"
+//	@Success	200
+//	@Router		/confirm-payment [post]
+func (e *Endpoints) ConfirmPayment(c echo.Context) error {
+	orderIdString := c.QueryParam("order_id")
+	orderId, err := strconv.ParseInt(orderIdString, 10, 64)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to parse order_id"))
+		return err
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to read file"))
+		return err
+	}
+	src, err := file.Open()
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to read file"))
+		return err
+	}
+
+	check, err := io.ReadAll(src)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to read file"))
+		return err
+	}
+
+	_, err = e.db.UpdateOrderPaymentConfirmed(c.Request().Context(), database.UpdateOrderPaymentConfirmedParams{
+		ID:               orderId,
+		PaymentConfirmed: true,
+		ConfirmImage:     check,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to read file"))
+		return err
+	}
+
+	return nil
+}
+
+type OrderStatusResponse struct {
+	Status string `json:"status"`
+}
+
+// OrderStatus godoc
+//
+//	@Summary	Check order status and return info about order
+//	@Param		Orderid	header		string	true	"orderid"
+//	@Success	200		{object}	OrderStatusResponse
+//	@Router		/order-status [get]
+func (e *Endpoints) OrderStatus(c echo.Context) error {
+	orderIdString := c.Request().Header["Orderid"][0]
+	orderId, err := strconv.ParseInt(orderIdString, 10, 64)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to parse order_id"))
+		return err
+	}
+
+	order, err := e.db.GetOrder(c.Request().Context(), orderId)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	status := "ожидает платежа"
+	if order.PaymentConfirmed {
+		status = "платеж пользователем осуществлен"
+	}
+	if order.Finished {
+		status = "завершен, обратный платеж отправлен"
+	}
+	if order.Cancelled {
+		status = "отменен, платеж не поступил"
+	}
+
+	return c.JSON(http.StatusOK, &OrderStatusResponse{
+		Status: status,
+	})
 }

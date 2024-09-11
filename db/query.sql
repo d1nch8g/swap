@@ -172,3 +172,9 @@ RETURNING *;
 SELECT *
 FROM orders
 WHERE user_id = $1;
+-- name: UpdateOrderPaymentConfirmed :one
+UPDATE orders
+SET payment_confirmed = $2,
+  confirm_image = $3
+WHERE id = $1
+RETURNING *;

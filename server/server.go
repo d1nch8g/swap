@@ -31,16 +31,27 @@ func Run(dir, port, tls string, e *echo.Echo, p *pgxpool.Pool, d *database.Queri
 	e.Use(middleware.Logger())
 
 	e.Static("/", dir)
+	e.Static("/contacts", dir)
+	e.Static("/login", dir)
+	e.Static("/register", dir)
+	e.Static("/rules", dir)
+	e.Static("/profile", dir)
+	e.Static("/admin", dir)
+	e.Static("/transfer", dir)
+	e.Static("/order", dir)
+	e.Static("/validate-card", dir)
 
 	api := e.Group("/api")
 
 	api.POST("/create-user", endpoints.CreateUser)
 	api.POST("/create-order", endpoints.CreateOrder)
 	api.POST("/validate-card", endpoints.ValidateCard)
+	api.POST("/confirm-payment", endpoints.ConfirmPayment)
 	api.GET("/verify/:uuid", endpoints.VerifyEmail)
 	api.GET("/list-currencies", endpoints.ListCurrencies)
 	api.GET("/list-exchangers", endpoints.ListExchangers)
 	api.GET("/current-rate", endpoints.CurrentRate)
+	api.GET("/order-status", endpoints.OrderStatus)
 	api.POST("/login", endpoints.Login)
 
 	user := api.Group("/user", middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {
