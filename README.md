@@ -16,6 +16,8 @@ Configuration:
 
 <!--
 
-http://localhost:8080/?currin=RUB&currout=TON
+http://localhost:8080/?currin=TON&currout=SBPRUB
+
+оперирование - история заявок
 
 -->

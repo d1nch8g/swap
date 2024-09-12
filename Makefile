@@ -29,3 +29,7 @@ watch:
         echo $$number ; \
     done
 # swagger-codegen generate -i swagger.yaml -l javascript --disable-examples --flatten-inline-schema -o gen/client
+
+# ip on local network
+ip:
+	ip route get 1.2.3.4 | grep -oP '(?<=src )\S+' 

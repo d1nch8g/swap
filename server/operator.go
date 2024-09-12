@@ -537,6 +537,48 @@ func (e *Endpoints) CancelOrder(c echo.Context) error {
 		return err
 	}
 
+	order, err := e.db.GetOrder(c.Request().Context(), req.OrderId)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	user, err := e.db.GetUserById(c.Request().Context(), order.UserID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	exch, err := e.db.GetExchangerById(c.Request().Context(), order.ExchangerID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	currIn, err := e.db.GetCurrencyById(c.Request().Context(), exch.InCurrency)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	currOut, err := e.db.GetCurrencyById(c.Request().Context(), exch.OutCurrency)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	err = e.mail.CancelOrder(user.Email, currIn.Code, currOut.Code)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusConflict)
+		_, err := c.Response().Write([]byte("unable to send email notification"))
+		return err
+	}
+
 	return nil
 }
 

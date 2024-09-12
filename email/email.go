@@ -44,6 +44,7 @@ func (m *Mailer) OrderCreated(email, currIn, amountIn, addressIn, currOut, amoun
 	mes.SetHeader("Subject", "Заявка была создана.")
 	mes.SetBody("text/html", fmt.Sprintf(`<b>Заявка была создана:</b><br>
 	Email заявки: %s <br>
+	Ссылка на заявку: <a href="%s/order">Order link</a><br>
 	<br>
 	Продаваемая валюта: %s <br>
 	Количество: %s <br>
@@ -52,7 +53,7 @@ func (m *Mailer) OrderCreated(email, currIn, amountIn, addressIn, currOut, amoun
 	Покупаемая валюта: %s <br>
 	Количество: %s <br>
 	Адрес получения: %s <br>
-	`, email, currIn, amountIn, addressIn, currOut, amountOut, addressOut))
+	`, email, m.ApiAddress, currIn, amountIn, addressIn, currOut, amountOut, addressOut))
 
 	return m.d.DialAndSend(mes)
 }
@@ -62,8 +63,8 @@ func (m *Mailer) OrderFinished(email, amount, to, address string) error {
 
 	mes.SetHeader("From", m.Sender)
 	mes.SetHeader("To", email)
-	mes.SetHeader("Subject", "Order have been finished.")
-	mes.SetBody("text/html", fmt.Sprintf(`%s %s were sent to address %s`, amount, to, address))
+	mes.SetHeader("Subject", "Заявка была завершена.")
+	mes.SetBody("text/html", fmt.Sprintf(`%s %s были отправлены на адрес %s`, amount, to, address))
 
 	return m.d.DialAndSend(mes)
 }
@@ -73,8 +74,20 @@ func (m *Mailer) CancelOrder(email, from, to string) error {
 
 	mes.SetHeader("From", m.Sender)
 	mes.SetHeader("To", email)
-	mes.SetHeader("Subject", "Your order have been cancelled.")
-	mes.SetBody("text/html", fmt.Sprintf("Your exchange order on %s to %s have been cancelled.", from, to))
+	mes.SetHeader("Subject", "Ваша заявка была отменена.")
+	mes.SetBody("text/html", fmt.Sprintf("Ваша заявка на обмен %s на %s была отменена.", from, to))
+
+	return m.d.DialAndSend(mes)
+}
+
+func (m *Mailer) InformOperator(email string) error {
+	mes := gomail.NewMessage()
+
+	mes.SetHeader("From", m.Sender)
+	mes.SetHeader("To", email)
+	mes.SetHeader("Subject", "Для вас была создана.")
+	mes.SetBody("text/html", fmt.Sprintf(`Для вас была создана новая заявка. <br>
+	Ссылка на заявки: <a href="%s/operator">Operator panel</a>`, m.ApiAddress))
 
 	return m.d.DialAndSend(mes)
 }

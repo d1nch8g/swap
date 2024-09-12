@@ -564,8 +564,15 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 		return err
 	}
 
-	// Send email notification
+	// Send email notifications
 	err = e.mail.OrderCreated(req.Email, req.InCurrency, fmt.Sprintf("%f", req.Amount), addr, req.OutCurrency, fmt.Sprintf("%f", outAmount), req.Address)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to send email notification"))
+		return err
+	}
+
+	err = e.mail.InformOperator(operator.Email)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to send email notification"))
