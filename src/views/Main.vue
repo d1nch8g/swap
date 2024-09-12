@@ -105,6 +105,7 @@ export default {
             if (response.ok) {
                 let resp = await response.json();
                 this.$router.push(`/transfer/?addr=${resp.transfer_address}&inamount=${resp.in_amount}&outamount=${resp.out_amount}&ordernum=${resp.order_number}`);
+                localStorage.setItem("lastorderid", resp.order_number.toString())
                 return;
             }
 

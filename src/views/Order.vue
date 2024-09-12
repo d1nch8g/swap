@@ -8,7 +8,13 @@ export default {
         }
     },
     async mounted() {
-        this.orderNum = this.getQueryVariable("orderid");
+        // try eject last order num from localstorage
+        this.orderNum = localStorage.getItem("lastorderid");
+
+        let queryNum = this.getQueryVariable("orderid");
+        if (queryNum) {
+            this.orderNum = queryNum;
+        }
         let headersList = {
             "orderid": this.orderNum.toString(),
         }
