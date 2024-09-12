@@ -43,7 +43,7 @@ export default {
             var data = new FormData();
             data.append('file', input.files[0]);
 
-            let response = await fetch(`http://localhost:8080/api/confirm-payment?order_id=${this.orderNumber}`, {
+            let response = await fetch(`/api/confirm-payment?order_id=${this.orderNumber}`, {
                 method: "POST",
                 body: data,
                 headers: {}

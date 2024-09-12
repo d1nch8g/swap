@@ -11,7 +11,7 @@ export default {
         }
     },
     async mounted() {
-        let currResponse = await fetch("http://localhost:8080/api/list-currencies", {
+        let currResponse = await fetch("/api/list-currencies", {
             method: "GET"
         });
 
@@ -24,7 +24,7 @@ export default {
             "Authorization": `Bearer ${token}`,
         }
 
-        let response = await fetch("http://localhost:8080/api/operator/list-balances", {
+        let response = await fetch("/api/operator/list-balances", {
             method: "GET",
             headers: headersList
         });
@@ -34,7 +34,7 @@ export default {
             this.balances = data.balances;
         }
 
-        let ordersResponse = await fetch("http://localhost:8080/api/operator/get-orders", {
+        let ordersResponse = await fetch("/api/operator/get-orders", {
             method: "GET",
             headers: headersList
         });
@@ -59,7 +59,7 @@ export default {
                 "id": id
             });
 
-            let response = await fetch("http://localhost:8080/api/operator/remove-balance", {
+            let response = await fetch("/api/operator/remove-balance", {
                 method: "DELETE",
                 body: bodyContent,
                 headers: headersList
@@ -90,7 +90,7 @@ export default {
                 "address": this.address
             });
 
-            let response = await fetch("http://localhost:8080/api/operator/update-balance", {
+            let response = await fetch("/api/operator/update-balance", {
                 method: "POST",
                 body: bodyContent,
                 headers: headersList
@@ -113,7 +113,7 @@ export default {
                 "order_id": id
             });
 
-            let response = await fetch("http://localhost:8080/api/operator/execute-order", {
+            let response = await fetch("/api/operator/execute-order", {
                 method: "POST",
                 body: bodyContent,
                 headers: headersList
@@ -136,7 +136,7 @@ export default {
                 "order_id": id,
             });
 
-            let response = await fetch("http://localhost:8080/api/operator/cancel-order", {
+            let response = await fetch("/api/operator/cancel-order", {
                 method: "POST",
                 body: bodyContent,
                 headers: headersList

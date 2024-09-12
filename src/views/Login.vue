@@ -15,7 +15,7 @@ export default {
                 "password": this.password
             }
 
-            let response = await fetch("http://localhost:8080/api/login", {
+            let response = await fetch("/api/login", {
                 method: "POST",
                 headers: headersList
             });
@@ -31,7 +31,7 @@ export default {
                 }
 
                 // check if user is admin or operator and set admin/operator localstorage values
-                let resp = await fetch("http://localhost:8080/api/operator/get-orders", {
+                let resp = await fetch("/api/operator/get-orders", {
                     method: "GET",
                     headers: headersList
                 });
@@ -41,7 +41,7 @@ export default {
                     localStorage.setItem("operator", "");
                 }
 
-                let adminResp = await fetch("http://localhost:8080/api/admin/check-if-admin", {
+                let adminResp = await fetch("/api/admin/check-if-admin", {
                     method: "POST",
                     headers: headersList,
                 })

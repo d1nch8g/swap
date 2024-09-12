@@ -22,7 +22,7 @@ export default {
             "orderid": this.orderNum.toString(),
         }
 
-        let response = await fetch("http://localhost:8080/api/order-status", {
+        let response = await fetch("/api/order-status", {
             method: "GET",
             headers: headersList
         });
@@ -62,7 +62,7 @@ export default {
             var data = new FormData();
             data.append('file', input.files[0]);
 
-            let response = await fetch(`http://localhost:8080/api/confirm-payment?order_id=${this.orderNum}`, {
+            let response = await fetch(`/api/confirm-payment?order_id=${this.orderNum}`, {
                 method: "POST",
                 body: data,
                 headers: {}

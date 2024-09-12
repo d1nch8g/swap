@@ -1,6 +1,6 @@
 FROM golang:1.23-alpine as builder
 
-WORKDIR /microservice
+WORKDIR /service
 
 # Creates non root user
 ENV USER=appuser
@@ -19,12 +19,14 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o microservice
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o service
 
 
-FROM scratch
+FROM alpine
 
 ENV PORT=8080
+
+WORKDIR /app
 
 # Non root user info
 COPY --from=builder /etc/passwd /etc/passwd
@@ -33,12 +35,12 @@ COPY --from=builder /etc/group /etc/group
 # Certs for making https requests
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-COPY --from=builder /microservice/microservice .
-COPY --from=builder /microservice/db/migrations ./db/migrations
-COPY --from=builder /microservice/dist ./dist
+COPY --from=builder /service/service /app/service
+COPY --from=builder /service/db/migrations /app/db/migrations
+COPY --from=builder /service/dist /app/dist
 
 # Running as appuser
 USER appuser:appuser
 
 EXPOSE ${PORT}
-ENTRYPOINT ["/microservice"]
+ENTRYPOINT ["/app/service"]

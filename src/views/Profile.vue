@@ -20,7 +20,7 @@ export default {
             "Authorization": `Bearer ${token}`
         }
 
-        let response = await fetch("http://localhost:8080/api/user/list-orders", {
+        let response = await fetch("/api/user/list-orders", {
             method: "GET",
             headers: headersList
         });

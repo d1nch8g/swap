@@ -85,7 +85,7 @@ func (m *Mailer) InformOperator(email string) error {
 
 	mes.SetHeader("From", m.Sender)
 	mes.SetHeader("To", email)
-	mes.SetHeader("Subject", "Для вас была создана.")
+	mes.SetHeader("Subject", "Для вас была создана заявка.")
 	mes.SetBody("text/html", fmt.Sprintf(`Для вас была создана новая заявка. <br>
 	Ссылка на заявки: <a href="%s/operator">Operator panel</a>`, m.ApiAddress))
 

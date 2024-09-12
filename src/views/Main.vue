@@ -17,7 +17,7 @@ export default {
         }
     },
     async mounted() {
-        let response = await fetch("http://localhost:8080/api/list-currencies", {
+        let response = await fetch("/api/list-currencies", {
             method: "GET"
         });
 
@@ -35,7 +35,7 @@ export default {
         }
     },
     async updated() {
-        let response = await fetch(`http://localhost:8080/api/current-rate?currency_in=${this.currencyIn}&currency_out=${this.currencyOut}&amount=${this.amountIn}`, {
+        let response = await fetch(`/api/current-rate?currency_in=${this.currencyIn}&currency_out=${this.currencyOut}&amount=${this.amountIn}`, {
             method: "GET",
             headers: {}
         });
@@ -96,7 +96,7 @@ export default {
 
             localStorage.setItem("order", bodyContent);
 
-            let response = await fetch("http://localhost:8080/api/create-order", {
+            let response = await fetch("/api/create-order", {
                 method: "POST",
                 body: bodyContent,
                 headers: headersList

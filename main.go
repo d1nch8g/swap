@@ -5,8 +5,6 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
-	"os"
-	"path"
 	"strings"
 
 	"ion.lc/d1nhc8g/inswap/bestchange"
@@ -49,9 +47,9 @@ var opts struct {
 	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
 	ServeDir        string `long:"serve-dir" env:"SERVE_DIR" default:"dist"`
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
-	LetsEncryptAddr string `long:"lets-encrypt-addr" env:"LETS_ENCRYPT_ADDR"`
+	LetsEncryptAddr string `long:"tls" env:"TLS"`
 	Admin           string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
-	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:8080"`
+	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:""`
 	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
@@ -110,24 +108,6 @@ func main() {
 	})
 	if err != nil && !strings.Contains(err.Error(), "duplicate key value violates unique constraint ") {
 		panic(err)
-	}
-
-	// Swap all API endpoint pathes to current API
-	des, err := os.ReadDir(path.Join(opts.ServeDir, "assets"))
-	if err != nil {
-		panic(err)
-	}
-	for _, de := range des {
-		filepath := path.Join(opts.ServeDir, "assets", de.Name())
-		filebytes, err := os.ReadFile(filepath)
-		if err != nil {
-			panic(err)
-		}
-		newcontent := strings.ReplaceAll(string(filebytes), "http://localhost:8080", opts.ApiAddr)
-		err = os.WriteFile(filepath, []byte(newcontent), os.ModePerm)
-		if err != nil {
-			panic(err)
-		}
 	}
 
 	server.Run(opts.ServeDir, opts.Port, opts.LetsEncryptAddr, e, conn, sqlc, bc, mail)

@@ -126,7 +126,7 @@ func Run(dir, port, tls string, e *echo.Echo, p *pgxpool.Pool, d *database.Queri
 	admin.DELETE("/remove-exchanger", endpoints.RemoveExchanger)
 
 	if tls != "" {
-		e.Logger.Fatal(e.StartAutoTLS(tls))
+		e.Logger.Fatal(e.StartTLS(tls+":"+port, "/certs/"+tls+".crt", "/certs/"+tls+".key"))
 	}
 	e.Logger.Fatal(e.Start("localhost:" + port))
 }

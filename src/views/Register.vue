@@ -25,7 +25,7 @@ export default {
                 "password": this.password
             });
 
-            let response = await fetch("http://localhost:8080/api/create-user", {
+            let response = await fetch("/api/create-user", {
                 method: "POST",
                 body: bodyContent,
                 headers: headersList
