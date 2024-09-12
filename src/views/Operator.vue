@@ -34,6 +34,17 @@ export default {
             this.balances = data.balances;
         }
 
+        let ordersResponse = await fetch("http://localhost:8080/api/operator/get-orders", {
+            method: "GET",
+            headers: headersList
+        });
+
+        if (ordersResponse.ok) {
+            let resp = await ordersResponse.json();
+            this.orders = resp.orders;
+        }
+
+
     },
     methods: {
         async removeBalance(id) {
@@ -65,8 +76,10 @@ export default {
             document.getElementById("myForm").style.display = "none";
         },
         async updateBalance() {
+            let token = localStorage.getItem("token");
+
             let headersList = {
-                "Authorization": "Bearer 0f14be9e-ea0d-40e7-bdb0-95e07055b980",
+                "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json"
             }
 
@@ -87,7 +100,53 @@ export default {
                 window.location.href = "/operator";
             }
 
-        }
+        },
+        async closeOrder(id) {
+            let token = localStorage.getItem("token");
+
+            let headersList = {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+
+            let bodyContent = JSON.stringify({
+                "order_id": id
+            });
+
+            let response = await fetch("http://localhost:8080/api/operator/execute-order", {
+                method: "POST",
+                body: bodyContent,
+                headers: headersList
+            });
+
+            if (response.ok) {
+                window.location.href = "/operator"
+            }
+
+        },
+        async cancelOrder(id) {
+            let token = localStorage.getItem("token");
+
+            let headersList = {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+
+            let bodyContent = JSON.stringify({
+                "order_id": id,
+            });
+
+            let response = await fetch("http://localhost:8080/api/operator/cancel-order", {
+                method: "POST",
+                body: bodyContent,
+                headers: headersList
+            });
+
+            if (response.ok) {
+                window.location.href = "/operator"
+            }
+
+        },
     }
 }
 </script>
@@ -101,14 +160,21 @@ export default {
             <th>Получаемое количество</th>
             <th>Отдаваемая валюта</th>
             <th>Отдаваемое количество</th>
+            <th>Отправляемый адресс</th>
             <th>Картинка подтверждение платежа</th>
             <th>Подтвердить перечисление</th>
             <th>Отменить заявку</th>
         </tr>
-        <tr>
-            <td>0</td>
-            <td>Maria Anders</td>
-            <td>Germany</td>
+        <tr v-for="order in orders">
+            <td>{{ order.id }}</td>
+            <td>{{ order.currin }}</td>
+            <td>{{ order.amountin }}</td>
+            <td>{{ order.currout }}</td>
+            <td>{{ order.amountout }}</td>
+            <td>{{ order.address }}</td>
+            <td><img v-bind:src="'data:image/jpeg;base64,' + order.approvepic" /></td>
+            <td><button @click="closeOrder(order.id)">Подтвердить и закрыть</button></td>
+            <td><button @click="cancelOrder(order.id)">Отменить</button></td>
         </tr>
     </table>
 
@@ -158,6 +224,10 @@ export default {
 </template>
 
 <style scoped>
+img {
+    max-height: 150px;
+}
+
 #table {
     font-family: Arial, Helvetica, sans-serif;
     border-collapse: collapse;

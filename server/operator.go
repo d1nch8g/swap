@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strings"
@@ -52,13 +53,17 @@ func (e *Endpoints) ChangeBusy(c echo.Context) error {
 }
 
 type Orders struct {
-	Orders []database.Order `json:"orders"`
+	Orders []Order `json:"orders"`
 }
 
-type OrderInfo struct {
-	Id         int64  `json:"id"`
-	CurrencyIn string `json:"currency_in"`
-	AmountIn   string
+type Order struct {
+	Id             int64   `json:"id"`
+	CurrencyIn     string  `json:"currin"`
+	AmountIn       float64 `json:"amountin"`
+	CurrOut        string  `json:"currout"`
+	AmountOut      float64 `json:"amountout"`
+	Address        string  `json:"address"`
+	ApprovePicture []byte  `json:"approvepic"`
 }
 
 // GetOrders godoc
@@ -77,11 +82,47 @@ func (e *Endpoints) GetOrders(c echo.Context) error {
 		return err
 	}
 
-	orders, err := e.db.GetOrders(c.Request().Context(), u.ID)
+	dborders, err := e.db.GetOrders(c.Request().Context(), u.ID)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
+	}
+
+	var orders []Order
+	for _, order := range dborders {
+		exch, err := e.db.GetExchangerById(c.Request().Context(), order.ExchangerID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		currIn, err := e.db.GetCurrencyById(c.Request().Context(), exch.InCurrency)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		currOut, err := e.db.GetCurrencyById(c.Request().Context(), exch.OutCurrency)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		fmt.Println(base64.RawStdEncoding.EncodeToString(order.ConfirmImage))
+
+		orders = append(orders, Order{
+			Id:             order.ID,
+			CurrencyIn:     currIn.Code,
+			AmountIn:       order.AmountIn,
+			CurrOut:        currOut.Code,
+			AmountOut:      order.AmountOut,
+			Address:        order.ReceiveAddress,
+			ApprovePicture: order.ConfirmImage,
+		})
 	}
 
 	return c.JSON(http.StatusOK, &Orders{
@@ -331,7 +372,6 @@ type ExecuteOrderRequest struct {
 //	@Security	ApiKeyAuth
 //	@Router		/admin/execute-order [post]
 func (e *Endpoints) ExecuteOrder(c echo.Context) error {
-	// Lower operator balance on sold currency and increase on bought
 	var req ExecuteOrderRequest
 	err := c.Bind(&req)
 	if err != nil {
@@ -373,9 +413,10 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 
 		if balance.CurrencyID == exch.InCurrency {
 			_, err = e.db.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
-				ID:      balance.CurrencyID,
+				ID:      balance.ID,
 				UserID:  operator.ID,
 				Balance: balance.Balance + order.AmountIn,
+				Address: balance.Address,
 			})
 			if err != nil {
 				c.Response().WriteHeader(http.StatusInternalServerError)
@@ -386,9 +427,10 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 
 		if balance.CurrencyID == exch.OutCurrency {
 			_, err = e.db.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
-				ID:      balance.CurrencyID,
+				ID:      balance.ID,
 				UserID:  operator.ID,
 				Balance: balance.Balance - order.AmountOut,
+				Address: balance.Address,
 			})
 			if err != nil {
 				c.Response().WriteHeader(http.StatusInternalServerError)

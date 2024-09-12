@@ -48,5 +48,5 @@ export default {
 <template>
     <h3>Заявка номер {{ orderNum }}.</h3>
     <p>Заявка находится в статусе: <b>{{ status }}</b></p>
-    <p>{{ trailText }}</p>
+    <p v-if="trailText">{{ trailText }}</p>
 </template>
