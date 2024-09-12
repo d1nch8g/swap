@@ -93,6 +93,7 @@ func Run(dir, port, tls string, e *echo.Echo, p *pgxpool.Pool, d *database.Queri
 
 	operator.POST("/change-busy", endpoints.ChangeBusy)
 	operator.GET("/get-orders", endpoints.GetOrders)
+	operator.GET("/finished-orders", endpoints.FinishedOrders)
 	operator.POST("/create-balance", endpoints.CreateBalance)
 	operator.GET("/list-balances", endpoints.ListBalances)
 	operator.POST("/update-balance", endpoints.UpdateBalance)

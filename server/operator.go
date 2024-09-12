@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strings"
@@ -64,6 +63,7 @@ type Order struct {
 	AmountOut      float64 `json:"amountout"`
 	Address        string  `json:"address"`
 	ApprovePicture []byte  `json:"approvepic"`
+	Status         string  `json:"status"`
 }
 
 // GetOrders godoc
@@ -112,7 +112,78 @@ func (e *Endpoints) GetOrders(c echo.Context) error {
 			return err
 		}
 
-		fmt.Println(base64.RawStdEncoding.EncodeToString(order.ConfirmImage))
+		orders = append(orders, Order{
+			Id:             order.ID,
+			CurrencyIn:     currIn.Code,
+			AmountIn:       order.AmountIn,
+			CurrOut:        currOut.Code,
+			AmountOut:      order.AmountOut,
+			Address:        order.ReceiveAddress,
+			ApprovePicture: order.ConfirmImage,
+		})
+	}
+
+	return c.JSON(http.StatusOK, &Orders{
+		Orders: orders,
+	})
+}
+
+// FinishedOrders godoc
+//
+//	@Summary	Get finished orders bound to specific operator
+//	@Success	200	{object}	Orders
+//	@Security	ApiKeyAuth
+//	@Router		/operator/finished-orders [get]
+func (e *Endpoints) FinishedOrders(c echo.Context) error {
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	dborders, err := e.db.GetFinishedOrders(c.Request().Context(), u.ID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	var orders []Order
+	for _, order := range dborders {
+		exch, err := e.db.GetExchangerById(c.Request().Context(), order.ExchangerID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		currIn, err := e.db.GetCurrencyById(c.Request().Context(), exch.InCurrency)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		currOut, err := e.db.GetCurrencyById(c.Request().Context(), exch.OutCurrency)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		var status = "ожидает платежа"
+		if order.PaymentConfirmed {
+			status = "платеж пользователем подтвержден"
+		}
+		if order.Finished {
+			status = "заявка выполнена"
+		}
+		if order.Cancelled {
+			status = "заявка отменена"
+		}
 
 		orders = append(orders, Order{
 			Id:             order.ID,
@@ -122,6 +193,7 @@ func (e *Endpoints) GetOrders(c echo.Context) error {
 			AmountOut:      order.AmountOut,
 			Address:        order.ReceiveAddress,
 			ApprovePicture: order.ConfirmImage,
+			Status:         status,
 		})
 	}
 

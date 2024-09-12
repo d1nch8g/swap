@@ -5,6 +5,7 @@ export default {
             currencies: [],
             balances: [],
             orders: [],
+            finorders: [],
             currencyCode: "",
             address: "",
             balance: 0
@@ -44,6 +45,15 @@ export default {
             this.orders = resp.orders;
         }
 
+        let finordersResponse = await fetch("/api/operator/finished-orders", {
+            method: "GET",
+            headers: headersList
+        });
+
+        if (finordersResponse.ok) {
+            let resp = await finordersResponse.json();
+            this.finorders = resp.orders;
+        }
 
     },
     methods: {
@@ -152,7 +162,7 @@ export default {
 </script>
 
 <template>
-    <h2>Активные заявки заявки</h2>
+    <h2>Активные заявки</h2>
     <table id="table">
         <tr>
             <th>ID</th>
@@ -195,6 +205,30 @@ export default {
             <td>{{ balance.address }}</td>
             <td>{{ balance.balance }}</td>
             <td><button @click="removeBalance(balance.id)">Удалить</button></td>
+        </tr>
+    </table>
+
+    <h2>Выполненные заявки</h2>
+    <table id="table">
+        <tr>
+            <th>ID</th>
+            <th>Получаемая валюта</th>
+            <th>Получаемое количество</th>
+            <th>Отдаваемая валюта</th>
+            <th>Отдаваемое количество</th>
+            <th>Отправляемый адресс</th>
+            <th>Картинка подтверждение платежа</th>
+            <th>Статус заявки</th>
+        </tr>
+        <tr v-for="order in finorders">
+            <td>{{ order.id }}</td>
+            <td>{{ order.currin }}</td>
+            <td>{{ order.amountin }}</td>
+            <td>{{ order.currout }}</td>
+            <td>{{ order.amountout }}</td>
+            <td>{{ order.address }}</td>
+            <td><img v-bind:src="'data:image/jpeg;base64,' + order.approvepic" /></td>
+            <td>{{ order.status }}</td>
         </tr>
     </table>
 

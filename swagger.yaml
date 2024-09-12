@@ -61,35 +61,6 @@ definitions:
       require_payment_verification:
         type: boolean
     type: object
-  database.Order:
-    properties:
-      amount_in:
-        type: number
-      amount_out:
-        type: number
-      cancelled:
-        type: boolean
-      confirm_image:
-        items:
-          type: integer
-        type: array
-      created_at:
-        type: string
-      exchanger_id:
-        type: integer
-      finished:
-        type: boolean
-      id:
-        type: integer
-      operator_id:
-        type: integer
-      payment_confirmed:
-        type: boolean
-      receive_address:
-        type: string
-      user_id:
-        type: integer
-    type: object
   database.RemoveExchangerParams:
     properties:
       in_currency:
@@ -203,6 +174,25 @@ definitions:
           $ref: '#/definitions/database.CardConfirmation'
         type: array
     type: object
+  server.Order:
+    properties:
+      address:
+        type: string
+      amountin:
+        type: number
+      amountout:
+        type: number
+      approvepic:
+        items:
+          type: integer
+        type: array
+      currin:
+        type: string
+      currout:
+        type: string
+      id:
+        type: integer
+    type: object
   server.OrderStatusResponse:
     properties:
       status:
@@ -212,7 +202,7 @@ definitions:
     properties:
       orders:
         items:
-          $ref: '#/definitions/database.Order'
+          $ref: '#/definitions/server.Order'
         type: array
     type: object
   server.RemoveBalanceRequest:
@@ -233,8 +223,8 @@ definitions:
         type: number
       balance_id:
         type: integer
-      currency_id:
-        type: integer
+      currency_code:
+        type: string
     type: object
   server.UserOrder:
     properties:
@@ -565,6 +555,16 @@ paths:
           schema:
             type: string
       summary: Login and get auth key
+  /operator/finished-orders:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.Orders'
+      security:
+      - ApiKeyAuth: []
+      summary: Get finished orders bound to specific operator
   /operator/get-orders:
     get:
       responses:

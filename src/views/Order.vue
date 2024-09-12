@@ -69,6 +69,7 @@ export default {
             });
 
             if (response.ok) {
+                window.location.href = `/order`
                 this.$router.push(`/order?orderid=${this.orderNum}`);
                 return;
             }

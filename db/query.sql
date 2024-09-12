@@ -163,6 +163,11 @@ SELECT *
 FROM orders
 WHERE finished = false
   AND operator_id = $1;
+-- name: GetFinishedOrders :many
+SELECT *
+FROM orders
+WHERE finished = true
+  AND operator_id = $1;
 -- name: GetOrder :one
 SELECT *
 FROM orders

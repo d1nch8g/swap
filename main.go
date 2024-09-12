@@ -12,6 +12,7 @@ import (
 	"ion.lc/d1nhc8g/inswap/gen/database"
 	"ion.lc/d1nhc8g/inswap/server"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -47,9 +48,9 @@ var opts struct {
 	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
 	ServeDir        string `long:"serve-dir" env:"SERVE_DIR" default:"dist"`
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
-	LetsEncryptAddr string `long:"tls" env:"TLS"`
+	Tls             string `long:"tls" env:"TLS"`
 	Admin           string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
-	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:""`
+	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:8080"`
 	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
@@ -60,6 +61,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	spew.Dump(opts)
 
 	m, err := migrate.New(
 		"file://db/migrations",
@@ -110,5 +112,5 @@ func main() {
 		panic(err)
 	}
 
-	server.Run(opts.ServeDir, opts.Port, opts.LetsEncryptAddr, e, conn, sqlc, bc, mail)
+	server.Run(opts.ServeDir, opts.Port, opts.Tls, e, conn, sqlc, bc, mail)
 }

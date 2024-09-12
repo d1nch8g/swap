@@ -394,6 +394,46 @@ func (q *Queries) GetExchangerById(ctx context.Context, id int64) (Exchanger, er
 	return i, err
 }
 
+const getFinishedOrders = `-- name: GetFinishedOrders :many
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished, confirm_image, payment_confirmed
+FROM orders
+WHERE finished = true
+  AND operator_id = $1
+`
+
+func (q *Queries) GetFinishedOrders(ctx context.Context, operatorID int64) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getFinishedOrders, operatorID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OperatorID,
+			&i.ExchangerID,
+			&i.AmountIn,
+			&i.AmountOut,
+			&i.ReceiveAddress,
+			&i.CreatedAt,
+			&i.Cancelled,
+			&i.Finished,
+			&i.ConfirmImage,
+			&i.PaymentConfirmed,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getFreeAdmins = `-- name: GetFreeAdmins :many
 SELECT id, email, verified, passwhash, admin, operator, token, busy
 FROM users
