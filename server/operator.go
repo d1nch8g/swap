@@ -89,6 +89,12 @@ func (e *Endpoints) GetOrders(c echo.Context) error {
 	})
 }
 
+type CreateBalanceRequest struct {
+	CurrencyId int64   `json:"currency_id"`
+	Balance    float64 `json:"balance"`
+	Address    string  `json:"address"`
+}
+
 // CreateBalance godoc
 //
 //	@Summary	Create new operator balance
@@ -130,8 +136,10 @@ func (e *Endpoints) CreateBalance(c echo.Context) error {
 }
 
 type UpdateBalanceRequest struct {
-	BalanceId int64   `json:"balance_id"`
-	Balance   float64 `json:"balance"`
+	BalanceId    int64   `json:"balance_id"`
+	CurrencyCode string  `json:"currency_code"`
+	Balance      float64 `json:"balance"`
+	Address      string  `json:"address"`
 }
 
 // UpdateBalance godoc
@@ -140,7 +148,7 @@ type UpdateBalanceRequest struct {
 //	@Param		status	body	UpdateBalanceRequest	true	"Update balance parameters"
 //	@Success	200
 //	@Security	ApiKeyAuth
-//	@Router		/admin/update-balance [post]
+//	@Router		/operator/update-balance [post]
 func (e *Endpoints) UpdateBalance(c echo.Context) error {
 	var req UpdateBalanceRequest
 	err := c.Bind(&req)
@@ -159,10 +167,49 @@ func (e *Endpoints) UpdateBalance(c echo.Context) error {
 		return err
 	}
 
+	if u.Busy {
+		c.Response().WriteHeader(http.StatusConflict)
+		_, err := c.Response().Write([]byte("unable to update balance while there are unfinished operations"))
+		return err
+	}
+
+	curr, err := e.db.GetCurrencyByCode(c.Request().Context(), req.CurrencyCode)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	bal, err := e.db.GetBalanceById(c.Request().Context(), database.GetBalanceByIdParams{
+		ID:     req.BalanceId,
+		UserID: u.ID,
+	})
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			bal, err = e.db.CreateBalance(c.Request().Context(), database.CreateBalanceParams{
+				UserID:     u.ID,
+				CurrencyID: curr.ID,
+				Balance:    req.Balance,
+				Address:    req.Address,
+			})
+			if err != nil {
+				c.Response().WriteHeader(http.StatusInternalServerError)
+				_, err := c.Response().Write([]byte("unable to access database"))
+				return err
+			}
+
+		} else {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+	}
+
 	_, err = e.db.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
-		ID:      req.BalanceId,
+		ID:      bal.ID,
 		UserID:  u.ID,
 		Balance: req.Balance,
+		Address: req.Address,
 	})
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
@@ -173,7 +220,15 @@ func (e *Endpoints) UpdateBalance(c echo.Context) error {
 }
 
 type Balances struct {
-	Balances []database.Balance
+	Balances []Balance `json:"balances"`
+}
+
+type Balance struct {
+	Id          int64   `json:"id"`
+	Code        string  `json:"code"`
+	Description string  `json:"description"`
+	Address     string  `json:"address"`
+	Balance     float64 `json:"balance"`
 }
 
 // ListBalances godoc
@@ -192,16 +247,76 @@ func (e *Endpoints) ListBalances(c echo.Context) error {
 		return err
 	}
 
-	balances, err := e.db.ListBalances(c.Request().Context(), u.ID)
+	dbbalances, err := e.db.ListBalances(c.Request().Context(), u.ID)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
 
+	var balances []Balance
+	for _, bal := range dbbalances {
+		curr, err := e.db.GetCurrencyById(c.Request().Context(), bal.CurrencyID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		balances = append(balances, Balance{
+			Id:          bal.ID,
+			Code:        curr.Code,
+			Description: curr.Description,
+			Address:     bal.Address,
+			Balance:     bal.Balance,
+		})
+	}
+
 	return c.JSON(http.StatusOK, &Balances{
 		Balances: balances,
 	})
+}
+
+type RemoveBalanceRequest struct {
+	Id int64 `json:"id"`
+}
+
+// RemoveBalance godoc
+//
+//	@Summary	Remove operators balance
+//	@Param		status	body	RemoveBalanceRequest	true	"Balance id"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/remove-balance [delete]
+func (e *Endpoints) RemoveBalance(c echo.Context) error {
+	var req RemoveBalanceRequest
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
+
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	err = e.db.RemoveBalance(c.Request().Context(), database.RemoveBalanceParams{
+		ID:     req.Id,
+		UserID: u.ID,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return nil
 }
 
 type ExecuteOrderRequest struct {

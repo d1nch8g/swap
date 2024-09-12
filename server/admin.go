@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"ion.lc/d1nhc8g/inswap/gen/database"
@@ -115,8 +116,27 @@ func (e *Endpoints) RemoveExchanger(c echo.Context) error {
 	return nil
 }
 
-type CreateBalanceRequest struct {
-	CurrencyId int64   `json:"currency_id"`
-	Balance    float64 `json:"balance"`
-	Address    string  `json:"address"`
+// CheckIfAdmin godoc
+//
+//	@Summary	Check if user is an admin
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/admin/check-if-admin [delete]
+func (e *Endpoints) CheckIfAdmin(c echo.Context) error {
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	if !u.Admin {
+		c.Response().WriteHeader(http.StatusConflict)
+		_, err := c.Response().Write([]byte("not an admin"))
+		return err
+	}
+
+	return nil
 }

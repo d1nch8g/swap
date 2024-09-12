@@ -22,10 +22,7 @@ export default {
         });
 
         let data = await response.json();
-        this.currencies = [];
-        data.currencies.forEach((currency) => {
-            this.currencies.push(currency);
-        });
+        this.currencies = data.currencies;
 
         this.currencyIn = this.getQueryVariable("currin");
         this.currencyOut = this.getQueryVariable("currout");

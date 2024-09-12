@@ -29,6 +29,7 @@ CREATE TABLE balances (
   CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(id),
   currency_id BIGSERIAL NOT NULL,
   CONSTRAINT fk_currency_id FOREIGN KEY(currency_id) REFERENCES currencies(id),
+  unique (col1, col2),
   balance DOUBLE PRECISION NOT NULL,
   address TEXT UNIQUE NOT NULL
 );

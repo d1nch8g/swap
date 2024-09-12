@@ -36,6 +36,7 @@ func Run(dir, port, tls string, e *echo.Echo, p *pgxpool.Pool, d *database.Queri
 	e.Static("/register", dir)
 	e.Static("/rules", dir)
 	e.Static("/profile", dir)
+	e.Static("/operator", dir)
 	e.Static("/admin", dir)
 	e.Static("/transfer", dir)
 	e.Static("/order", dir)
@@ -95,6 +96,7 @@ func Run(dir, port, tls string, e *echo.Echo, p *pgxpool.Pool, d *database.Queri
 	operator.POST("/create-balance", endpoints.CreateBalance)
 	operator.GET("/list-balances", endpoints.ListBalances)
 	operator.POST("/update-balance", endpoints.UpdateBalance)
+	operator.DELETE("/remove-balance", endpoints.RemoveBalance)
 	operator.POST("/execute-order", endpoints.ExecuteOrder)
 	operator.POST("/cancel-order", endpoints.CancelOrder)
 	operator.GET("/get-card-confirmations", endpoints.GetCardConfirmations)
@@ -117,6 +119,7 @@ func Run(dir, port, tls string, e *echo.Echo, p *pgxpool.Pool, d *database.Queri
 		return true, nil
 	}))
 
+	admin.POST("/check-if-admin", endpoints.CheckIfAdmin)
 	admin.POST("/create-currency", endpoints.CreateCurrency)
 	admin.DELETE("/remove-currency", endpoints.RemoveCurrency)
 	admin.POST("/create-exchanger", endpoints.CreateExchanger)

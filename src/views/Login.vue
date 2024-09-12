@@ -30,12 +30,22 @@ export default {
                     "Authorization": `Bearer ${data}`
                 }
 
-                // check if user is admin and set admin localstorage value
-                let resp = await fetch("http://localhost:8080/api/admin/get-orders", {
+                // check if user is admin or operator and set admin/operator localstorage values
+                let resp = await fetch("http://localhost:8080/api/operator/get-orders", {
                     method: "GET",
                     headers: headersList
                 });
                 if (resp.ok) {
+                    localStorage.setItem("operator", "true");
+                } else {
+                    localStorage.setItem("operator", "");
+                }
+
+                let adminResp = await fetch("http://localhost:8080/api/admin/check-if-admin", {
+                    method: "POST",
+                    headers: headersList,
+                })
+                if (adminResp.ok) {
                     localStorage.setItem("admin", "true");
                 } else {
                     localStorage.setItem("admin", "");

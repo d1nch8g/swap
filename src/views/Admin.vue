@@ -1,33 +1,57 @@
+<script>
+export default {
+    data() {
+        return {
+            currencies: [],
+            exchangers: [],
+        }
+    },
+    mounted() { 
+        
+    }
+}
+</script>
+
 <template>
-    <h2>Входящие заявки</h2>
+    <h2>Валюты</h2>
     <table id="table">
         <tr>
-            <th>id</th>
-            <th>Минимальная операция</th>
-            <th>Требуется подтверждение платежа</th>
+            <th>ID баланса</th>
+            <th>Описание</th>
+            <th>Код</th>
+            <th>Адрес</th>
+            <th>Баланс</th>
+            <th>Удалить</th>
         </tr>
         <tr>
-            <td>0</td>
-            <td>Maria Anders</td>
-            <td>Germany</td>
+            <td>тест</td>
+            <td>тест</td>
+            <td>тест</td>
+            <td>тест</td>
+            <td>тест</td>
+            <td>тест</td>
         </tr>
     </table>
 
-    <h2>Балансы</h2>
+    <h2>Обменники</h2>
     <table id="table">
         <tr>
-            <th>id</th>
-            <th>Минимальная операция</th>
-            <th>Требуется подтверждение платежа</th>
+            <th>ID баланса</th>
+            <th>Описание</th>
+            <th>Код</th>
+            <th>Адрес</th>
+            <th>Баланс</th>
+            <th>Удалить</th>
         </tr>
         <tr>
-            <td>0</td>
-            <td>Maria Anders</td>
-            <td>Germany</td>
+            <td>тест</td>
+            <td>тест</td>
+            <td>тест</td>
+            <td>тест</td>
+            <td>тест</td>
+            <td>тест</td>
         </tr>
     </table>
-
-
 </template>
 
 <style>

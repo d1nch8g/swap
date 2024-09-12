@@ -1,18 +1,5 @@
 basePath: /api
 definitions:
-  database.Balance:
-    properties:
-      address:
-        type: string
-      balance:
-        type: number
-      currency_id:
-        type: integer
-      id:
-        type: integer
-      user_id:
-        type: integer
-    type: object
   database.CardConfirmation:
     properties:
       address:
@@ -115,11 +102,24 @@ definitions:
       confirmation_id:
         type: integer
     type: object
+  server.Balance:
+    properties:
+      address:
+        type: string
+      balance:
+        type: number
+      code:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+    type: object
   server.Balances:
     properties:
       balances:
         items:
-          $ref: '#/definitions/database.Balance'
+          $ref: '#/definitions/server.Balance'
         type: array
     type: object
   server.Busy:
@@ -215,6 +215,11 @@ definitions:
           $ref: '#/definitions/database.Order'
         type: array
     type: object
+  server.RemoveBalanceRequest:
+    properties:
+      id:
+        type: integer
+    type: object
   server.RemoveCurrencyRequest:
     properties:
       code:
@@ -222,9 +227,13 @@ definitions:
     type: object
   server.UpdateBalanceRequest:
     properties:
+      address:
+        type: string
       balance:
         type: number
       balance_id:
+        type: integer
+      currency_id:
         type: integer
     type: object
   server.UserOrder:
@@ -319,6 +328,14 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Change busy status for admin operator
+  /admin/check-if-admin:
+    delete:
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Check if user is an admin
   /admin/create-balance:
     post:
       parameters:
@@ -399,6 +416,21 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List operator currency balances
+  /admin/remove-balance:
+    delete:
+      parameters:
+      - description: Balance id
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.RemoveBalanceRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Remove operators balance
   /admin/remove-currency:
     delete:
       parameters:
@@ -429,21 +461,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Remove existing exchanger from API
-  /admin/update-balance:
-    post:
-      parameters:
-      - description: Update balance parameters
-        in: body
-        name: status
-        required: true
-        schema:
-          $ref: '#/definitions/server.UpdateBalanceRequest'
-      responses:
-        "200":
-          description: OK
-      security:
-      - ApiKeyAuth: []
-      summary: Update operator currency balance
   /confirm-payment:
     post:
       parameters:
@@ -558,6 +575,21 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get active orders bound to specific operator
+  /operator/update-balance:
+    post:
+      parameters:
+      - description: Update balance parameters
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.UpdateBalanceRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Update operator currency balance
   /order-status:
     get:
       parameters:

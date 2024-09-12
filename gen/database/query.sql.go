@@ -239,6 +239,31 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const getBalanceById = `-- name: GetBalanceById :one
+SELECT id, user_id, currency_id, balance, address
+FROM balances
+WHERE id = $1
+  AND user_id = $2
+`
+
+type GetBalanceByIdParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) GetBalanceById(ctx context.Context, arg GetBalanceByIdParams) (Balance, error) {
+	row := q.db.QueryRow(ctx, getBalanceById, arg.ID, arg.UserID)
+	var i Balance
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.CurrencyID,
+		&i.Balance,
+		&i.Address,
+	)
+	return i, err
+}
+
 const getCardConfirmation = `-- name: GetCardConfirmation :one
 SELECT id, user_id, currency_id, address, verified, image
 FROM card_confirmations
@@ -701,6 +726,22 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const removeBalance = `-- name: RemoveBalance :exec
+DELETE FROM balances
+WHERE id = $1
+  AND user_id = $2
+`
+
+type RemoveBalanceParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
+
+func (q *Queries) RemoveBalance(ctx context.Context, arg RemoveBalanceParams) error {
+	_, err := q.db.Exec(ctx, removeBalance, arg.ID, arg.UserID)
+	return err
+}
+
 const removeCurrency = `-- name: RemoveCurrency :exec
 DELETE FROM currencies
 WHERE code = $1
@@ -729,7 +770,8 @@ func (q *Queries) RemoveExchanger(ctx context.Context, arg RemoveExchangerParams
 
 const updateBalance = `-- name: UpdateBalance :one
 UPDATE balances
-SET balance = $3
+SET balance = $3,
+  address = $4
 WHERE id = $1
   AND user_id = $2
 RETURNING id, user_id, currency_id, balance, address
@@ -739,10 +781,16 @@ type UpdateBalanceParams struct {
 	ID      int64   `json:"id"`
 	UserID  int64   `json:"user_id"`
 	Balance float64 `json:"balance"`
+	Address string  `json:"address"`
 }
 
 func (q *Queries) UpdateBalance(ctx context.Context, arg UpdateBalanceParams) (Balance, error) {
-	row := q.db.QueryRow(ctx, updateBalance, arg.ID, arg.UserID, arg.Balance)
+	row := q.db.QueryRow(ctx, updateBalance,
+		arg.ID,
+		arg.UserID,
+		arg.Balance,
+		arg.Address,
+	)
 	var i Balance
 	err := row.Scan(
 		&i.ID,

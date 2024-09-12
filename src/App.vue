@@ -5,13 +5,18 @@ export default {
   data() {
     return {
       showLogin: true,
-      showAdmin: false
+      showOperator: false,
+      showAdmin: false,
     }
   },
   mounted() {
     let token = localStorage.getItem("token");
     if (token) {
       this.showLogin = false;
+      let operator = localStorage.getItem("operator");
+      if (operator) {
+        this.showOperator = true;
+      }
       let admin = localStorage.getItem("admin");
       if (admin) {
         this.showAdmin = true;
@@ -44,8 +49,11 @@ export default {
       <a v-if="!showLogin">
         <RouterLink to="/profile">Профиль</RouterLink>
       </a>
+      <a v-if="showOperator">
+        <RouterLink to="/operator">Оперирование</RouterLink>
+      </a>
       <a v-if="showAdmin">
-        <RouterLink to="/admin">Управление</RouterLink>
+        <RouterLink to="/admin">Администрирование</RouterLink>
       </a>
     </div>
   </div>

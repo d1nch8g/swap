@@ -103,7 +103,8 @@ VALUES ($1, $2, $3, $4)
 RETURNING *;
 -- name: UpdateBalance :one
 UPDATE balances
-SET balance = $3
+SET balance = $3,
+  address = $4
 WHERE id = $1
   AND user_id = $2
 RETURNING *;
@@ -111,6 +112,15 @@ RETURNING *;
 SELECT *
 FROM balances
 WHERE user_id = $1;
+-- name: GetBalanceById :one
+SELECT *
+FROM balances
+WHERE id = $1
+  AND user_id = $2;
+-- name: RemoveBalance :exec
+DELETE FROM balances
+WHERE id = $1
+  AND user_id = $2;
 -- name: CreateCardConfirmation :one
 INSERT INTO card_confirmations (user_id, currency_id, address, verified)
 VALUES ($1, $2, $3, $4)
