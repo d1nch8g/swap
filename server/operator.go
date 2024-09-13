@@ -58,6 +58,7 @@ type Orders struct {
 type Order struct {
 	Id             int64   `json:"id"`
 	CurrencyIn     string  `json:"currin"`
+	Email          string  `json:"email"`
 	AmountIn       float64 `json:"amountin"`
 	CurrOut        string  `json:"currout"`
 	AmountOut      float64 `json:"amountout"`
@@ -112,14 +113,23 @@ func (e *Endpoints) GetOrders(c echo.Context) error {
 			return err
 		}
 
+		u, err := e.db.GetUserById(c.Request().Context(), order.UserID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
 		orders = append(orders, Order{
 			Id:             order.ID,
 			CurrencyIn:     currIn.Code,
+			Email:          u.Email,
 			AmountIn:       order.AmountIn,
 			CurrOut:        currOut.Code,
 			AmountOut:      order.AmountOut,
 			Address:        order.ReceiveAddress,
 			ApprovePicture: order.ConfirmImage,
+			Status:         "",
 		})
 	}
 
@@ -174,6 +184,13 @@ func (e *Endpoints) FinishedOrders(c echo.Context) error {
 			return err
 		}
 
+		u, err := e.db.GetUserById(c.Request().Context(), order.UserID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
 		var status = "ожидает платежа"
 		if order.PaymentConfirmed {
 			status = "платеж пользователем подтвержден"
@@ -188,6 +205,7 @@ func (e *Endpoints) FinishedOrders(c echo.Context) error {
 		orders = append(orders, Order{
 			Id:             order.ID,
 			CurrencyIn:     currIn.Code,
+			Email:          u.Email,
 			AmountIn:       order.AmountIn,
 			CurrOut:        currOut.Code,
 			AmountOut:      order.AmountOut,
@@ -416,6 +434,12 @@ func (e *Endpoints) RemoveBalance(c echo.Context) error {
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	if u.Busy {
+		c.Response().WriteHeader(http.StatusConflict)
+		_, err := c.Response().Write([]byte("cannot remove balance of busy user"))
 		return err
 	}
 

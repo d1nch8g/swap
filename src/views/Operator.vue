@@ -166,6 +166,7 @@ export default {
     <table id="table">
         <tr>
             <th>ID</th>
+            <th>Email</th>
             <th>Получаемая валюта</th>
             <th>Получаемое количество</th>
             <th>Отдаваемая валюта</th>
@@ -177,6 +178,7 @@ export default {
         </tr>
         <tr v-for="order in orders">
             <td>{{ order.id }}</td>
+            <td>{{ order.email }}</td>
             <td>{{ order.currin }}</td>
             <td>{{ order.amountin }}</td>
             <td>{{ order.currout }}</td>
@@ -212,16 +214,18 @@ export default {
     <table id="table">
         <tr>
             <th>ID</th>
+            <th>Email</th>
             <th>Получаемая валюта</th>
             <th>Получаемое количество</th>
             <th>Отдаваемая валюта</th>
             <th>Отдаваемое количество</th>
             <th>Отправляемый адресс</th>
-            <th>Картинка подтверждение платежа</th>
+            <th>Подтверждение платежа</th>
             <th>Статус заявки</th>
         </tr>
         <tr v-for="order in finorders">
             <td>{{ order.id }}</td>
+            <td>{{ order.email }}</td>
             <td>{{ order.currin }}</td>
             <td>{{ order.amountin }}</td>
             <td>{{ order.currout }}</td>

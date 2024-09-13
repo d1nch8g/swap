@@ -11,7 +11,8 @@ CREATE TABLE exchangers (
   in_currency BIGSERIAL NOT NULL,
   CONSTRAINT fk_curr_in FOREIGN KEY(in_currency) REFERENCES currencies(id),
   out_currency BIGSERIAL NOT NULL,
-  CONSTRAINT fk_curr_out FOREIGN KEY(out_currency) REFERENCES currencies(id)
+  CONSTRAINT fk_curr_out FOREIGN KEY(out_currency) REFERENCES currencies(id),
+  unique(in_currency, out_currency)
 );
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,

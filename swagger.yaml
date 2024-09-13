@@ -61,13 +61,6 @@ definitions:
       require_payment_verification:
         type: boolean
     type: object
-  database.RemoveExchangerParams:
-    properties:
-      in_currency:
-        type: integer
-      out_currency:
-        type: integer
-    type: object
   server.ApproveCardConfirmationRequest:
     properties:
       confirmation_id:
@@ -190,8 +183,12 @@ definitions:
         type: string
       currout:
         type: string
+      email:
+        type: string
       id:
         type: integer
+      status:
+        type: string
     type: object
   server.OrderStatusResponse:
     properties:
@@ -214,6 +211,11 @@ definitions:
     properties:
       code:
         type: string
+    type: object
+  server.RemoveExchangerRequest:
+    properties:
+      id:
+        type: integer
     type: object
   server.UpdateBalanceRequest:
     properties:
@@ -444,7 +446,7 @@ paths:
         name: status
         required: true
         schema:
-          $ref: '#/definitions/database.RemoveExchangerParams'
+          $ref: '#/definitions/server.RemoveExchangerRequest'
       responses:
         "200":
           description: OK

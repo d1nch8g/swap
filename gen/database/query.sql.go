@@ -794,17 +794,11 @@ func (q *Queries) RemoveCurrency(ctx context.Context, code string) error {
 
 const removeExchanger = `-- name: RemoveExchanger :exec
 DELETE FROM exchangers
-WHERE in_currency = $1
-  AND out_currency = $2
+WHERE id = $1
 `
 
-type RemoveExchangerParams struct {
-	InCurrency  int64 `json:"in_currency"`
-	OutCurrency int64 `json:"out_currency"`
-}
-
-func (q *Queries) RemoveExchanger(ctx context.Context, arg RemoveExchangerParams) error {
-	_, err := q.db.Exec(ctx, removeExchanger, arg.InCurrency, arg.OutCurrency)
+func (q *Queries) RemoveExchanger(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, removeExchanger, id)
 	return err
 }
 

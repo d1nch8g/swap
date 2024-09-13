@@ -16,8 +16,10 @@ Configuration:
 
 <!--
 
-/?currin=TON&currout=SBPRUB
+http://192.168.0.105:8080/?currin=TON&currout=SBPRUB
 
-оперирование - история заявок
+add transactions to execute and create order functions
+
+add validate card page
 
 -->

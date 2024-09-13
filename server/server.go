@@ -19,7 +19,7 @@ type Endpoints struct {
 	pgx  *pgxpool.Pool
 }
 
-func Run(dir, port, tls string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
+func Run(dir, port, host string, tls bool, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
 	endpoints := &Endpoints{
 		db:   d,
 		e:    e,
@@ -37,7 +37,9 @@ func Run(dir, port, tls string, e *echo.Echo, p *pgxpool.Pool, d *database.Queri
 	e.Static("/rules", dir)
 	e.Static("/profile", dir)
 	e.Static("/operator", dir)
-	e.Static("/admin", dir)
+	e.Static("/currencies", dir)
+	e.Static("/exchangers", dir)
+	e.Static("/operators", dir)
 	e.Static("/transfer", dir)
 	e.Static("/order", dir)
 	e.Static("/validate-card", dir)
@@ -126,8 +128,8 @@ func Run(dir, port, tls string, e *echo.Echo, p *pgxpool.Pool, d *database.Queri
 	admin.POST("/create-exchanger", endpoints.CreateExchanger)
 	admin.DELETE("/remove-exchanger", endpoints.RemoveExchanger)
 
-	if tls != "" {
-		e.Logger.Fatal(e.StartTLS(tls+":"+port, "/certs/"+tls+".crt", "/certs/"+tls+".key"))
+	if tls {
+		e.Logger.Fatal(e.StartAutoTLS(host + ":" + port))
 	}
-	e.Logger.Fatal(e.Start("localhost:" + port))
+	e.Logger.Fatal(e.Start(host + ":" + port))
 }

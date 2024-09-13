@@ -41,9 +41,19 @@ const router = createRouter({
       component: () => import("../views/Operator.vue"),
     },
     {
-      path: "/admin",
-      name: "admin",
-      component: () => import("../views/Admin.vue"),
+      path: "/currencies",
+      name: "currencies",
+      component: () => import("../views/Currencies.vue"),
+    },
+    {
+      path: "/exchangers",
+      name: "exchangers",
+      component: () => import("../views/Exchangers.vue"),
+    },
+    {
+      path: "/operators",
+      name: "operators",
+      component: () => import("../views/Operators.vue"),
     },
     {
       path: "/transfer",

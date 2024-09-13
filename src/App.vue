@@ -53,7 +53,13 @@ export default {
         <RouterLink to="/operator">Оперирование</RouterLink>
       </a>
       <a v-if="showAdmin">
-        <RouterLink to="/admin">Администрирование</RouterLink>
+        <RouterLink to="/currencies">Валюты</RouterLink>
+      </a>
+      <a v-if="showAdmin">
+        <RouterLink to="/exchangers">Обменники</RouterLink>
+      </a>
+      <a v-if="showAdmin">
+        <RouterLink to="/operators">Операторы</RouterLink>
       </a>
     </div>
   </div>

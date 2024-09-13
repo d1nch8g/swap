@@ -28,8 +28,7 @@ VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 -- name: RemoveExchanger :exec
 DELETE FROM exchangers
-WHERE in_currency = $1
-  AND out_currency = $2;
+WHERE id = $1;
 -- name: ListExchangers :many
 SELECT *
 FROM exchangers;
