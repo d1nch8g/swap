@@ -104,10 +104,10 @@ export default {
 
             if (response.ok) {
                 let resp = await response.json();
-                this.$router.push(`/transfer/?addr=${resp.transfer_address}&inamount=${resp.in_amount}&outamount=${resp.out_amount}&ordernum=${resp.order_number}`);
                 localStorage.setItem("lastorderid", resp.order_number.toString());
                 localStorage.setItem("transfer_address", resp.transfer_address);
                 localStorage.setItem("out_amount", resp.out_amount.toString());
+                this.$router.push(`/transfer/?addr=${resp.transfer_address}&inamount=${resp.in_amount}&outamount=${resp.out_amount}&ordernum=${resp.order_number}`);
                 return;
             }
 
@@ -120,10 +120,8 @@ export default {
             }
 
             if (response.status === 403) {
-                let resp = await response.json();
-
-                this.$router.push(`/validate-card`);
-                // handle validate card operation
+                // this.$router.push(`/validate-card`);
+                window.location.href = "/validate-card";
             }
         }
     }
@@ -137,7 +135,7 @@ export default {
             <option v-for="currency in currencies" :value="currency.code">{{ currency.code }} -
                 {{ currency.description }}</option>
         </select>
-        <input type="number" id="currin" name="currency-in" v-model="amountIn">
+        <input type="number" id="currin" name="currency-in" min="0" step="any" v-model="amountIn">
 
         <label for="currout">Получаете:</label>
         <select id="currout" name="currout" v-model="currencyOut">
@@ -152,7 +150,7 @@ export default {
         <label for="address">Адрес получения (номер карты/кошелек):</label>
         <input type="text" id="address" name="address" v-model="address">
 
-        <input type="submit" value="Создать заявку" @click="createOrder" v-if="showCreateOrderButton">
+        <input type="submit" value="Создать заявку" v-if="showCreateOrderButton">
     </form>
 
     <div class="alert" v-if="showMinAmountNotification">

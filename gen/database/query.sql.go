@@ -293,6 +293,7 @@ func (q *Queries) GetCardConfirmation(ctx context.Context, arg GetCardConfirmati
 const getCardConfirmations = `-- name: GetCardConfirmations :many
 SELECT id, user_id, currency_id, address, verified, image
 FROM card_confirmations
+WHERE verified = FALSE
 `
 
 func (q *Queries) GetCardConfirmations(ctx context.Context) ([]CardConfirmation, error) {
@@ -779,6 +780,16 @@ type RemoveBalanceParams struct {
 
 func (q *Queries) RemoveBalance(ctx context.Context, arg RemoveBalanceParams) error {
 	_, err := q.db.Exec(ctx, removeBalance, arg.ID, arg.UserID)
+	return err
+}
+
+const removeCardConfirmation = `-- name: RemoveCardConfirmation :exec
+DELETE FROM card_confirmations
+WHERE id = $1
+`
+
+func (q *Queries) RemoveCardConfirmation(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, removeCardConfirmation, id)
 	return err
 }
 

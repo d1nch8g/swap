@@ -17,11 +17,11 @@ export default {
         let orderString = localStorage.getItem("order");
         let order = JSON.parse(orderString);
 
-        this.orderNumber = this.getQueryVariable("ordernum");
-        this.transferAddr = this.getQueryVariable("addr");
+        this.orderNumber = localStorage.getItem("lastorderid");
+        this.transferAddr = localStorage.getItem("transfer_address");
         this.amountIn = order.amount;
         this.currencyIn = order.in_currency;
-        this.amountOut = this.getQueryVariable("outamount");
+        this.amountOut = localStorage.getItem("out_amount");
         this.currencyOut = order.out_currency;
         this.receiveAddr = order.address;
 

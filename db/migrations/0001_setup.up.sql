@@ -40,6 +40,7 @@ CREATE TABLE card_confirmations (
   CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(id),
   currency_id BIGSERIAL NOT NULL,
   CONSTRAINT fk_currency_id FOREIGN KEY(currency_id) REFERENCES currencies(id),
+  unique (user_id, currency_id),
   address TEXT UNIQUE NOT NULL,
   verified BOOLEAN NOT NULL,
   image BYTEA

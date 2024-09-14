@@ -687,7 +687,7 @@ type GetCardConfirmationsResponse struct {
 //	@Summary	Get user credit card approval images with parameters
 //	@Success	200 {object}	GetCardConfirmationsResponse
 //	@Security	ApiKeyAuth
-//	@Router		/admin/get-card-confirmations [get]
+//	@Router		/operator/get-card-confirmations [get]
 func (e *Endpoints) GetCardConfirmations(c echo.Context) error {
 	cc, err := e.db.GetCardConfirmations(c.Request().Context())
 	if err != nil {
@@ -711,7 +711,7 @@ type ApproveCardConfirmationRequest struct {
 //	@Param		status	body	ApproveCardConfirmationRequest	true	"Approve card request"
 //	@Success	200
 //	@Security	ApiKeyAuth
-//	@Router		/admin/approve-card [post]
+//	@Router		/operator/approve-card [post]
 func (e *Endpoints) ApproveCard(c echo.Context) error {
 	var req ApproveCardConfirmationRequest
 	err := c.Bind(&req)
@@ -725,6 +725,36 @@ func (e *Endpoints) ApproveCard(c echo.Context) error {
 		ID:       req.ConfirmationId,
 		Verified: true,
 	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return nil
+}
+
+type CancelCardRequest struct {
+	ConfirmationId int64 `json:"confirmation_id"`
+}
+
+// ApproveCard godoc
+//
+//	@Summary	Remove user's card request
+//	@Param		status	body	CancelCardRequest	true	"Remove confirmation id"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/operator/cancel-card [delete]
+func (e *Endpoints) CancelCard(c echo.Context) error {
+	var req CancelCardRequest
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
+
+	err = e.db.RemoveCardConfirmation(c.Request().Context(), req.ConfirmationId)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))

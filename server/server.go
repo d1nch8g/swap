@@ -104,6 +104,7 @@ func Run(dir, port, host string, tls bool, e *echo.Echo, p *pgxpool.Pool, d *dat
 	operator.POST("/cancel-order", endpoints.CancelOrder)
 	operator.GET("/get-card-confirmations", endpoints.GetCardConfirmations)
 	operator.POST("/approve-card", endpoints.ApproveCard)
+	operator.DELETE("/cancel-card", endpoints.CancelCard)
 
 	admin := api.Group("/admin", middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {
 		u, err := d.GetUserByToken(c.Request().Context(), auth)

@@ -388,11 +388,12 @@ func (e *Endpoints) ListExchangers(c echo.Context) error {
 }
 
 type CreateOrderRequest struct {
-	Email       string  `json:"email"`
-	InCurrency  string  `json:"in_currency"`
-	OutCurrency string  `json:"out_currency"`
-	Amount      float64 `json:"amount"`
-	Address     string  `json:"address"`
+	Email          string  `json:"email"`
+	InCurrency     string  `json:"in_currency"`
+	OutCurrency    string  `json:"out_currency"`
+	Amount         float64 `json:"amount"`
+	PaymentAddress string  `json:"payment_address"`
+	Address        string  `json:"address"`
 }
 
 type CreateOrderResponse struct {
@@ -464,26 +465,14 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	}
 
 	if exch.RequirePaymentVerification {
-		pc, err := e.db.GetCardConfirmation(c.Request().Context(), database.GetCardConfirmationParams{
+		_, err = e.db.GetCardConfirmation(c.Request().Context(), database.GetCardConfirmationParams{
 			UserID:     u.ID,
 			CurrencyID: inCurr.ID,
 		})
 		if err != nil {
-			_, err := e.db.CreateCardConfirmation(c.Request().Context(), database.CreateCardConfirmationParams{
-				UserID:     u.ID,
-				CurrencyID: inCurr.ID,
-				Address:    req.Address,
-				Verified:   false,
-			})
-			if err != nil {
-				c.Response().WriteHeader(http.StatusInternalServerError)
-				_, err := c.Response().Write([]byte("unable to access database or exchanger does not exist"))
-				return err
-			}
-			return c.String(http.StatusForbidden, "required card confirmation")
-		}
-		if !pc.Verified {
-			return c.String(http.StatusForbidden, "required card confirmation")
+			c.Response().WriteHeader(http.StatusForbidden)
+			_, err := c.Response().Write([]byte("unable to access database or exchanger does not exist"))
+			return err
 		}
 	}
 
@@ -595,18 +584,16 @@ type ValidateCardRequest struct {
 // ValidateCard godoc
 //
 //	@Summary	Create order to exchange specific currency
-//	@Param		status	body		ValidateCardRequest	true	"Request parameters"
-//	@Param		file	formData	file				true	"this is a test file"
+//	@Param		email		query		string	true	"Email"
+//	@Param		currency	query		string	true	"Currency"
+//	@Param		addr		query		string	true	"Address"
+//	@Param		file		formData	file	true	"Approve file"
 //	@Success	200
 //	@Router		/validate-card [post]
 func (e *Endpoints) ValidateCard(c echo.Context) error {
-	var req ValidateCardRequest
-	err := c.Bind(&req)
-	if err != nil {
-		c.Response().WriteHeader(http.StatusBadRequest)
-		_, err := c.Response().Write([]byte("unable to unmarshal request"))
-		return err
-	}
+	email := c.QueryParam("email")
+	curr := c.QueryParam("currency")
+	addr := c.QueryParam("addr")
 
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -628,20 +615,28 @@ func (e *Endpoints) ValidateCard(c echo.Context) error {
 		return err
 	}
 
-	u, err := e.db.GetUser(c.Request().Context(), req.Email)
+	u, err := e.db.GetUser(c.Request().Context(), email)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to read file"))
 		return err
 	}
 
-	cc, err := e.db.GetCardConfirmation(c.Request().Context(), database.GetCardConfirmationParams{
+	currency, err := e.db.GetCurrencyByCode(c.Request().Context(), curr)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to read file"))
+		return err
+	}
+
+	cc, err := e.db.CreateCardConfirmation(c.Request().Context(), database.CreateCardConfirmationParams{
 		UserID:     u.ID,
-		CurrencyID: req.CurrencyId,
+		CurrencyID: currency.ID,
+		Address:    addr,
 	})
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
-		_, err := c.Response().Write([]byte("unable to access database"))
+		_, err := c.Response().Write([]byte("unable to read file"))
 		return err
 	}
 

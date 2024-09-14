@@ -131,7 +131,11 @@ WHERE user_id = $1
   AND currency_id = $2;
 -- name: GetCardConfirmations :many
 SELECT *
-FROM card_confirmations;
+FROM card_confirmations
+WHERE verified = FALSE;
+-- name: RemoveCardConfirmation :exec
+DELETE FROM card_confirmations
+WHERE id = $1;
 -- name: UpdateCardConfirmationImage :one
 UPDATE card_confirmations
 SET image = $2

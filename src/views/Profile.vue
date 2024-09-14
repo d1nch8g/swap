@@ -131,4 +131,23 @@ export default {
     opacity: 1;
     right: 0;
 }
+
+table {
+    table-layout: fixed;
+}
+
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+}
+
+@media only screen and (max-width: 480px) {
+
+    /* horizontal scrollbar for tables if mobile screen */
+    table {
+        overflow-x: auto;
+        display: block;
+    }
+}
 </style>

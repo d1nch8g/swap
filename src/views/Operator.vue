@@ -1,10 +1,13 @@
 <script>
+import ValidateCard from './ValidateCard.vue';
+
 export default {
     data() {
         return {
             currencies: [],
             balances: [],
             orders: [],
+            cardConfirmations: [],
             finorders: [],
             currencyCode: "",
             address: "",
@@ -43,6 +46,16 @@ export default {
         if (ordersResponse.ok) {
             let resp = await ordersResponse.json();
             this.orders = resp.orders;
+        }
+
+        let cardConfirmations = await fetch("/api/operator/get-card-confirmations", {
+            method: "GET",
+            headers: headersList
+        });
+
+        if (cardConfirmations.ok) {
+            let resp = await cardConfirmations.json();
+            this.cardConfirmations = resp.card_confirmations;
         }
 
         let finordersResponse = await fetch("/api/operator/finished-orders", {
@@ -153,10 +166,53 @@ export default {
             });
 
             if (response.ok) {
-                window.location.href = "/operator"
+                window.location.href = "/operator";
+            }
+        },
+        async approveCard(id) {
+            let token = localStorage.getItem("token");
+
+            let headersList = {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
             }
 
+            let bodyContent = JSON.stringify({
+                "confirmation_id": id,
+            });
+
+            let response = await fetch("/api/operator/approve-card", {
+                method: "POST",
+                body: bodyContent,
+                headers: headersList
+            });
+
+            if (response.ok) {
+                window.location.href = "/operator";
+            }
         },
+        async cancelCard(id) {
+            let token = localStorage.getItem("token");
+
+            let headersList = {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+
+            let bodyContent = JSON.stringify({
+                "confirmation_id": id,
+            });
+
+            let response = await fetch("/api/operator/cancel-card", {
+                method: "DELETE",
+                body: bodyContent,
+                headers: headersList
+            });
+
+            if (response.ok) {
+                window.location.href = "/operator";
+            }
+        }
     }
 }
 </script>
@@ -187,6 +243,22 @@ export default {
             <td><img v-bind:src="'data:image/jpeg;base64,' + order.approvepic" /></td>
             <td><button @click="closeOrder(order.id)">Подтвердить и закрыть</button></td>
             <td><button @click="cancelOrder(order.id)">Отменить</button></td>
+        </tr>
+    </table>
+
+    <h2>Подтверждения карт</h2>
+    <table id="table">
+        <tr>
+            <th>Адрес</th>
+            <th>Картинка</th>
+            <th>Подтвердить</th>
+            <th>Удалить</th>
+        </tr>
+        <tr v-for="cardConfirmation in cardConfirmations">
+            <td>{{ cardConfirmation.address }}</td>
+            <td><img v-bind:src="'data:image/jpeg;base64,' + cardConfirmation.image" /></td>
+            <td><button @click="approveCard(cardConfirmation.id)">Подтвердить</button></td>
+            <td><button @click="cancelCard(cardConfirmation.id)">Удалить</button></td>
         </tr>
     </table>
 
@@ -433,5 +505,24 @@ div {
 /* When moving the mouse over the close button */
 .closebtn:hover {
     color: black;
+}
+
+table {
+    table-layout: fixed;
+}
+
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+}
+
+@media only screen and (max-width: 480px) {
+
+    /* horizontal scrollbar for tables if mobile screen */
+    table {
+        overflow-x: auto;
+        display: block;
+    }
 }
 </style>
