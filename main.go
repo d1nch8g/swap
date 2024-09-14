@@ -45,7 +45,7 @@ import (
 
 var opts struct {
 	Port            string `long:"port" env:"PORT" default:"8080"`
-	Host            string `long:"host" env:"HOST" default:"localhost"`
+	Host            string `long:"host" env:"HOST"`
 	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
 	ServeDir        string `long:"serve-dir" env:"SERVE_DIR" default:"dist"`
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
