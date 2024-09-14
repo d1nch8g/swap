@@ -133,7 +133,7 @@ func Run(dir, port, host, certDir string, e *echo.Echo, p *pgxpool.Pool, d *data
 
 	if host != "" {
 		go func() {
-			e.Logger.Fatal(e.Start(":" + port))
+			e.Logger.Fatal(e.Start(":80"))
 		}()
 		e.Logger.Fatal(e.StartTLS(":"+port, path.Join(certDir, host+".crt"), path.Join(certDir, host+".key")))
 	}
