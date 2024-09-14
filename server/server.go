@@ -131,7 +131,7 @@ func Run(dir, port, host, certDir string, e *echo.Echo, p *pgxpool.Pool, d *data
 	admin.DELETE("/remove-exchanger", endpoints.RemoveExchanger)
 
 	if certDir != "" {
-		e.Logger.Fatal(e.StartTLS(host+":"+port, path.Join(certDir, host+".crt"), path.Join(certDir, host+".key")))
+		e.Logger.Fatal(e.StartTLS(":"+port, path.Join(certDir, host+".crt"), path.Join(certDir, host+".key")))
 	}
 	e.Logger.Fatal(e.Start(host + ":" + port))
 }
