@@ -763,3 +763,36 @@ func (e *Endpoints) CancelCard(c echo.Context) error {
 
 	return nil
 }
+
+type CardConfirmationsResponse struct {
+	Confirmations []database.CardConfirmation `json:"confirmations"`
+}
+
+// CardConfirmations godoc
+//
+//	@Summary	Get user's card confirmations
+//	@Param		email		query		string	true	"Email"
+//	@Success	200 {object} CardConfirmationsResponse
+//	@Security	ApiKeyAuth
+//	@Router		/operator/card-confirmations [get]
+func (e *Endpoints) CardConfirmations(c echo.Context) error {
+	email := c.QueryParam("email")
+
+	u, err := e.db.GetUser(c.Request().Context(), email)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	cc, err := e.db.GetCardConfirmationsForUser(c.Request().Context(), u.ID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &CardConfirmationsResponse{
+		Confirmations: cc,
+	})
+}

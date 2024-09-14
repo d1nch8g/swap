@@ -51,9 +51,9 @@ const router = createRouter({
       component: () => import("../views/Exchangers.vue"),
     },
     {
-      path: "/operators",
-      name: "operators",
-      component: () => import("../views/Operators.vue"),
+      path: "/card-confirmations",
+      name: "card-confirmations",
+      component: () => import("../views/CardConfirmations.vue"),
     },
     {
       path: "/transfer",

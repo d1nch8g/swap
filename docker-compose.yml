@@ -1,4 +1,12 @@
 services:
+  inswap:
+    image: ion.lc/d1nch8g/inswap
+    restart: always
+    environment:
+      DATABASE: postgresql://user:password@db:5432/db?sslmode=disable
+
+    volumes:
+      - ${PWD}:/
   db:
     image: postgres
     restart: always

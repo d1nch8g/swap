@@ -88,6 +88,11 @@ definitions:
       order_id:
         type: integer
     type: object
+  server.CardConfirmationsRequest:
+    properties:
+      email:
+        type: string
+    type: object
   server.CreateBalanceRequest:
     properties:
       address:
@@ -562,6 +567,21 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Remove user's card request
+  /operator/card-confirmations:
+    get:
+      parameters:
+      - description: 'Email '
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.CardConfirmationsRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Get user's card confirmations
   /operator/finished-orders:
     get:
       responses:

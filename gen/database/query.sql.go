@@ -323,6 +323,39 @@ func (q *Queries) GetCardConfirmations(ctx context.Context) ([]CardConfirmation,
 	return items, nil
 }
 
+const getCardConfirmationsForUser = `-- name: GetCardConfirmationsForUser :many
+SELECT id, user_id, currency_id, address, verified, image
+FROM card_confirmations
+WHERE user_id = $1
+`
+
+func (q *Queries) GetCardConfirmationsForUser(ctx context.Context, userID int64) ([]CardConfirmation, error) {
+	rows, err := q.db.Query(ctx, getCardConfirmationsForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CardConfirmation
+	for rows.Next() {
+		var i CardConfirmation
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CurrencyID,
+			&i.Address,
+			&i.Verified,
+			&i.Image,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCurrencyByCode = `-- name: GetCurrencyByCode :one
 SELECT id, code, description
 FROM currencies
@@ -721,6 +754,41 @@ func (q *Queries) ListExchangers(ctx context.Context) ([]Exchanger, error) {
 			&i.RequirePaymentVerification,
 			&i.InCurrency,
 			&i.OutCurrency,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listOperators = `-- name: ListOperators :many
+SELECT id, email, verified, passwhash, admin, operator, token, busy
+FROM users
+WHERE operator = TRUE
+`
+
+func (q *Queries) ListOperators(ctx context.Context) ([]User, error) {
+	rows, err := q.db.Query(ctx, listOperators)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Verified,
+			&i.Passwhash,
+			&i.Admin,
+			&i.Operator,
+			&i.Token,
+			&i.Busy,
 		); err != nil {
 			return nil, err
 		}

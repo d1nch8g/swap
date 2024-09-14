@@ -71,6 +71,10 @@ WHERE token = $1;
 SELECT *
 FROM users
 ORDER BY email;
+-- name: ListOperators :many
+SELECT *
+FROM users
+WHERE operator = TRUE;
 -- name: GetUserById :one
 SELECT *
 FROM users
@@ -136,6 +140,10 @@ WHERE verified = FALSE;
 -- name: RemoveCardConfirmation :exec
 DELETE FROM card_confirmations
 WHERE id = $1;
+-- name: GetCardConfirmationsForUser :many
+SELECT *
+FROM card_confirmations
+WHERE user_id = $1;
 -- name: UpdateCardConfirmationImage :one
 UPDATE card_confirmations
 SET image = $2

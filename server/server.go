@@ -40,7 +40,7 @@ func Run(dir, port, host, certDir string, e *echo.Echo, p *pgxpool.Pool, d *data
 	e.Static("/operator", dir)
 	e.Static("/currencies", dir)
 	e.Static("/exchangers", dir)
-	e.Static("/operators", dir)
+	e.Static("/card-confirmations", dir)
 	e.Static("/transfer", dir)
 	e.Static("/order", dir)
 	e.Static("/validate-card", dir)
@@ -106,6 +106,7 @@ func Run(dir, port, host, certDir string, e *echo.Echo, p *pgxpool.Pool, d *data
 	operator.GET("/get-card-confirmations", endpoints.GetCardConfirmations)
 	operator.POST("/approve-card", endpoints.ApproveCard)
 	operator.DELETE("/cancel-card", endpoints.CancelCard)
+	operator.GET("/card-confirmations", endpoints.CardConfirmations)
 
 	admin := api.Group("/admin", middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {
 		u, err := d.GetUserByToken(c.Request().Context(), auth)
@@ -130,8 +131,11 @@ func Run(dir, port, host, certDir string, e *echo.Echo, p *pgxpool.Pool, d *data
 	admin.POST("/create-exchanger", endpoints.CreateExchanger)
 	admin.DELETE("/remove-exchanger", endpoints.RemoveExchanger)
 
-	if certDir != "" {
+	if host != "" {
+		go func() {
+			e.Logger.Fatal(e.Start(":" + port))
+		}()
 		e.Logger.Fatal(e.StartTLS(":"+port, path.Join(certDir, host+".crt"), path.Join(certDir, host+".key")))
 	}
-	e.Logger.Fatal(e.Start(host + ":" + port))
+	e.Logger.Fatal(e.Start(":" + port))
 }

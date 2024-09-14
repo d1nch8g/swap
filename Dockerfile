@@ -26,8 +26,6 @@ FROM alpine
 
 ENV PORT=8080
 
-WORKDIR /app
-
 # Non root user info
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
@@ -35,12 +33,12 @@ COPY --from=builder /etc/group /etc/group
 # Certs for making https requests
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-COPY --from=builder /service/service /app/service
-COPY --from=builder /service/db/migrations /app/db/migrations
-COPY --from=builder /service/dist /app/dist
+COPY --from=builder /service/service /service
+COPY --from=builder /service/db/migrations /db/migrations
+COPY --from=builder /service/dist /dist
 
 # Running as appuser
 USER appuser:appuser
 
 EXPOSE ${PORT}
-ENTRYPOINT ["/app/service"]
+ENTRYPOINT ["/service"]

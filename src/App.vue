@@ -28,7 +28,9 @@ export default {
 
 <template>
   <div class="header">
-    <img src="./assets/logo.png" alt="Company logo">
+    <a href="/">
+      <img src="./assets/logo.png" alt="Company logo" href="/">
+    </a>
 
     <div class="header-right">
       <a>
@@ -52,14 +54,14 @@ export default {
       <a v-if="showOperator">
         <RouterLink to="/operator">Оперирование</RouterLink>
       </a>
+      <a v-if="showOperator">
+        <RouterLink to="/card-confirmations">Подтверждения карт</RouterLink>
+      </a>
       <a v-if="showAdmin">
         <RouterLink to="/currencies">Валюты</RouterLink>
       </a>
       <a v-if="showAdmin">
         <RouterLink to="/exchangers">Обменники</RouterLink>
-      </a>
-      <a v-if="showAdmin">
-        <RouterLink to="/operators">Операторы</RouterLink>
       </a>
     </div>
   </div>
@@ -70,7 +72,6 @@ export default {
 <style scoped>
 img {
   height: 32px;
-  margin: 8px;
 }
 
 .header {
