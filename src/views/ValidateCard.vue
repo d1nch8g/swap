@@ -3,7 +3,8 @@ export default {
     data() {
         return {
             cardnum: "",
-            incorrect: false
+            incorrect: false,
+            allOperatorsBusy: false
         }
     },
     methods: {
@@ -41,6 +42,10 @@ export default {
                     this.$router.push(`/transfer/?addr=${resp.transfer_address}&inamount=${resp.in_amount}&outamount=${resp.out_amount}&ordernum=${resp.order_number}`);
                     return;
                 }
+
+                if (response.status === 409) { 
+                    this.allOperatorsBusy
+                }
             }
             this.incorrect = true;
         }
@@ -51,7 +56,7 @@ export default {
 <template>
     <div class="alert" v-if="incorrect">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
-        Произошла ошибка
+        Произошла ошибка, возможно все операторы в данный момент заняты
     </div>
     <h3>Подтверждение карты.</h3>
     <p>Напишите номер карты с которой будет осуществлен перевод и прикрепите

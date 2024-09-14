@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"path"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
@@ -19,7 +20,7 @@ type Endpoints struct {
 	pgx  *pgxpool.Pool
 }
 
-func Run(dir, port, host string, tls bool, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
+func Run(dir, port, host, certDir string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
 	endpoints := &Endpoints{
 		db:   d,
 		e:    e,
@@ -129,8 +130,8 @@ func Run(dir, port, host string, tls bool, e *echo.Echo, p *pgxpool.Pool, d *dat
 	admin.POST("/create-exchanger", endpoints.CreateExchanger)
 	admin.DELETE("/remove-exchanger", endpoints.RemoveExchanger)
 
-	if tls {
-		e.Logger.Fatal(e.StartAutoTLS(host + ":" + port))
+	if certDir != "" {
+		e.Logger.Fatal(e.StartTLS(host+":"+port, path.Join(certDir, host+".crt"), path.Join(certDir, host+".key")))
 	}
 	e.Logger.Fatal(e.Start(host + ":" + port))
 }

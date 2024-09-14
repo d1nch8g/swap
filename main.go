@@ -49,7 +49,7 @@ var opts struct {
 	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
 	ServeDir        string `long:"serve-dir" env:"SERVE_DIR" default:"dist"`
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
-	Tls             bool   `long:"tls" env:"TLS"`
+	CertDir         string `long:"cert-dir" env:"CERT_DIR"`
 	Admin           string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
 	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:8080"`
 	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
@@ -113,5 +113,5 @@ func main() {
 		panic(err)
 	}
 
-	server.Run(opts.ServeDir, opts.Port, opts.Host, opts.Tls, e, conn, sqlc, bc, mail)
+	server.Run(opts.ServeDir, opts.Port, opts.Host, opts.CertDir, e, conn, sqlc, bc, mail)
 }
