@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"path"
 
+	"github.com/d1nch8g/swap/bestchange"
+	"github.com/d1nch8g/swap/email"
+	"github.com/d1nch8g/swap/gen/database"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"ion.lc/d1nhc8g/inswap/bestchange"
-	"ion.lc/d1nhc8g/inswap/email"
-	"ion.lc/d1nhc8g/inswap/gen/database"
 )
 
 type Endpoints struct {

@@ -7,10 +7,10 @@ import (
 	"errors"
 	"strings"
 
-	"ion.lc/d1nhc8g/inswap/bestchange"
-	"ion.lc/d1nhc8g/inswap/email"
-	"ion.lc/d1nhc8g/inswap/gen/database"
-	"ion.lc/d1nhc8g/inswap/server"
+	"github.com/d1nch8g/swap/bestchange"
+	"github.com/d1nch8g/swap/email"
+	"github.com/d1nch8g/swap/gen/database"
+	"github.com/d1nch8g/swap/server"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/golang-migrate/migrate/v4"
@@ -22,17 +22,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-//	@title			Inswap exchange api
+//	@title			Swap exchange api
 //	@version		1.0
-//	@description	Inswap exchange api.
-//	@termsOfService	http://github.com/d1nch8g/inswap
+//	@description	Swap exchange api.
+//	@termsOfService	http://github.com/d1nch8g/swap
 
-//	@contact.name	Inswap Support
-//	@contact.url	http://github.com/d1nch8g/inswap
-//	@contact.email	support@swagger.io
+//	@contact.name	Swap Support
+//	@contact.url	http://github.com/d1nch8g/swap
+//	@contact.email	support@ion.lc
 
 //	@license.name	MIT
-//	@license.url	https://github.com/d1nch8g/inswap/src/branch/main/LICENSE
+//	@license.url	https://github.com/d1nch8g/swap/src/branch/main/LICENSE
 
 //	@host		localhost:8080
 //	@BasePath	/api
@@ -50,11 +50,11 @@ var opts struct {
 	ServeDir        string `long:"serve-dir" env:"SERVE_DIR" default:"dist"`
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
 	CertDir         string `long:"cert-dir" env:"CERT_DIR"`
-	Admin           string `long:"admin" env:"ADMIN" default:"support@inswap.in:password"`
+	Admin           string `long:"admin" env:"ADMIN" default:"support@ion.lc:password"`
 	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:8080"`
 	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
-	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@inswap.in:password"`
+	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@ion.lc:password"`
 }
 
 func main() {

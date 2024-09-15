@@ -1,4 +1,4 @@
-module ion.lc/d1nhc8g/inswap
+module github.com/d1nch8g/swap
 
 go 1.23.0
 

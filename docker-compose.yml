@@ -1,12 +1,16 @@
 services:
-  inswap:
-    image: ion.lc/d1nch8g/inswap
+  swap:
+    image: ion.lc/d1nch8g/swap
     restart: always
     environment:
+      PORT: 80
       DATABASE: postgresql://user:password@db:5432/db?sslmode=disable
 
     volumes:
-      - ${PWD}:/
+      - ${PWD}:/home
+    ports:
+      - 80:80
+      - 443:443
   db:
     image: postgres
     restart: always

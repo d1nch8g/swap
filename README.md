@@ -1,4 +1,4 @@
-# Inswap - open currency exchange spot software
+# Swap - open currency exchange spot software
 
 This projects provides access to self hosted exchange spot which can be configured under your personal needs.
 

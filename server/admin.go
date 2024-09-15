@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/d1nch8g/swap/gen/database"
 	"github.com/labstack/echo/v4"
-	"ion.lc/d1nhc8g/inswap/gen/database"
 )
 
 // CreateCurrency godoc

@@ -88,10 +88,12 @@ definitions:
       order_id:
         type: integer
     type: object
-  server.CardConfirmationsRequest:
+  server.CardConfirmationsResponse:
     properties:
-      email:
-        type: string
+      confirmations:
+        items:
+          $ref: '#/definitions/database.CardConfirmation'
+        type: array
     type: object
   server.CreateBalanceRequest:
     properties:
@@ -270,14 +272,14 @@ host: localhost:8080
 info:
   contact:
     email: support@swagger.io
-    name: Inswap Support
-    url: http://github.com/d1nch8g/inswap
-  description: Inswap exchange api.
+    name: Swap Support
+    url: http://github.com/d1nch8g/swap
+  description: Swap exchange api.
   license:
     name: MIT
-    url: https://github.com/d1nch8g/inswap/src/branch/main/LICENSE
-  termsOfService: http://github.com/d1nch8g/inswap
-  title: Inswap exchange api
+    url: https://github.com/d1nch8g/swap/src/branch/main/LICENSE
+  termsOfService: http://github.com/d1nch8g/swap
+  title: Swap exchange api
   version: "1.0"
 paths:
   /admin/cancel-order:
@@ -570,15 +572,16 @@ paths:
   /operator/card-confirmations:
     get:
       parameters:
-      - description: 'Email '
-        in: body
-        name: status
+      - description: Email
+        in: query
+        name: email
         required: true
-        schema:
-          $ref: '#/definitions/server.CardConfirmationsRequest'
+        type: string
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/server.CardConfirmationsResponse'
       security:
       - ApiKeyAuth: []
       summary: Get user's card confirmations

@@ -4,10 +4,10 @@
     По любым вопросам связанным с исполнением заявок всегда можно обратиться на почту и в телеграм.
   </p>
   <p>
-    Почта: support@inswap.in
+    Почта: support@ion.lc
   </p>
   <p>
-    Telegram: @inswapin
+    Telegram: @ionlic
   </p>
 </template>
 
