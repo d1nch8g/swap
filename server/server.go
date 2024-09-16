@@ -13,20 +13,26 @@ import (
 )
 
 type Endpoints struct {
-	db   *database.Queries
-	e    *echo.Echo
-	bc   *bestchange.Client
-	mail *email.Mailer
-	pgx  *pgxpool.Pool
+	db       *database.Queries
+	e        *echo.Echo
+	bc       *bestchange.Client
+	mail     *email.Mailer
+	pgx      *pgxpool.Pool
+	host     string
+	email    string
+	telegram string
 }
 
-func Run(dir, port, host, certDir string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
+func Run(dir, port, host, certDir, email, telegram string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
 	endpoints := &Endpoints{
-		db:   d,
-		e:    e,
-		bc:   b,
-		pgx:  p,
-		mail: mail,
+		db:       d,
+		e:        e,
+		bc:       b,
+		mail:     mail,
+		pgx:      p,
+		host:     host,
+		email:    email,
+		telegram: telegram,
 	}
 
 	e.Use(middleware.Logger())
@@ -47,6 +53,7 @@ func Run(dir, port, host, certDir string, e *echo.Echo, p *pgxpool.Pool, d *data
 
 	api := e.Group("/api")
 
+	api.GET("/info", endpoints.Info)
 	api.POST("/create-user", endpoints.CreateUser)
 	api.POST("/create-order", endpoints.CreateOrder)
 	api.POST("/validate-card", endpoints.ValidateCard)

@@ -744,3 +744,22 @@ func (e *Endpoints) OrderStatus(c echo.Context) error {
 		Status: status,
 	})
 }
+
+type InfoResponse struct {
+	Host     string `json:"host"`
+	Email    string `json:"email"`
+	Telegram string `json:"telegram"`
+}
+
+// Info godoc
+//
+//	@Summary	Get info about the running instance.
+//	@Success	200		{object}	OrderStatusResponse
+//	@Router		/info [get]
+func (e *Endpoints) Info(c echo.Context) error {
+	return c.JSON(http.StatusOK, &InfoResponse{
+		Host:     e.host,
+		Email:    e.email,
+		Telegram: e.telegram,
+	})
+}

@@ -5,6 +5,8 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/d1nch8g/swap/bestchange"
@@ -55,6 +57,8 @@ var opts struct {
 	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@ion.lc:password"`
+	Telegram        string `long:"telegram" env:"TELEGRAM"`
+	Desciprtion     string `long:"description" env:"DESCRIPTION"`
 }
 
 func main() {
@@ -113,5 +117,12 @@ func main() {
 		panic(err)
 	}
 
-	server.Run(opts.ServeDir, opts.Port, opts.Host, opts.CertDir, e, conn, sqlc, bc, mail)
+	index, err := os.ReadFile(path.Join(opts.ServeDir, "index.html"))
+	if err != nil {
+		panic(err)
+	}
+	idx := strings.Replace(string(index), "{{ title }}", opts.Desciprtion, 1)
+	os.WriteFile(path.Join(opts.ServeDir, "index.html"), []byte(idx), os.ModePerm)
+
+	server.Run(opts.ServeDir, opts.Port, opts.Host, opts.CertDir, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)
 }
