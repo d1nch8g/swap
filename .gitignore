@@ -61,3 +61,6 @@ coverage
 .dart_tool
 build/**
 __debug_bin**
+
+.env
+.ENV

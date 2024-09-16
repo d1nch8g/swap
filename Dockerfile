@@ -21,6 +21,18 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o service
 
+FROM node as node
+
+WORKDIR /app
+
+COPY package.json package.json
+COPY package-lock.json package-lock.json
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
 
 FROM alpine
 
@@ -35,7 +47,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=builder /service/service /service
 COPY --from=builder /service/db/migrations /db/migrations
-COPY --from=builder /service/dist /dist
+COPY --from=node /app/dist /dist
 
 # Running as appuser
 USER appuser:appuser

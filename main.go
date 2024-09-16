@@ -121,7 +121,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	idx := strings.Replace(string(index), "{{ title }}", opts.Desciprtion, 1)
+	idx := strings.Replace(string(index), "{{ description }}", opts.Desciprtion, 1)
 	os.WriteFile(path.Join(opts.ServeDir, "index.html"), []byte(idx), os.ModePerm)
 
 	server.Run(opts.ServeDir, opts.Port, opts.Host, opts.CertDir, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)
