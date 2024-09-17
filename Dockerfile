@@ -49,6 +49,8 @@ COPY --from=builder /service/service /service
 COPY --from=builder /service/db/migrations /db/migrations
 COPY --from=node /app/dist /dist
 
+RUN chmod a+rwx /dist/index.html
+
 # Running as appuser
 USER appuser:appuser
 

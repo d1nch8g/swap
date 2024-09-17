@@ -58,7 +58,7 @@ var opts struct {
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@ion.lc:password"`
 	Telegram        string `long:"telegram" env:"TELEGRAM"`
-	Desciprtion     string `long:"description" env:"DESCRIPTION"`
+	Title           string `long:"title" env:"TITLE"`
 }
 
 func main() {
@@ -121,8 +121,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	idx := strings.Replace(string(index), "{{ description }}", opts.Desciprtion, 1)
-	os.WriteFile(path.Join(opts.ServeDir, "index.html"), []byte(idx), os.ModePerm)
+	idx := strings.Replace(string(index), "{{ title }}", opts.Title, 1)
+	err = os.WriteFile(path.Join(opts.ServeDir, "index.html"), []byte(idx), os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
 
 	server.Run(opts.ServeDir, opts.Port, opts.Host, opts.CertDir, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)
 }

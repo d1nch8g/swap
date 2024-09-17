@@ -1,6 +1,6 @@
 services:
   swap:
-    image: ion.lc/d1nch8g/swap
+    image: ghcr.io/d1nch8g/swap
     restart: always
     environment:
       PORT: 80
@@ -8,8 +8,8 @@ services:
       SERVE_DIR: /dist
       BESTCHANGE_TOKEN: ${BESTCHANGE_TOKEN}
       EMAIL_CREDS: ${EMAIL_CREDS}
-        
-      
+      TITLE: Exchange spot
+      TELEGRAM: "@ionlic"
     volumes:
       - ${PWD}:/home
     ports:
