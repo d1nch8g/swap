@@ -55,7 +55,7 @@ func Run(port, host, email, telegram string, e *echo.Echo, p *pgxpool.Pool, d *d
 
 	for _, path := range staticDir {
 		handler := http.FileServer(web.AssetFile())
-		e.GET(path, echo.WrapHandler(handler))
+		e.GET(path, echo.WrapHandler(http.StripPrefix(path, handler)))
 	}
 	for _, path := range web.AssetNames() {
 		handler := http.FileServer(web.AssetFile())
