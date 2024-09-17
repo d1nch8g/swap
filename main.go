@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/d1nch8g/swap/bestchange"
@@ -57,6 +58,23 @@ var opts struct {
 	Telegram        string `long:"telegram" env:"TELEGRAM"`
 	CertFile        string `long:"cert-file" env:"CERT_FILE"`
 	KeyFile         string `long:"key-file" env:"KEY_FILE"`
+	Help            bool   `short:"h" long:"help"`
+}
+
+func Help() string {
+	return `Server parameters:
+--port             - Port on which to run application on
+--host             - Hostname, should be inintialized on production runs
+--database         - database connection string
+--bestchange-token - token to access bestchange API
+--admin            - admin creds "email:password"
+--email-addr       - email client address
+--email-port       - email client port
+--email-creds      - email "login:password"
+--telegram         - telegram link
+--cert-file        - Cert file path (should be used for TLS)
+--key-file         - Key file path (should be used for TLS)
+-h --help          - Show this help message and exit`
 }
 
 func main() {
@@ -64,6 +82,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	if opts.Help {
+		fmt.Println(Help())
+		return
+	}
+
 	spew.Dump(opts)
 
 	s := bindata.Resource(migr.AssetNames(),
