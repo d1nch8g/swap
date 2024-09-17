@@ -31,6 +31,8 @@ export default {
 </script>
 
 <template>
+    <title>Подтверждения карт</title>
+
     <h3>Подтвержденные карты</h3>
 
     <form @submit.prevent="findCardConfirmations">

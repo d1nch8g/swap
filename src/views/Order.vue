@@ -80,6 +80,8 @@ export default {
 </script>
 
 <template>
+    <title>Заказ {{ orderNum }}</title>
+
     <h3>Заявка номер {{ orderNum }}.</h3>
     <p>Заявка находится в статусе: <b>{{ status }}</b></p>
     <p v-if="trailText">{{ trailText }}</p>

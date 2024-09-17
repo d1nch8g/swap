@@ -72,6 +72,8 @@ export default {
 </script>
 
 <template>
+    <title>Валюты</title>
+
     <h2>Валюты</h2>
     <table id="table">
         <tr>

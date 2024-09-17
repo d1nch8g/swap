@@ -41,6 +41,7 @@ export default {
 </script>
 
 <template>
+    <title>Страница профиля</title>
 
     <div class="card">
         <div class="container">

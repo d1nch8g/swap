@@ -77,8 +77,4 @@ Configuration:
 
 http://192.168.0.105:8080/?currin=TON&currout=SBPRUB
 
-add transactions to execute and create order functions
-
-add validate card page
-
 -->

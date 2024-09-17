@@ -476,23 +476,33 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 		return err
 	}
 
+	tx, err := e.pgx.Begin(c.Request().Context())
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+	defer tx.Rollback(c.Request().Context())
+
+	qtx := e.db.WithTx(tx)
+
 	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
 
-	operator, err := e.db.GetUserByToken(c.Request().Context(), token)
+	operator, err := qtx.GetUserByToken(c.Request().Context(), token)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
 
-	balances, err := e.db.ListBalances(c.Request().Context(), operator.ID)
+	balances, err := qtx.ListBalances(c.Request().Context(), operator.ID)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
 
-	order, err := e.db.GetOrder(c.Request().Context(), req.OrderId)
+	order, err := qtx.GetOrder(c.Request().Context(), req.OrderId)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -500,7 +510,7 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 	}
 
 	for _, balance := range balances {
-		exch, err := e.db.GetExchangerById(c.Request().Context(), order.ExchangerID)
+		exch, err := qtx.GetExchangerById(c.Request().Context(), order.ExchangerID)
 		if err != nil {
 			c.Response().WriteHeader(http.StatusInternalServerError)
 			_, err := c.Response().Write([]byte("unable to access database"))
@@ -508,7 +518,7 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 		}
 
 		if balance.CurrencyID == exch.InCurrency {
-			_, err = e.db.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
+			_, err = qtx.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
 				ID:      balance.ID,
 				UserID:  operator.ID,
 				Balance: balance.Balance + order.AmountIn,
@@ -522,7 +532,7 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 		}
 
 		if balance.CurrencyID == exch.OutCurrency {
-			_, err = e.db.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
+			_, err = qtx.UpdateBalance(c.Request().Context(), database.UpdateBalanceParams{
 				ID:      balance.ID,
 				UserID:  operator.ID,
 				Balance: balance.Balance - order.AmountOut,
@@ -537,7 +547,7 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 	}
 
 	// Mark operator as free.
-	_, err = e.db.UpdateUserBusy(c.Request().Context(), database.UpdateUserBusyParams{
+	_, err = qtx.UpdateUserBusy(c.Request().Context(), database.UpdateUserBusyParams{
 		Email: operator.Email,
 		Busy:  false,
 	})
@@ -548,28 +558,35 @@ func (e *Endpoints) ExecuteOrder(c echo.Context) error {
 	}
 
 	// Mark transaction as finished.
-	_, err = e.db.UpdateOrderFinished(c.Request().Context(), order.ID)
+	_, err = qtx.UpdateOrderFinished(c.Request().Context(), order.ID)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
 
-	u, err := e.db.GetUserById(c.Request().Context(), order.UserID)
+	u, err := qtx.GetUserById(c.Request().Context(), order.UserID)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
 
-	exch, err := e.db.GetExchangerById(c.Request().Context(), order.ExchangerID)
+	exch, err := qtx.GetExchangerById(c.Request().Context(), order.ExchangerID)
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
 
-	outCurr, err := e.db.GetCurrencyById(c.Request().Context(), exch.OutCurrency)
+	outCurr, err := qtx.GetCurrencyById(c.Request().Context(), exch.OutCurrency)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	err = tx.Commit(c.Request().Context())
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))

@@ -62,6 +62,8 @@ export default {
 </script>
 
 <template>
+    <title>Войти в аккаунт</title>
+
     <div class="alert" v-if="incorrect">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
         Неправильный логин или пароль

@@ -60,6 +60,8 @@ export default {
 </script>
 
 <template>
+    <title>Перевод средств</title>
+
     <div class="alert" v-if="incorrect">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
         Ошибка при загрузке файла, попробуйте еще раз

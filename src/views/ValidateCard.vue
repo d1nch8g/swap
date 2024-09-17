@@ -43,7 +43,7 @@ export default {
                     return;
                 }
 
-                if (response.status === 409) { 
+                if (response.status === 409) {
                     this.allOperatorsBusy
                 }
             }
@@ -54,6 +54,8 @@ export default {
 </script>
 
 <template>
+    <title>Подтверждение карты</title>
+
     <div class="alert" v-if="incorrect">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
         Произошла ошибка, возможно все операторы в данный момент заняты

@@ -86,6 +86,8 @@ export default {
 </script>
 
 <template>
+    <title>Обменники</title>
+
     <h2>Обменники</h2>
     <table id="table">
         <tr>

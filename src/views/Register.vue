@@ -41,6 +41,8 @@ export default {
 </script>
 
 <template>
+    <title>Регистрация нового аккаунта</title>
+
     <div class="alert" v-if="showPasswordNotification">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
         Пароли не совпадают

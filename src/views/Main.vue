@@ -129,6 +129,8 @@ export default {
 </script>
 
 <template>
+    <title>Обмен {{ currencyIn }} на {{ currencyOut }}</title>
+
     <form @submit.prevent="createOrder">
         <label for="currin">Отдаете:</label>
         <select id="currin" name="currin" v-model="currencyIn">

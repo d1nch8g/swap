@@ -218,6 +218,8 @@ export default {
 </script>
 
 <template>
+    <title>Панель управления</title>
+
     <h2>Активные заявки</h2>
     <table id="table">
         <tr>
