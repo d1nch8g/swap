@@ -55,6 +55,8 @@ var opts struct {
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@ion.lc:password"`
 	Telegram        string `long:"telegram" env:"TELEGRAM"`
+	CertFile        string `long:"cert-file" env:"CERT_FILE"`
+	KeyFile         string `long:"key-file" env:"KEY_FILE"`
 }
 
 func main() {
@@ -124,5 +126,5 @@ func main() {
 		panic(err)
 	}
 
-	server.Run(opts.Port, opts.Host, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)
+	server.Run(opts.Port, opts.Host, opts.CertFile, opts.KeyFile, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)
 }

@@ -23,7 +23,7 @@ type Endpoints struct {
 	telegram string
 }
 
-func Run(port, host, email, telegram string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
+func Run(port, host, certFile, keyFile, email, telegram string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
 	endpoints := &Endpoints{
 		db:       d,
 		e:        e,
@@ -150,11 +150,8 @@ func Run(port, host, email, telegram string, e *echo.Echo, p *pgxpool.Pool, d *d
 	admin.POST("/create-exchanger", endpoints.CreateExchanger)
 	admin.DELETE("/remove-exchanger", endpoints.RemoveExchanger)
 
-	if host != "" {
-		go func() {
-			e.Logger.Fatal(e.Start(":80"))
-		}()
-		e.Logger.Fatal(e.StartAutoTLS(host + ":" + port))
+	if keyFile != "" && certFile != "" {
+		e.Logger.Fatal(e.StartTLS(":"+port, keyFile, certFile))
 	}
 	e.Logger.Fatal(e.Start(":" + port))
 }
