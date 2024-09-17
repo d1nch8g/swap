@@ -2,7 +2,6 @@ package server
 
 import (
 	"net/http"
-	"path"
 
 	"github.com/d1nch8g/swap/bestchange"
 	"github.com/d1nch8g/swap/email"
@@ -24,7 +23,7 @@ type Endpoints struct {
 	telegram string
 }
 
-func Run(port, host, certDir, email, telegram string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
+func Run(port, host, email, telegram string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
 	endpoints := &Endpoints{
 		db:       d,
 		e:        e,
@@ -155,7 +154,7 @@ func Run(port, host, certDir, email, telegram string, e *echo.Echo, p *pgxpool.P
 		go func() {
 			e.Logger.Fatal(e.Start(":80"))
 		}()
-		e.Logger.Fatal(e.StartTLS(":"+port, path.Join(certDir, host+".crt"), path.Join(certDir, host+".key")))
+		e.Logger.Fatal(e.StartAutoTLS(host + ":" + port))
 	}
 	e.Logger.Fatal(e.Start(":" + port))
 }

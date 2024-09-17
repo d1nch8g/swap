@@ -50,9 +50,7 @@ var opts struct {
 	Host            string `long:"host" env:"HOST"`
 	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
-	CertDir         string `long:"cert-dir" env:"CERT_DIR"`
 	Admin           string `long:"admin" env:"ADMIN" default:"support@ion.lc:password"`
-	ApiAddr         string `long:"api-addr" env:"API_ADDRESS" default:"http://localhost:8080"`
 	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@ion.lc:password"`
@@ -105,7 +103,7 @@ func main() {
 		opts.EmailAddress,
 		strings.Split(opts.EmailCreds, ":")[0],
 		strings.Split(opts.EmailCreds, ":")[1],
-		opts.ApiAddr,
+		"https://"+opts.Host,
 		opts.EmailPort,
 	)
 
@@ -126,5 +124,5 @@ func main() {
 		panic(err)
 	}
 
-	server.Run(opts.Port, opts.Host, opts.CertDir, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)
+	server.Run(opts.Port, opts.Host, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)
 }
