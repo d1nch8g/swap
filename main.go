@@ -5,19 +5,19 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"errors"
-	"os"
-	"path"
 	"strings"
 
 	"github.com/d1nch8g/swap/bestchange"
 	"github.com/d1nch8g/swap/email"
 	"github.com/d1nch8g/swap/gen/database"
+	"github.com/d1nch8g/swap/gen/migr"
 	"github.com/d1nch8g/swap/server"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jessevdk/go-flags"
@@ -49,7 +49,6 @@ var opts struct {
 	Port            string `long:"port" env:"PORT" default:"8080"`
 	Host            string `long:"host" env:"HOST"`
 	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
-	ServeDir        string `long:"serve-dir" env:"SERVE_DIR" default:"dist"`
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
 	CertDir         string `long:"cert-dir" env:"CERT_DIR"`
 	Admin           string `long:"admin" env:"ADMIN" default:"support@ion.lc:password"`
@@ -58,7 +57,6 @@ var opts struct {
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@ion.lc:password"`
 	Telegram        string `long:"telegram" env:"TELEGRAM"`
-	Title           string `long:"title" env:"TITLE"`
 }
 
 func main() {
@@ -68,8 +66,19 @@ func main() {
 	}
 	spew.Dump(opts)
 
-	m, err := migrate.New(
-		"file://db/migrations",
+	s := bindata.Resource(migr.AssetNames(),
+		func(name string) ([]byte, error) {
+			return migr.Asset(name)
+		})
+
+	d, err := bindata.WithInstance(s)
+	if err != nil {
+		panic(err)
+	}
+
+	m, err := migrate.NewWithSourceInstance(
+		"go-bindata",
+		d,
 		opts.Database,
 	)
 	if err != nil {
@@ -117,15 +126,5 @@ func main() {
 		panic(err)
 	}
 
-	index, err := os.ReadFile(path.Join(opts.ServeDir, "index.html"))
-	if err != nil {
-		panic(err)
-	}
-	idx := strings.Replace(string(index), "{{ title }}", opts.Title, 1)
-	err = os.WriteFile(path.Join(opts.ServeDir, "index.html"), []byte(idx), os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-
-	server.Run(opts.ServeDir, opts.Port, opts.Host, opts.CertDir, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)
+	server.Run(opts.Port, opts.Host, opts.CertDir, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)
 }

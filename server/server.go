@@ -7,6 +7,7 @@ import (
 	"github.com/d1nch8g/swap/bestchange"
 	"github.com/d1nch8g/swap/email"
 	"github.com/d1nch8g/swap/gen/database"
+	"github.com/d1nch8g/swap/gen/web"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -23,7 +24,7 @@ type Endpoints struct {
 	telegram string
 }
 
-func Run(dir, port, host, certDir, email, telegram string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
+func Run(port, host, certDir, email, telegram string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
 	endpoints := &Endpoints{
 		db:       d,
 		e:        e,
@@ -37,19 +38,30 @@ func Run(dir, port, host, certDir, email, telegram string, e *echo.Echo, p *pgxp
 
 	e.Use(middleware.Logger())
 
-	e.Static("/", dir)
-	e.Static("/contacts", dir)
-	e.Static("/login", dir)
-	e.Static("/register", dir)
-	e.Static("/rules", dir)
-	e.Static("/profile", dir)
-	e.Static("/operator", dir)
-	e.Static("/currencies", dir)
-	e.Static("/exchangers", dir)
-	e.Static("/card-confirmations", dir)
-	e.Static("/transfer", dir)
-	e.Static("/order", dir)
-	e.Static("/validate-card", dir)
+	staticDir := []string{
+		"/",
+		"/contacts",
+		"/login",
+		"/register",
+		"/rules",
+		"/profile",
+		"/operator",
+		"/currencies",
+		"/exchangers",
+		"/card-confirmations",
+		"/transfer",
+		"/order",
+		"/validate-card",
+	}
+
+	for _, path := range staticDir {
+		handler := http.FileServer(web.AssetFile())
+		e.GET(path, echo.WrapHandler(handler))
+	}
+	for _, path := range web.AssetNames() {
+		handler := http.FileServer(web.AssetFile())
+		e.GET(path, echo.WrapHandler(handler))
+	}
 
 	api := e.Group("/api")
 
@@ -83,6 +95,7 @@ func Run(dir, port, host, certDir, email, telegram string, e *echo.Echo, p *pgxp
 	}))
 
 	user.GET("/list-orders", endpoints.ListOrders)
+	user.GET("/self-info", endpoints.SelfInfo)
 
 	operator := api.Group("/operator", middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {
 		u, err := d.GetUserByToken(c.Request().Context(), auth)

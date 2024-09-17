@@ -177,6 +177,33 @@ func (e *Endpoints) ListOrders(c echo.Context) error {
 	})
 }
 
+type SelfInfoResponse struct {
+	Email string `json:"email"`
+	Busy  bool   `json:"busy"`
+}
+
+// ListOrders godoc
+//
+//	@Summary	Get user's self info
+//	@Success	200	{object}	SelfInfoResponse
+//	@Security	ApiKeyAuth
+//	@Router		/user/self-info [get]
+func (e *Endpoints) SelfInfo(c echo.Context) error {
+	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
+
+	u, err := e.db.GetUserByToken(c.Request().Context(), token)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &SelfInfoResponse{
+		Email: u.Email,
+		Busy:  u.Busy,
+	})
+}
+
 type CreateUserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

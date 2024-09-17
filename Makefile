@@ -5,6 +5,7 @@ install:
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/swaggo/swag/cmd/swag@latest
+	go install github.com/go-bindata/go-bindata/go-bindata@latest
 
 format:
 	gofmt -w .
@@ -22,7 +23,10 @@ run:
 .PHONY: gen
 gen:
 	sqlc generate
-	swag init -o . --ot yaml 
+	swag init -o . --ot yaml
+	npm run build
+	go-bindata -pkg web -o gen/web/web.go -fs -prefix "dist/" dist/...
+	go-bindata -pkg migr -o gen/migr/migr.go -fs -prefix "db/migrations/" db/migrations/...
 
 watch:
 	for number in 1 2 3 4 ; do \

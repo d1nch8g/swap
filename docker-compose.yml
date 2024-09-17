@@ -5,10 +5,8 @@ services:
     environment:
       PORT: 80
       DATABASE: postgresql://user:password@db:5432/db?sslmode=disable
-      SERVE_DIR: /dist
       BESTCHANGE_TOKEN: ${BESTCHANGE_TOKEN}
       EMAIL_CREDS: ${EMAIL_CREDS}
-      TITLE: Exchange spot
       TELEGRAM: "@ionlic"
     volumes:
       - ${PWD}:/home

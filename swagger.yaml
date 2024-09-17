@@ -231,6 +231,13 @@ definitions:
       id:
         type: integer
     type: object
+  server.SelfInfoResponse:
+    properties:
+      busy:
+        type: boolean
+      email:
+        type: string
+    type: object
   server.UpdateBalanceRequest:
     properties:
       address:
@@ -271,7 +278,7 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    email: support@swagger.io
+    email: support@ion.lc
     name: Swap Support
     url: http://github.com/d1nch8g/swap
   description: Swap exchange api.
@@ -504,6 +511,14 @@ paths:
           schema:
             $ref: '#/definitions/server.CurrentRateResponse'
       summary: Current rate at specific currency
+  /info:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.OrderStatusResponse'
+      summary: Get info about the running instance.
   /list-currencies:
     get:
       responses:
@@ -654,6 +669,16 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: List user's orders
+  /user/self-info:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.SelfInfoResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user's self info
   /validate-card:
     post:
       parameters:

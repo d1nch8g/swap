@@ -1,3 +1,16 @@
+FROM node as node
+
+WORKDIR /app
+
+COPY package.json package.json
+COPY package-lock.json package-lock.json
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
 FROM golang:1.23-alpine as builder
 
 WORKDIR /service
@@ -16,23 +29,16 @@ RUN adduser \
 
 COPY go.mod go.sum ./
 RUN go mod download
+RUN go install github.com/go-bindata/go-bindata/go-bindata@latest
 
 COPY . .
+
+COPY --from=node /app/dist dist
+
+RUN go-bindata -pkg web -o gen/web/web.go -fs -prefix "dist/" dist/...
+RUN go-bindata -pkg web -o gen/migr/migr.go -fs -prefix "db/migrations/" db/migrations/...
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o service
-
-FROM node as node
-
-WORKDIR /app
-
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-
-RUN npm install
-
-COPY . .
-
-RUN npm run build
 
 FROM alpine
 
@@ -46,10 +52,6 @@ COPY --from=builder /etc/group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=builder /service/service /service
-COPY --from=builder /service/db/migrations /db/migrations
-COPY --from=node /app/dist /dist
-
-RUN chmod a+rwx /dist/index.html
 
 # Running as appuser
 USER appuser:appuser

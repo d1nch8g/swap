@@ -3,6 +3,7 @@ export default {
     data() {
         return {
             orders: [],
+            email: ""
         }
     },
     methods: {
@@ -27,11 +28,27 @@ export default {
 
         let resp = await response.json();
         this.orders = resp.orders;
+
+        let selfInfoResponse = await fetch("/api/user/self-info", {
+            method: "GET",
+            headers: headersList
+        });
+
+        let selfInfo = await selfInfoResponse.json();
+        this.email = selfInfo.email; ``
     }
 }
 </script>
 
 <template>
+
+    <div class="card">
+        <div class="container">
+            <h4><b>{{ email }}</b></h4>
+            <p>Это ваш профиль, здесь будут отображены все ваши заявки.</p>
+        </div>
+    </div>
+
     <h2>Ваши заявки</h2>
     <table id="table">
         <tr>
@@ -59,8 +76,7 @@ export default {
     </table>
 
     <br>
-
-    <button class="button" style="vertical-align:middle" @click="logout"><span>Выйти </span></button>
+    <button class="button" @click="logout"><span>Выйти</span></button>
 </template>
 
 <style scoped>
@@ -92,44 +108,33 @@ export default {
     color: white;
 }
 
+.card {
+    /* Add shadows to create the "card" effect */
+    margin: 20px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+}
+
+/* On mouse-over, add a deeper shadow */
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Add some padding inside the card container */
+.container {
+    padding: 2px 16px;
+}
+
 .button {
-    display: inline-block;
-    border-radius: 4px;
-    background-color: #f4511e;
+    background-color: orangered;
+    /* Green */
     border: none;
-    color: #FFFFFF;
+    color: white;
+    padding: 15px 32px;
     text-align: center;
-    font-size: 28px;
-    padding: 20px;
-    width: 200px;
-    transition: all 0.5s;
-    cursor: pointer;
-    margin: 5px;
-}
-
-.button span {
-    cursor: pointer;
+    text-decoration: none;
     display: inline-block;
-    position: relative;
-    transition: 0.5s;
-}
-
-.button span:after {
-    content: '\00bb';
-    position: absolute;
-    opacity: 0;
-    top: 0;
-    right: -20px;
-    transition: 0.5s;
-}
-
-.button:hover span {
-    padding-right: 25px;
-}
-
-.button:hover span:after {
-    opacity: 1;
-    right: 0;
+    font-size: 16px;
 }
 
 table {
