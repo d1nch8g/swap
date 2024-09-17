@@ -14,3 +14,8 @@ sql:
           go_type:
             import: "time"
             type: "Time"
+        - db_type: "bigserial"
+          nullable: true
+          go_type:
+            type: "int64"
+            pointer: true

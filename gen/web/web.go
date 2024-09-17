@@ -204,7 +204,7 @@ func assetsCardconfirmationsCzinkekcCss() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/CardConfirmations-CZINKekc.css", size: 1088, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/CardConfirmations-CZINKekc.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -224,7 +224,7 @@ func assetsCardconfirmationsDet0y0ibJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/CardConfirmations-Det0Y0ib.js", size: 1506, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/CardConfirmations-Det0Y0ib.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -244,7 +244,7 @@ func assetsContactsBzcbrerwJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Contacts-BzcBRERW.js", size: 761, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Contacts-BzcBRERW.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -264,7 +264,7 @@ func assetsCurrenciesG26aiotqCss() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Currencies-G26AIotq.css", size: 2361, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Currencies-G26AIotq.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -284,7 +284,7 @@ func assetsCurrenciesNzvsw9blJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Currencies-nzVSW9bL.js", size: 2699, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Currencies-nzVSW9bL.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -304,7 +304,7 @@ func assetsExchangersCkkkgrttJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Exchangers-CkKkgRTT.js", size: 4320, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Exchangers-CkKkgRTT.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -324,7 +324,7 @@ func assetsExchangersDhg6b1fqCss() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Exchangers-DHg6b1Fq.css", size: 2361, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Exchangers-DHg6b1Fq.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -344,7 +344,7 @@ func assetsLoginBngvw7xiCss() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Login-BNgVw7xI.css", size: 1158, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Login-BNgVw7xI.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -364,7 +364,7 @@ func assetsLoginD7inmowmJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Login-D7InMoWM.js", size: 2048, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Login-D7InMoWM.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -384,7 +384,7 @@ func assetsOperatorCddkzxovJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Operator-CDDKZxoV.js", size: 7779, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Operator-CDDKZxoV.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -404,7 +404,7 @@ func assetsOperatorCh31xvkrCss() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Operator-CH31xvkR.css", size: 2617, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Operator-CH31xvkR.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -424,7 +424,7 @@ func assetsOrderIhsouyquJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Order-IHsOUyQu.js", size: 3085, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Order-IHsOUyQu.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -444,7 +444,7 @@ func assetsProfile6aguuuu1Css() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Profile-6agUuuU1.css", size: 985, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Profile-6agUuuU1.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -464,7 +464,7 @@ func assetsProfileD8ramz2bJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Profile-D8raMz2b.js", size: 2052, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Profile-D8raMz2b.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -484,7 +484,7 @@ func assetsRegisterC4adH77Css() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Register-C4AD-h77.css", size: 991, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Register-C4AD-h77.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -504,7 +504,7 @@ func assetsRegisterCl0fNt1Js() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Register-Cl0f-nt1.js", size: 2680, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Register-Cl0f-nt1.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -524,7 +524,7 @@ func assetsRulesCdmuvu2fJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Rules-CDMUVu2f.js", size: 53631, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Rules-CDMUVu2f.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -544,7 +544,7 @@ func assetsTransfer5jzgwv43Css() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Transfer-5jZgwV43.css", size: 147, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Transfer-5jZgwV43.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -564,7 +564,7 @@ func assetsTransferCsxazu6rJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/Transfer-CsXAZu6R.js", size: 2551, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/Transfer-CsXAZu6R.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -584,7 +584,7 @@ func assetsValidatecardDbmqdkukCss() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/ValidateCard-DbmQdkUK.css", size: 1021, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/ValidateCard-DbmQdkUK.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -604,7 +604,7 @@ func assetsValidatecardQtcg6byfJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/ValidateCard-qtcg6BYF.js", size: 2551, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/ValidateCard-qtcg6BYF.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -624,7 +624,7 @@ func assetsIndexBsobszVJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/index-BSOBsz-v.js", size: 97608, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/index-BSOBsz-v.js", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -644,7 +644,7 @@ func assetsIndexBxzjpbs3Css() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/index-BXZjpBs3.css", size: 1609, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/index-BXZjpBs3.css", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -664,7 +664,7 @@ func assetsLogoDowkh2lkPng() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/logo-DOWkH2lK.png", size: 17065, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "assets/logo-DOWkH2lK.png", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -684,7 +684,7 @@ func indexHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "index.html", size: 408, mode: os.FileMode(420), modTime: time.Unix(1726608305, 0)}
+	info := bindataFileInfo{name: "index.html", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

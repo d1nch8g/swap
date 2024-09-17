@@ -40,6 +40,36 @@ func (q *Queries) CreateBalance(ctx context.Context, arg CreateBalanceParams) (B
 	return i, err
 }
 
+const createBotMessage = `-- name: CreateBotMessage :one
+INSERT INTO bot_messages (user_id, order_id, message, checked)
+VALUES ($1, $2, $3, $4)
+RETURNING user_id, order_id, message, checked
+`
+
+type CreateBotMessageParams struct {
+	UserID  *int64 `json:"user_id"`
+	OrderID *int64 `json:"order_id"`
+	Message string `json:"message"`
+	Checked bool   `json:"checked"`
+}
+
+func (q *Queries) CreateBotMessage(ctx context.Context, arg CreateBotMessageParams) (BotMessage, error) {
+	row := q.db.QueryRow(ctx, createBotMessage,
+		arg.UserID,
+		arg.OrderID,
+		arg.Message,
+		arg.Checked,
+	)
+	var i BotMessage
+	err := row.Scan(
+		&i.UserID,
+		&i.OrderID,
+		&i.Message,
+		&i.Checked,
+	)
+	return i, err
+}
+
 const createCardConfirmation = `-- name: CreateCardConfirmation :one
 INSERT INTO card_confirmations (user_id, currency_id, address, verified)
 VALUES ($1, $2, $3, $4)

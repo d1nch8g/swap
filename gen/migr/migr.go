@@ -2,6 +2,8 @@
 // sources:
 // db/migrations/0001_setup.down.sql
 // db/migrations/0001_setup.up.sql
+// db/migrations/0002_bot.down.sql
+// db/migrations/0002_bot.up.sql
 package migr
 
 import (
@@ -181,7 +183,7 @@ func _0001_setupDownSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "0001_setup.down.sql", size: 142, mode: os.FileMode(420), modTime: time.Unix(1725211424, 0)}
+	info := bindataFileInfo{name: "0001_setup.down.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -201,7 +203,47 @@ func _0001_setupUpSql() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "0001_setup.up.sql", size: 2188, mode: os.FileMode(420), modTime: time.Unix(1726254972, 0)}
+	info := bindataFileInfo{name: "0001_setup.up.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __0002_botDownSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\x09\xf2\x0f\x50\x08\x71\x74\xf2\x71\x55\x48\xca\x2f\x89\xcf\x4d\x2d\x2e\x4e\x4c\x4f\x2d\xb6\x06\x04\x00\x00\xff\xff\x10\xe1\xe1\xce\x18\x00\x00\x00")
+
+func _0002_botDownSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__0002_botDownSql,
+		"0002_bot.down.sql",
+	)
+}
+
+func _0002_botDownSql() (*asset, error) {
+	bytes, err := _0002_botDownSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "0002_bot.down.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __0002_botUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\xcf\xc1\xca\xc2\x30\x10\x04\xe0\x7b\x9f\x62\x8e\x2d\xfc\x6f\xf0\x9f\xd2\xb2\x2d\xc1\xb0\x81\x74\x05\x3d\x15\x6d\xa2\x96\x22\x85\x46\xdf\x5f\x8c\x55\xec\xcd\xeb\xec\xcc\x07\x5b\x39\x52\x42\x10\x55\x1a\xc2\x71\xba\x75\xd7\x10\xe3\xe1\x1c\x22\xf2\x0c\x00\xee\x31\xcc\xdd\xe0\x51\xea\xa6\x25\xa7\x95\xf9\x4b\x71\x65\xb9\x15\xa7\x34\x0b\x4e\x63\xf7\x2c\xa1\xb6\x8e\x74\xc3\xd8\xd0\x3e\x5f\x56\x05\x1c\xd5\xe4\x88\x2b\x6a\x93\x14\xf3\xc1\x17\x2f\x61\x9a\xfd\x0f\x72\x6a\xad\xe8\xf7\x6e\x65\xa7\xf0\x0b\x5f\x9e\x80\xd0\x4e\xc0\x56\xc0\x5b\xb3\xf8\xfd\x25\xf4\x63\xf0\x28\xad\x35\xa4\xf8\x73\xcd\x8a\xff\x47\x00\x00\x00\xff\xff\x99\x12\xfd\xd3\x0c\x01\x00\x00")
+
+func _0002_botUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__0002_botUpSql,
+		"0002_bot.up.sql",
+	)
+}
+
+func _0002_botUpSql() (*asset, error) {
+	bytes, err := _0002_botUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "0002_bot.up.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -260,6 +302,8 @@ func AssetNames() []string {
 var _bindata = map[string]func() (*asset, error){
 	"0001_setup.down.sql": _0001_setupDownSql,
 	"0001_setup.up.sql":   _0001_setupUpSql,
+	"0002_bot.down.sql":   _0002_botDownSql,
+	"0002_bot.up.sql":     _0002_botUpSql,
 }
 
 // AssetDir returns the file names below a certain
@@ -305,6 +349,8 @@ type bintree struct {
 var _bintree = &bintree{nil, map[string]*bintree{
 	"0001_setup.down.sql": &bintree{_0001_setupDownSql, map[string]*bintree{}},
 	"0001_setup.up.sql":   &bintree{_0001_setupUpSql, map[string]*bintree{}},
+	"0002_bot.down.sql":   &bintree{_0002_botDownSql, map[string]*bintree{}},
+	"0002_bot.up.sql":     &bintree{_0002_botUpSql, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
