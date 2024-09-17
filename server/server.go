@@ -151,7 +151,7 @@ func Run(port, host, certFile, keyFile, email, telegram string, e *echo.Echo, p 
 	admin.DELETE("/remove-exchanger", endpoints.RemoveExchanger)
 
 	if keyFile != "" && certFile != "" {
-		e.Logger.Fatal(e.StartTLS(":"+port, keyFile, certFile))
+		e.Logger.Fatal(e.StartTLS(":"+port, certFile, keyFile))
 	}
 	e.Logger.Fatal(e.Start(":" + port))
 }
