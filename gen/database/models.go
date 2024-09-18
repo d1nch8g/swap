@@ -17,10 +17,11 @@ type Balance struct {
 }
 
 type BotMessage struct {
-	UserID  *int64 `json:"user_id"`
-	OrderID *int64 `json:"order_id"`
-	Message string `json:"message"`
-	Checked bool   `json:"checked"`
+	UserID    *int64    `json:"user_id"`
+	OrderID   *int64    `json:"order_id"`
+	CreatedAt time.Time `json:"created_at"`
+	Message   string    `json:"message"`
+	Checked   bool      `json:"checked"`
 }
 
 type CardConfirmation struct {

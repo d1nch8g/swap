@@ -20,10 +20,10 @@ migrate:
 .PHONY: gen
 gen:
 	sqlc generate
-	swag init -o . --ot yaml
 	npm run build
 	go-bindata -fs -pkg web -o gen/web/web.go -prefix "dist/" dist/...
 	go-bindata -fs -pkg migr -o gen/migr/migr.go -prefix "db/migrations/" db/migrations/...
+	swag init -o . --ot yaml
 
 # ip on local network
 ip:

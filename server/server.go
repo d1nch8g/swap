@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/d1nch8g/swap/bestchange"
 	"github.com/d1nch8g/swap/email"
@@ -10,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/sirupsen/logrus"
 )
 
 type Endpoints struct {
@@ -35,7 +37,42 @@ func Run(port, host, certFile, keyFile, email, telegram string, e *echo.Echo, p 
 		telegram: telegram,
 	}
 
-	e.Use(middleware.Logger())
+	log := logrus.StandardLogger()
+	log.Formatter = &logrus.TextFormatter{
+		ForceColors:               true,
+		EnvironmentOverrideColors: true,
+		TimestampFormat:           time.RFC3339,
+	}
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogURI:    true,
+		LogStatus: true,
+		LogValuesFunc: func(c echo.Context, values middleware.RequestLoggerValues) error {
+			log.WithFields(logrus.Fields{
+				"URI":           values.URI,
+				"status":        values.Status,
+				"StartTime":     values.StartTime,
+				"Latency":       values.Latency,
+				"Protocol":      values.Protocol,
+				"RemoteIP":      values.RemoteIP,
+				"Host":          values.Host,
+				"Method":        values.Method,
+				"URIPath":       values.URIPath,
+				"RoutePath":     values.RoutePath,
+				"RequestID":     values.RequestID,
+				"Referer":       values.Referer,
+				"UserAgent":     values.UserAgent,
+				"Status":        values.Status,
+				"Error":         values.Error,
+				"ContentLength": values.ContentLength,
+				"ResponseSize":  values.ResponseSize,
+				"Headers":       values.Headers,
+				"QueryParams":   values.QueryParams,
+				"FormValues":    values.FormValues,
+			}).Info("request")
+
+			return nil
+		},
+	}))
 
 	staticDir := []string{
 		"/",

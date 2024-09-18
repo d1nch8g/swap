@@ -23,8 +23,6 @@ export default {
                 let data = await response.json();
                 this.cardConfirmations = data.confirmations;
             }
-
-
         }
     }
 }

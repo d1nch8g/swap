@@ -43,7 +43,7 @@ func (q *Queries) CreateBalance(ctx context.Context, arg CreateBalanceParams) (B
 const createBotMessage = `-- name: CreateBotMessage :one
 INSERT INTO bot_messages (user_id, order_id, message, checked)
 VALUES ($1, $2, $3, $4)
-RETURNING user_id, order_id, message, checked
+RETURNING user_id, order_id, created_at, message, checked
 `
 
 type CreateBotMessageParams struct {
@@ -64,6 +64,7 @@ func (q *Queries) CreateBotMessage(ctx context.Context, arg CreateBotMessagePara
 	err := row.Scan(
 		&i.UserID,
 		&i.OrderID,
+		&i.CreatedAt,
 		&i.Message,
 		&i.Checked,
 	)

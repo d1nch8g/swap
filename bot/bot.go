@@ -2,13 +2,12 @@ package bot
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/d1nch8g/swap/gen/database"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
 
 type Bot struct {
@@ -32,52 +31,50 @@ func RunBot(host, token string, db *database.Queries) error {
 	}
 	mybot.Bot = b
 
-	b.RegisterHandler(bot.HandlerTypeMessageText, "/help", bot.MatchTypeExact, mybot.helloHandler)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/help", bot.MatchTypeExact, mybot.helpHandler)
 
 	b.Start(context.Background())
 	return nil
 }
 
-func (s *Bot) helloHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+func (s *Bot) helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:    update.Message.Chat.ID,
-		ParseMode: models.ParseModeMarkdown,
-		Text: "Здравствуйте, *" + bot.EscapeMarkdown(update.Message.From.FirstName) + "*" + `
+		ChatID: update.Message.Chat.ID,
+		Text: `Для получения помощи по заявке отправьте пожалуйста в ответном сообщении по форме
 
-Отправьте пожалуйста:
-1) Номер заявки
-2) Ваш email
-3) Сообщение которое хотите доставить до службы поддержки
+1) Вашу электронная почта
+2) Номер заявки (если известен)
+3) Подробное описание проблемы с деталями для администрации сайта
 
-`,
+Сообщение будет доставлено до администрации сайта, ответ прийдет через бота и на email.`,
 	})
 }
 
 func (s *Bot) defaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	switch {
-	case !strings.HasPrefix(update.Message.Text, "/"):
-
+	if strings.HasPrefix(update.Message.Text, "1)") {
 		_, err := s.Database.CreateBotMessage(ctx, database.CreateBotMessageParams{
-			UserID:  new(int64),
-			OrderID: new(int64),
+			UserID:  nil,
+			OrderID: nil,
 			Message: update.Message.Text,
 			Checked: false,
 		})
 		if err != nil {
-			echo.New().Logger.Errorf("unable to create bot message")
+			logrus.Error("unbale to deliver bot message: ", err)
+			return
 		}
-		b.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID: update.Message.Chat.ID,
-			Text:   "Ваше сообщение доставлено, ожидайте ответа в этом чате",
-		})
 
-	default:
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text: fmt.Sprintf(`Здравствуйте, это бот обменника %s.
-	
-	Получить помощь по сделке: /help`, s.Host),
+			Text:   `Ваше сообщение доставлено, ожидайте ответа в этом чате`,
 		})
+		return
 	}
+
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text: `Введена непонятная команда, список допустимых комманд:
+
+/help`,
+	})
 
 }
