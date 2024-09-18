@@ -42,6 +42,10 @@ export default {
 
 <template>
     <title>Регистрация нового аккаунта</title>
+    <meta property="og:title" content="Регистрация нового аккаунта" />
+
+    <meta property="og:image" content="../assets/logo.svg" />
+
 
     <div class="alert" v-if="showPasswordNotification">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>

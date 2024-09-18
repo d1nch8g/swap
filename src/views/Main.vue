@@ -131,6 +131,14 @@ export default {
 <template>
     <title>Обмен {{ currencyIn }} на {{ currencyOut }}</title>
 
+    <meta property="og:title" :content="'Обмен ' + currencyIn + ' на ' + currencyOut" />
+
+    <meta name="description"  :content="'Обмен ' + currencyIn + ' на ' + currencyOut" />
+    <meta property="og:description" :content="'Обмен ' + currencyIn + ' на ' + currencyOut" />
+
+    <meta property="og:image" content="../assets/logo.svg" />
+
+
     <form @submit.prevent="createOrder">
         <label for="currin">Отдаете:</label>
         <select id="currin" name="currin" v-model="currencyIn">

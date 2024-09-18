@@ -64,6 +64,11 @@ export default {
 <template>
     <title>Войти в аккаунт</title>
 
+    <meta property="og:title" content="Вход в систему" />
+
+    <meta property="og:image" content="../assets/logo.svg" />
+
+
     <div class="alert" v-if="incorrect">
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
         Неправильный логин или пароль

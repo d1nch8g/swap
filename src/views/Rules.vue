@@ -23,6 +23,12 @@ export default {
 
 <template>
     <title>Правила сервиса</title>
+    <meta property="og:title" content="Правила сервиса" />
+
+    <meta name="description" content="На данной странице предствлены все правила оказания услуг." />
+    <meta property="og:description" content="На данной странице предствлены все правила оказания услуг." />
+
+    <meta property="og:image" content="../assets/logo.svg" />
 
     <h2>Правила сервиса</h2>
     <p>
