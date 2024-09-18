@@ -29,7 +29,7 @@ export default {
 <template>
   <div class="header">
     <a href="/">
-      <img src="./assets/logo.png" alt="Company logo" href="/">
+      <img src="./assets/logo.svg" alt="Company logo" href="/">
     </a>
 
     <div class="header-right">

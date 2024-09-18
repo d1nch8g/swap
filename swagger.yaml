@@ -320,7 +320,7 @@ paths:
       - ApiKeyAuth: []
       summary: Change busy status for admin operator
   /admin/check-if-admin:
-    delete:
+    post:
       responses:
         "200":
           description: OK

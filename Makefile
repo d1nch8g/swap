@@ -16,23 +16,14 @@ rundb:
 migrate:
 	migrate -path db/migrations/ -database "postgresql://user:password@localhost:5432/db?sslmode=disable" -verbose up
 
-run:
-	go run . --port 8080 --database "postgresql://user:password@localhost:5432/db?sslmode=disable"
-
 # Generates database related and swagger documentation from request comments (also checks migration schema)
 .PHONY: gen
 gen:
 	sqlc generate
 	swag init -o . --ot yaml
 	npm run build
-	go-bindata -pkg web -o gen/web/web.go -fs -prefix "dist/" dist/...
-	go-bindata -pkg migr -o gen/migr/migr.go -fs -prefix "db/migrations/" db/migrations/...
-
-watch:
-	for number in 1 2 3 4 ; do \
-        echo $$number ; \
-    done
-# swagger-codegen generate -i swagger.yaml -l javascript --disable-examples --flatten-inline-schema -o gen/client
+	go-bindata -fs -pkg web -o gen/web/web.go -prefix "dist/" dist/...
+	go-bindata -fs -pkg migr -o gen/migr/migr.go -prefix "db/migrations/" db/migrations/...
 
 # ip on local network
 ip:

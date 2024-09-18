@@ -153,7 +153,7 @@ func (e *Endpoints) RemoveExchanger(c echo.Context) error {
 //	@Summary	Check if user is an admin
 //	@Success	200
 //	@Security	ApiKeyAuth
-//	@Router		/admin/check-if-admin [delete]
+//	@Router		/admin/check-if-admin [post]
 func (e *Endpoints) CheckIfAdmin(c echo.Context) error {
 	token := strings.ReplaceAll(c.Request().Header["Authorization"][0], "Bearer ", "")
 
