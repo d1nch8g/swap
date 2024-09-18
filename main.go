@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/d1nch8g/swap/bestchange"
+	"github.com/d1nch8g/swap/bot"
 	"github.com/d1nch8g/swap/email"
 	"github.com/d1nch8g/swap/gen/database"
 	"github.com/d1nch8g/swap/gen/migr"
@@ -56,6 +57,7 @@ var opts struct {
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
 	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@ion.lc:password"`
 	Telegram        string `long:"telegram" env:"TELEGRAM"`
+	TelegramToken   string `long:"telegram-token" env:"TELEGRAM_TOKEN"`
 	CertFile        string `long:"cert-file" env:"CERT_FILE"`
 	KeyFile         string `long:"key-file" env:"KEY_FILE"`
 	Help            bool   `short:"h" long:"help"`
@@ -71,7 +73,8 @@ func Help() string {
 --email-addr       - email client address
 --email-port       - email client port
 --email-creds      - email "login:password"
---telegram         - telegram link
+--telegram         - telegram support bot link (will be displayed on the web server)
+--telegram-token   - telegram support bot token
 --cert-file        - Cert file path (should be used for TLS)
 --key-file         - Key file path (should be used for TLS)
 -h --help          - Show this help message and exit`
@@ -147,6 +150,15 @@ func main() {
 	})
 	if err != nil && !strings.Contains(err.Error(), "duplicate key value violates unique constraint ") {
 		panic(err)
+	}
+
+	if opts.TelegramToken != "" {
+		go func() {
+			err := bot.RunBot(opts.Host, opts.TelegramToken, sqlc)
+			if err != nil {
+				panic(err)
+			}
+		}()
 	}
 
 	server.Run(opts.Port, opts.Host, opts.CertFile, opts.KeyFile, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)

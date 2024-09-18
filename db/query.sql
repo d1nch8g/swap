@@ -204,3 +204,7 @@ SET payment_confirmed = $2,
   confirm_image = $3
 WHERE id = $1
 RETURNING *;
+-- name: CreateBotMessage :one
+INSERT INTO bot_messages (user_id, order_id, message, checked)
+VALUES ($1, $2, $3, $4)
+RETURNING *;

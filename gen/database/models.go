@@ -16,6 +16,13 @@ type Balance struct {
 	Address    string  `json:"address"`
 }
 
+type BotMessage struct {
+	UserID  *int64 `json:"user_id"`
+	OrderID *int64 `json:"order_id"`
+	Message string `json:"message"`
+	Checked bool   `json:"checked"`
+}
+
 type CardConfirmation struct {
 	ID         int64  `json:"id"`
 	UserID     int64  `json:"user_id"`
