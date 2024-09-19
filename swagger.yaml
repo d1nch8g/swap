@@ -161,6 +161,10 @@ definitions:
     properties:
       amount:
         type: number
+      min_amount:
+        type: number
+      rate:
+        type: number
     type: object
   server.Exchangers:
     properties:
@@ -180,6 +184,23 @@ definitions:
         items:
           $ref: '#/definitions/database.CardConfirmation'
         type: array
+    type: object
+  server.Item:
+    properties:
+      amount:
+        type: number
+      from:
+        type: string
+      in:
+        type: number
+      maxAmount:
+        type: number
+      minAmount:
+        type: number
+      out:
+        type: number
+      to:
+        type: string
     type: object
   server.Order:
     properties:
@@ -273,6 +294,13 @@ definitions:
       orders:
         items:
           $ref: '#/definitions/server.UserOrder'
+        type: array
+    type: object
+  server.rates:
+    properties:
+      rates:
+        items:
+          $ref: '#/definitions/server.Item'
         type: array
     type: object
 host: localhost:8080
@@ -442,6 +470,14 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Remove existing exchanger from API
+  /bcexport:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.rates'
+      summary: Export to bestchange.
   /confirm-payment:
     post:
       parameters:
@@ -630,6 +666,22 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get active orders bound to specific operator
+  /operator/order-search:
+    get:
+      parameters:
+      - description: Email
+        in: query
+        name: email
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.Orders'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user's card confirmations
   /operator/update-balance:
     post:
       parameters:

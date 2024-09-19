@@ -55,6 +55,9 @@ export default {
         <RouterLink to="/operator">Оперирование</RouterLink>
       </a>
       <a v-if="showOperator">
+        <RouterLink to="/orders">Заявки</RouterLink>
+      </a>
+      <a v-if="showOperator">
         <RouterLink to="/card-confirmations">Подтверждения карт</RouterLink>
       </a>
       <a v-if="showAdmin">

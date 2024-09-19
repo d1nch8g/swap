@@ -1,6 +1,4 @@
 <script>
-import ValidateCard from './ValidateCard.vue';
-
 export default {
     data() {
         return {
@@ -8,7 +6,6 @@ export default {
             balances: [],
             orders: [],
             cardConfirmations: [],
-            finorders: [],
             currencyCode: "",
             address: "",
             balance: 0
@@ -57,17 +54,6 @@ export default {
             let resp = await cardConfirmations.json();
             this.cardConfirmations = resp.card_confirmations;
         }
-
-        let finordersResponse = await fetch("/api/operator/finished-orders", {
-            method: "GET",
-            headers: headersList
-        });
-
-        if (finordersResponse.ok) {
-            let resp = await finordersResponse.json();
-            this.finorders = resp.orders;
-        }
-
     },
     methods: {
         async removeBalance(id) {
@@ -281,32 +267,6 @@ export default {
             <td>{{ balance.address }}</td>
             <td>{{ balance.balance }}</td>
             <td><button @click="removeBalance(balance.id)">Удалить</button></td>
-        </tr>
-    </table>
-
-    <h2>Выполненные заявки</h2>
-    <table id="table">
-        <tr>
-            <th>ID</th>
-            <th>Email</th>
-            <th>Получаемая валюта</th>
-            <th>Получаемое количество</th>
-            <th>Отдаваемая валюта</th>
-            <th>Отдаваемое количество</th>
-            <th>Отправляемый адресс</th>
-            <th>Подтверждение платежа</th>
-            <th>Статус заявки</th>
-        </tr>
-        <tr v-for="order in finorders">
-            <td>{{ order.id }}</td>
-            <td>{{ order.email }}</td>
-            <td>{{ order.currin }}</td>
-            <td>{{ order.amountin }}</td>
-            <td>{{ order.currout }}</td>
-            <td>{{ order.amountout }}</td>
-            <td>{{ order.address }}</td>
-            <td><img v-bind:src="'data:image/jpeg;base64,' + order.approvepic" /></td>
-            <td>{{ order.status }}</td>
         </tr>
     </table>
 

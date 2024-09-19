@@ -323,7 +323,9 @@ func (e *Endpoints) ListCurrencies(c echo.Context) error {
 }
 
 type CurrentRateResponse struct {
-	Amount float64 `json:"amount"`
+	Amount    float64 `json:"amount"`
+	Rate      float64 `json:"rate"`
+	MinAmount float64 `json:"min_amount"`
 }
 
 // CurrentRate godoc
@@ -374,11 +376,6 @@ func (e *Endpoints) CurrentRate(c echo.Context) error {
 		_, err := c.Response().Write([]byte("unable to access database"))
 		return err
 	}
-	if amount < exch.Inmin {
-		c.Response().WriteHeader(http.StatusConflict)
-		_, err := c.Response().Write([]byte(fmt.Sprintf("not over minimum operation %f", exch.Inmin)))
-		return err
-	}
 
 	rez, err := e.bc.EstimateOperation(currencyIn, currencyOut)
 	if err != nil {
@@ -387,8 +384,21 @@ func (e *Endpoints) CurrentRate(c echo.Context) error {
 		return err
 	}
 
+	var outRez = rez
+	if outRez < 1 {
+		outRez = 1 / rez
+	}
+
+	if amount < exch.Inmin {
+		return c.JSON(http.StatusConflict, &CurrentRateResponse{
+			Rate:      outRez,
+			MinAmount: exch.Inmin,
+		})
+	}
+
 	return c.JSON(http.StatusOK, &CurrentRateResponse{
 		Amount: amount / rez,
+		Rate:   outRez,
 	})
 }
 
@@ -524,7 +534,7 @@ func (e *Endpoints) CreateOrder(c echo.Context) error {
 	outAmount := req.Amount / rate
 
 	// Find free operator with proper calculated amount for given currency
-	admins, err := qtx.GetFreeAdmins(c.Request().Context())
+	admins, err := qtx.GetFreeOperators(c.Request().Context())
 	if err != nil {
 		c.Response().WriteHeader(http.StatusInternalServerError)
 		_, err := c.Response().Write([]byte("unable to access database"))
@@ -798,12 +808,113 @@ type InfoResponse struct {
 // Info godoc
 //
 //	@Summary	Get info about the running instance.
-//	@Success	200		{object}	OrderStatusResponse
+//	@Success	200	{object}	OrderStatusResponse
 //	@Router		/info [get]
 func (e *Endpoints) Info(c echo.Context) error {
 	return c.JSON(http.StatusOK, &InfoResponse{
 		Host:     e.host,
 		Email:    e.email,
 		Telegram: e.telegram,
+	})
+}
+
+type rates struct {
+	Rates []Item `xml:"item"`
+}
+
+type Item struct {
+	From      string  `xml:"from"`
+	To        string  `xml:"to"`
+	In        float64 `xml:"in"`
+	Out       float64 `xml:"out"`
+	Amount    float64 `xml:"amount"`
+	MinAmount float64 `xml:"minamount"`
+	MaxAmount float64 `xml:"maxamount"`
+}
+
+// BcExport
+//
+//	@Summary	Export to bestchange.
+//	@Success	200	{object}	rates
+//	@Router		/bcexport [get]
+func (e *Endpoints) BcExport(c echo.Context) error {
+	exchangers, err := e.db.ListExchangers(c.Request().Context())
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	operators, err := e.db.GetFreeOperators(c.Request().Context())
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	balanceSum := map[string]float64{}
+
+	for _, operator := range operators {
+		balances, err := e.db.ListBalances(c.Request().Context(), operator.ID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+		for _, balance := range balances {
+			curr, err := e.db.GetCurrencyById(c.Request().Context(), balance.CurrencyID)
+			if err != nil {
+				c.Response().WriteHeader(http.StatusInternalServerError)
+				_, err := c.Response().Write([]byte("unable to access database"))
+				return err
+			}
+			if _, ok := balanceSum[curr.Code]; !ok {
+				balanceSum[curr.Code] = 0
+			}
+			balanceSum[curr.Code] = balanceSum[curr.Code] + balance.Balance
+		}
+	}
+
+	var items []Item
+
+	for _, exchanger := range exchangers {
+		inCurr, err := e.db.GetCurrencyById(c.Request().Context(), exchanger.InCurrency)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		outCurr, err := e.db.GetCurrencyById(c.Request().Context(), exchanger.OutCurrency)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		rate, err := e.bc.EstimateOperation(inCurr.Code, outCurr.Code)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access bestchange API"))
+			return err
+		}
+
+		if balanceSum[outCurr.Code]*rate < exchanger.Inmin {
+			continue
+		}
+
+		items = append(items, Item{
+			From:      inCurr.Code,
+			To:        outCurr.Code,
+			In:        rate,
+			Out:       1,
+			Amount:    balanceSum[outCurr.Code],
+			MinAmount: exchanger.Inmin,
+			MaxAmount: exchanger.Inmin * 20,
+		})
+	}
+
+	return c.XML(http.StatusOK, &rates{
+		Rates: items,
 	})
 }

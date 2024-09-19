@@ -813,3 +813,74 @@ func (e *Endpoints) CardConfirmations(c echo.Context) error {
 		Confirmations: cc,
 	})
 }
+
+// CardConfirmations godoc
+//
+//	@Summary	Get user's card confirmations
+//	@Param		email		query		string	true	"Email"
+//	@Success	200 {object} Orders
+//	@Security	ApiKeyAuth
+//	@Router		/operator/order-search [get]
+func (e *Endpoints) OrderSearch(c echo.Context) error {
+	email := c.QueryParam("email")
+
+	u, err := e.db.GetUser(c.Request().Context(), email)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusNotFound)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	dborders, err := e.db.UserOrders(c.Request().Context(), u.ID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	var orders []Order
+	for _, order := range dborders {
+		exch, err := e.db.GetExchangerById(c.Request().Context(), order.ExchangerID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		currIn, err := e.db.GetCurrencyById(c.Request().Context(), exch.InCurrency)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		currOut, err := e.db.GetCurrencyById(c.Request().Context(), exch.OutCurrency)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		u, err := e.db.GetUserById(c.Request().Context(), order.UserID)
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+
+		orders = append(orders, Order{
+			Id:             order.ID,
+			CurrencyIn:     currIn.Code,
+			Email:          u.Email,
+			AmountIn:       order.AmountIn,
+			CurrOut:        currOut.Code,
+			AmountOut:      order.AmountOut,
+			Address:        order.ReceiveAddress,
+			ApprovePicture: order.ConfirmImage,
+		})
+	}
+
+	return c.JSON(http.StatusOK, &Orders{
+		Orders: orders,
+	})
+}

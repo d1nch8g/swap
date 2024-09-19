@@ -95,7 +95,7 @@ SET token = $2,
   passwhash = $3
 WHERE email = $1
 RETURNING *;
--- name: GetFreeAdmins :many
+-- name: GetFreeOperators :many
 SELECT *
 FROM users
 WHERE admin = TRUE
@@ -169,6 +169,10 @@ INSERT INTO orders (
   )
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 RETURNING *;
+-- name: UserOrders :many
+SELECT *
+FROM orders
+WHERE user_id = $1;
 -- name: GetOrders :many
 SELECT *
 FROM orders

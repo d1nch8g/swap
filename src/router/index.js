@@ -65,11 +65,15 @@ const router = createRouter({
       name: "validate-card",
       component: () => import("../views/ValidateCard.vue"),
     },
-    ,
     {
       path: "/order",
       name: "order",
       component: () => import("../views/Order.vue"),
+    },
+    {
+      path: "/orders",
+      name: "orders",
+      component: () => import("../views/Orders.vue"),
     },
   ],
 });

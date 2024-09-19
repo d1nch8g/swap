@@ -9,6 +9,7 @@ export default {
             amountOut: 0,
             email: "",
             address: "",
+            rate: 0,
             minAmountToExchnage: 0,
             showCreateOrderButton: true,
             showMinAmountNotification: false,
@@ -33,6 +34,16 @@ export default {
         if (!this.currencyOut) {
             this.currencyOut = "SBPRUB";
         }
+
+        let resp = await fetch(`/api/current-rate?currency_in=${this.currencyIn}&currency_out=${this.currencyOut}&amount=${this.amountIn}`, {
+            method: "GET",
+            headers: {}
+        });
+
+        if (resp.ok) {
+            let rate = await resp.json();
+            this.rate = rate.rate;
+        }
     },
     async updated() {
         let response = await fetch(`/api/current-rate?currency_in=${this.currencyIn}&currency_out=${this.currencyOut}&amount=${this.amountIn}`, {
@@ -43,6 +54,7 @@ export default {
         // handle normal response
         if (response.ok) {
             let amount = await response.json();
+            this.rate = amount.rate;
             this.amountOut = amount.amount;
             this.showCreateOrderButton = true;
             this.showMinAmountNotification = false;
@@ -52,17 +64,19 @@ export default {
 
         // handle not over required minimum error
         if (response.status === 409) {
-            let rsp = await response.text();
+            let resp = await response.json();
+            this.rate = resp.rate;
             this.showCreateOrderButton = false;
             this.showMinAmountNotification = true;
             this.showPairNotSupportedNotfication = false;
             this.amountOut = 0;
-            this.minAmountToExchnage = Number(rsp.replace("not over minimum operation ", ""));
+            this.minAmountToExchnage = resp.min_amount;
             return;
         }
 
         // handle exchangers pair not supported
         if (response.status === 403) {
+            this.rate = 0;
             this.showCreateOrderButton = false;
             this.showMinAmountNotification = false;
             this.showPairNotSupportedNotfication = true;
@@ -133,7 +147,7 @@ export default {
 
     <meta property="og:title" :content="'Обмен ' + currencyIn + ' на ' + currencyOut" />
 
-    <meta name="description"  :content="'Обмен ' + currencyIn + ' на ' + currencyOut" />
+    <meta name="description" :content="'Обмен ' + currencyIn + ' на ' + currencyOut" />
     <meta property="og:description" :content="'Обмен ' + currencyIn + ' на ' + currencyOut" />
 
     <meta property="og:image" content="../assets/logo.svg" />
@@ -160,6 +174,7 @@ export default {
         <label for="address">Адрес получения (номер карты/кошелек):</label>
         <input type="text" id="address" name="address" v-model="address">
 
+        <label for="address">Используемый курс {{ rate }}.</label>
         <input type="submit" value="Создать заявку" v-if="showCreateOrderButton">
     </form>
 

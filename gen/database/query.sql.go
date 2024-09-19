@@ -468,15 +468,15 @@ func (q *Queries) GetFinishedOrders(ctx context.Context, operatorID int64) ([]Or
 	return items, nil
 }
 
-const getFreeAdmins = `-- name: GetFreeAdmins :many
+const getFreeOperators = `-- name: GetFreeOperators :many
 SELECT id, email, verified, passwhash, admin, operator, token, busy
 FROM users
 WHERE admin = TRUE
   AND busy = FALSE
 `
 
-func (q *Queries) GetFreeAdmins(ctx context.Context) ([]User, error) {
-	rows, err := q.db.Query(ctx, getFreeAdmins)
+func (q *Queries) GetFreeOperators(ctx context.Context) ([]User, error) {
+	rows, err := q.db.Query(ctx, getFreeOperators)
 	if err != nil {
 		return nil, err
 	}
@@ -1168,4 +1168,43 @@ func (q *Queries) UpdateUserVerified(ctx context.Context, arg UpdateUserVerified
 		&i.Busy,
 	)
 	return i, err
+}
+
+const userOrders = `-- name: UserOrders :many
+SELECT id, user_id, operator_id, exchanger_id, amount_in, amount_out, receive_address, created_at, cancelled, finished, confirm_image, payment_confirmed
+FROM orders
+WHERE user_id = $1
+`
+
+func (q *Queries) UserOrders(ctx context.Context, userID int64) ([]Order, error) {
+	rows, err := q.db.Query(ctx, userOrders, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OperatorID,
+			&i.ExchangerID,
+			&i.AmountIn,
+			&i.AmountOut,
+			&i.ReceiveAddress,
+			&i.CreatedAt,
+			&i.Cancelled,
+			&i.Finished,
+			&i.ConfirmImage,
+			&i.PaymentConfirmed,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

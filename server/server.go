@@ -50,6 +50,7 @@ func Run(port, host, certFile, keyFile, email, telegram string, e *echo.Echo, p 
 		"/card-confirmations",
 		"/transfer",
 		"/order",
+		"/orders",
 		"/validate-card",
 	}
 
@@ -65,6 +66,7 @@ func Run(port, host, certFile, keyFile, email, telegram string, e *echo.Echo, p 
 	api := e.Group("/api")
 
 	api.GET("/info", endpoints.Info)
+	api.GET("/bcexport", endpoints.BcExport)
 	api.POST("/create-user", endpoints.CreateUser)
 	api.POST("/create-order", endpoints.CreateOrder)
 	api.POST("/validate-card", endpoints.ValidateCard)
@@ -124,6 +126,7 @@ func Run(port, host, certFile, keyFile, email, telegram string, e *echo.Echo, p 
 	operator.POST("/cancel-order", endpoints.CancelOrder)
 	operator.GET("/get-card-confirmations", endpoints.GetCardConfirmations)
 	operator.POST("/approve-card", endpoints.ApproveCard)
+	operator.GET("/order-search", endpoints.OrderSearch)
 	operator.DELETE("/cancel-card", endpoints.CancelCard)
 	operator.GET("/card-confirmations", endpoints.CardConfirmations)
 
