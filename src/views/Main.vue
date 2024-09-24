@@ -14,10 +14,17 @@ export default {
             showCreateOrderButton: true,
             showMinAmountNotification: false,
             showPairNotSupportedNotfication: false,
-            allOperatorsAreBusyNotification: false
+            allOperatorsAreBusyNotification: false,
+            bestchangeLink: ""
         }
     },
     async mounted() {
+        let bclinkresp = await fetch("/api/bclink", {
+            method: "GET"
+        });
+
+        this.bestchangeLink = await bclinkresp.text();
+
         let response = await fetch("/api/list-currencies", {
             method: "GET"
         });
@@ -192,6 +199,15 @@ export default {
         <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
         Все операторы в данный момент заняты, создайсте заявку позже.
     </div>
+
+
+    <div class="box">
+        <div class="row header2">
+            <a :href="bestchangeLink">
+                <img src="../assets/bestchange.svg" alt="bestchange link">
+            </a>
+        </div>
+    </div>
 </template>
 
 <style scoped>
@@ -263,5 +279,27 @@ div {
 /* When moving the mouse over the close button */
 .closebtn:hover {
     color: black;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+.box {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
+
+.box .row.header2 {
+    flex: 0 1 auto;
+    /* The above is shorthand for:
+  flex-grow: 0,
+  flex-shrink: 1,
+  flex-basis: auto
+  */
 }
 </style>

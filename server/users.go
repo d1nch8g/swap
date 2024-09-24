@@ -918,3 +918,12 @@ func (e *Endpoints) BcExport(c echo.Context) error {
 		Rates: items,
 	})
 }
+
+// BcExport
+//
+//	@Summary	Export to bestchange.
+//	@Success	200
+//	@Router		/bclink [get]
+func (e *Endpoints) BcLink(c echo.Context) error {
+	return c.String(http.StatusOK, e.bestchangeLink)
+}

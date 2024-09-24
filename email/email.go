@@ -43,17 +43,17 @@ func (m *Mailer) OrderCreated(email, currIn, amountIn, addressIn, currOut, amoun
 	mes.SetHeader("To", email)
 	mes.SetHeader("Subject", "Заявка была создана.")
 	mes.SetBody("text/html", fmt.Sprintf(`<b>Заявка была создана:</b><br>
-	Email заявки: %s <br>
-	Ссылка на заявку: <a href="%s/order">Order link</a><br>
-	<br>
-	Продаваемая валюта: %s <br>
-	Количество: %s <br>
-	Адрес отправки: %s <br>
-	<br>
-	Покупаемая валюта: %s <br>
-	Количество: %s <br>
-	Адрес получения: %s <br>
-	`, email, m.ApiAddress, currIn, amountIn, addressIn, currOut, amountOut, addressOut))
+Email заявки: %s <br>
+Ссылка на заявку: <a href="%s/order">Order link</a><br>
+<br>
+Продаваемая валюта: %s <br>
+Количество: %s <br>
+Адрес отправки: %s <br>
+<br>
+Покупаемая валюта: %s <br>
+Количество: %s <br>
+Адрес получения: %s <br>
+`, email, m.ApiAddress, currIn, amountIn, addressIn, currOut, amountOut, addressOut))
 
 	return m.d.DialAndSend(mes)
 }

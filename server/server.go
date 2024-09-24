@@ -13,26 +13,28 @@ import (
 )
 
 type Endpoints struct {
-	db       *database.Queries
-	e        *echo.Echo
-	bc       *bestchange.Client
-	mail     *email.Mailer
-	pgx      *pgxpool.Pool
-	host     string
-	email    string
-	telegram string
+	db             *database.Queries
+	e              *echo.Echo
+	bc             *bestchange.Client
+	mail           *email.Mailer
+	pgx            *pgxpool.Pool
+	host           string
+	email          string
+	telegram       string
+	bestchangeLink string
 }
 
-func Run(port, host, certFile, keyFile, email, telegram string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
+func Run(port, host, certFile, keyFile, email, telegram, bestchangeLink string, e *echo.Echo, p *pgxpool.Pool, d *database.Queries, b *bestchange.Client, mail *email.Mailer) {
 	endpoints := &Endpoints{
-		db:       d,
-		e:        e,
-		bc:       b,
-		mail:     mail,
-		pgx:      p,
-		host:     host,
-		email:    email,
-		telegram: telegram,
+		db:             d,
+		e:              e,
+		bc:             b,
+		mail:           mail,
+		pgx:            p,
+		host:           host,
+		email:          email,
+		telegram:       telegram,
+		bestchangeLink: bestchangeLink,
 	}
 
 	e.Use(middleware.Logger())
@@ -67,6 +69,7 @@ func Run(port, host, certFile, keyFile, email, telegram string, e *echo.Echo, p 
 
 	api.GET("/info", endpoints.Info)
 	api.GET("/bcexport", endpoints.BcExport)
+	api.GET("/bclink", endpoints.BcLink)
 	api.POST("/create-user", endpoints.CreateUser)
 	api.POST("/create-order", endpoints.CreateOrder)
 	api.POST("/validate-card", endpoints.ValidateCard)

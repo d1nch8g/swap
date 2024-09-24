@@ -32,7 +32,7 @@ import (
 
 //	@contact.name	Swap Support
 //	@contact.url	http://github.com/d1nch8g/swap
-//	@contact.email	support@ion.lc
+//	@contact.email	support@chx.su
 
 //	@license.name	MIT
 //	@license.url	https://github.com/d1nch8g/swap/src/branch/main/LICENSE
@@ -51,10 +51,11 @@ var opts struct {
 	Host            string `long:"host" env:"HOST"`
 	Database        string `long:"database" env:"DATABASE" default:"postgresql://user:password@localhost:5432/db?sslmode=disable"`
 	BestchangeToken string `long:"bestchange-token" env:"BESTCHANGE_TOKEN"`
-	Admin           string `long:"admin" env:"ADMIN" default:"support@ion.lc:password"`
+	BestchangeLink  string `long:"bestchange-link" env:"BESTCHANGE_LINK" default:"https://bestchange.ru/"`
+	Admin           string `long:"admin" env:"ADMIN" default:"support@chx.su:password"`
 	EmailAddress    string `long:"email-addr" env:"EMAIL_ADDRESS" default:"mail.hosting.reg.ru"`
 	EmailPort       int    `long:"email-port" env:"EMAIL_PORT" default:"587"`
-	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@ion.lc:password"`
+	EmailCreds      string `long:"email-creds" env:"EMAIL_CREDS" default:"support@chx.su:password"`
 	Telegram        string `long:"telegram" env:"TELEGRAM"`
 	CertFile        string `long:"cert-file" env:"CERT_FILE"`
 	KeyFile         string `long:"key-file" env:"KEY_FILE"`
@@ -149,5 +150,5 @@ func main() {
 		panic(err)
 	}
 
-	server.Run(opts.Port, opts.Host, opts.CertFile, opts.KeyFile, strings.Split(opts.Admin, ":")[0], opts.Telegram, e, conn, sqlc, bc, mail)
+	server.Run(opts.Port, opts.Host, opts.CertFile, opts.KeyFile, strings.Split(opts.Admin, ":")[0], opts.Telegram, opts.BestchangeLink, e, conn, sqlc, bc, mail)
 }
