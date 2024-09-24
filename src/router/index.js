@@ -31,6 +31,11 @@ const router = createRouter({
       component: () => import("../views/Rules.vue"),
     },
     {
+      path: "/amlkyc",
+      name: "amlkyc",
+      component: () => import("../views/Amlkyc.vue"),
+    },
+    {
       path: "/profile",
       name: "profile",
       component: () => import("../views/Profile.vue"),

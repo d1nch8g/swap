@@ -42,6 +42,9 @@ export default {
       <a>
         <RouterLink to="/rules">Правила</RouterLink>
       </a>
+      <a>
+        <RouterLink to="/amlkyc">AML/KYC</RouterLink>
+      </a>
       <a v-if="showLogin">
         <RouterLink to="/login">Войти</RouterLink>
       </a>

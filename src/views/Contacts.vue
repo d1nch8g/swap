@@ -37,10 +37,10 @@ export default {
         По любым вопросам связанным с исполнением заявок всегда можно обратиться на почту и в телеграм.
     </p>
     <p>
-        Почта: {{ email }}
+        Почта: <a :href="'mailto:' + email">{{ email }}</a>
     </p>
     <p>
-        Telegram: {{ telegram }}
+        Telegram: <a :href="'https://t.me/' + telegram">@{{ telegram }}</a>
     </p>
 </template>
 

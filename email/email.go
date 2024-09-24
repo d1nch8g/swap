@@ -53,7 +53,9 @@ Email заявки: %s <br>
 Покупаемая валюта: %s <br>
 Количество: %s <br>
 Адрес получения: %s <br>
-`, email, m.ApiAddress, currIn, amountIn, addressIn, currOut, amountOut, addressOut))
+
+Адрес для контактов: %s
+`, email, m.ApiAddress, currIn, amountIn, addressIn, currOut, amountOut, addressOut, email))
 
 	return m.d.DialAndSend(mes)
 }

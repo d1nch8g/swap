@@ -910,7 +910,7 @@ func (e *Endpoints) BcExport(c echo.Context) error {
 			Out:       1,
 			Amount:    balanceSum[outCurr.Code],
 			MinAmount: exchanger.Inmin,
-			MaxAmount: exchanger.Inmin * 20,
+			MaxAmount: balanceSum[outCurr.Code] * rate,
 		})
 	}
 

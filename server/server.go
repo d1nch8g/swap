@@ -54,6 +54,7 @@ func Run(port, host, certFile, keyFile, email, telegram, bestchangeLink string, 
 		"/order",
 		"/orders",
 		"/validate-card",
+		"/amlkyc",
 	}
 
 	for _, path := range staticDir {
