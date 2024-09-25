@@ -1,5 +1,6 @@
 <script>
 import { RouterLink, RouterView } from 'vue-router'
+import Chat from './components/Chat.vue'
 
 export default {
   data() {
@@ -56,6 +57,9 @@ export default {
       </a>
       <a v-if="showOperator">
         <RouterLink to="/operator">Оперирование</RouterLink>
+      </a>
+      <a v-if="showOperator">
+        <RouterLink to="/chats">Чаты</RouterLink>
       </a>
       <a v-if="showOperator">
         <RouterLink to="/orders">Заявки</RouterLink>

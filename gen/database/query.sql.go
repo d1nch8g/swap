@@ -72,6 +72,48 @@ func (q *Queries) CreateCardConfirmation(ctx context.Context, arg CreateCardConf
 	return i, err
 }
 
+const createChat = `-- name: CreateChat :one
+INSERT INTO chats (uuid, resolved)
+VALUES ($1, $2)
+RETURNING id, uuid, resolved
+`
+
+type CreateChatParams struct {
+	Uuid     string `json:"uuid"`
+	Resolved bool   `json:"resolved"`
+}
+
+func (q *Queries) CreateChat(ctx context.Context, arg CreateChatParams) (Chat, error) {
+	row := q.db.QueryRow(ctx, createChat, arg.Uuid, arg.Resolved)
+	var i Chat
+	err := row.Scan(&i.ID, &i.Uuid, &i.Resolved)
+	return i, err
+}
+
+const createChatMessage = `-- name: CreateChatMessage :one
+INSERT INTO chat_messages (chat_id, message, outgoing)
+VALUES ($1, $2, $3)
+RETURNING chat_id, outgoing, message, created_at
+`
+
+type CreateChatMessageParams struct {
+	ChatID   int64  `json:"chat_id"`
+	Message  string `json:"message"`
+	Outgoing bool   `json:"outgoing"`
+}
+
+func (q *Queries) CreateChatMessage(ctx context.Context, arg CreateChatMessageParams) (ChatMessage, error) {
+	row := q.db.QueryRow(ctx, createChatMessage, arg.ChatID, arg.Message, arg.Outgoing)
+	var i ChatMessage
+	err := row.Scan(
+		&i.ChatID,
+		&i.Outgoing,
+		&i.Message,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createCurrency = `-- name: CreateCurrency :one
 INSERT INTO currencies (code, description)
 VALUES ($1, $2)
@@ -356,6 +398,50 @@ func (q *Queries) GetCardConfirmationsForUser(ctx context.Context, userID int64)
 	return items, nil
 }
 
+const getChat = `-- name: GetChat :one
+SELECT id, uuid, resolved
+FROM chats
+WHERE uuid = $1
+`
+
+func (q *Queries) GetChat(ctx context.Context, uuid string) (Chat, error) {
+	row := q.db.QueryRow(ctx, getChat, uuid)
+	var i Chat
+	err := row.Scan(&i.ID, &i.Uuid, &i.Resolved)
+	return i, err
+}
+
+const getChatMessages = `-- name: GetChatMessages :many
+SELECT chat_id, outgoing, message, created_at
+FROM chat_messages
+WHERE chat_id = $1
+`
+
+func (q *Queries) GetChatMessages(ctx context.Context, chatID int64) ([]ChatMessage, error) {
+	rows, err := q.db.Query(ctx, getChatMessages, chatID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ChatMessage
+	for rows.Next() {
+		var i ChatMessage
+		if err := rows.Scan(
+			&i.ChatID,
+			&i.Outgoing,
+			&i.Message,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCurrencyByCode = `-- name: GetCurrencyByCode :one
 SELECT id, code, description
 FROM currencies
@@ -599,6 +685,32 @@ func (q *Queries) GetOrdersForUser(ctx context.Context, userID int64) ([]Order, 
 			&i.ConfirmImage,
 			&i.PaymentConfirmed,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUnresolvedChats = `-- name: GetUnresolvedChats :many
+SELECT id, uuid, resolved
+FROM chats
+WHERE resolved = FALSE
+`
+
+func (q *Queries) GetUnresolvedChats(ctx context.Context) ([]Chat, error) {
+	rows, err := q.db.Query(ctx, getUnresolvedChats)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Chat
+	for rows.Next() {
+		var i Chat
+		if err := rows.Scan(&i.ID, &i.Uuid, &i.Resolved); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -964,6 +1076,34 @@ func (q *Queries) UpdateCardConfirmationVerified(ctx context.Context, arg Update
 		&i.Verified,
 		&i.Image,
 	)
+	return i, err
+}
+
+const updateChatResolved = `-- name: UpdateChatResolved :one
+UPDATE chats
+SET resolved = TRUE
+WHERE id = $1
+RETURNING id, uuid, resolved
+`
+
+func (q *Queries) UpdateChatResolved(ctx context.Context, id int64) (Chat, error) {
+	row := q.db.QueryRow(ctx, updateChatResolved, id)
+	var i Chat
+	err := row.Scan(&i.ID, &i.Uuid, &i.Resolved)
+	return i, err
+}
+
+const updateChatUnresolved = `-- name: UpdateChatUnresolved :one
+UPDATE chats
+SET resolved = FALSE
+WHERE id = $1
+RETURNING id, uuid, resolved
+`
+
+func (q *Queries) UpdateChatUnresolved(ctx context.Context, id int64) (Chat, error) {
+	row := q.db.QueryRow(ctx, updateChatUnresolved, id)
+	var i Chat
+	err := row.Scan(&i.ID, &i.Uuid, &i.Resolved)
 	return i, err
 }
 

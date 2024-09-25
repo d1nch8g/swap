@@ -208,6 +208,8 @@ export default {
             </a>
         </div>
     </div>
+
+    <Chat />
 </template>
 
 <style scoped>
@@ -296,10 +298,5 @@ body {
 
 .box .row.header2 {
     flex: 0 1 auto;
-    /* The above is shorthand for:
-  flex-grow: 0,
-  flex-shrink: 1,
-  flex-basis: auto
-  */
 }
 </style>

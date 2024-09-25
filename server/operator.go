@@ -814,6 +814,66 @@ func (e *Endpoints) CardConfirmations(c echo.Context) error {
 	})
 }
 
+type UnresolvedChats struct {
+	Chats []database.Chat `json:"chats"`
+}
+
+// GetUnresolvedChats godoc
+//
+//	@Summary	Get unresolved chat objects
+//	@Success	200 {object} UnresolvedChats
+//	@Security	ApiKeyAuth
+//	@Router		/operator/unresolved-chats [get]
+func (e *Endpoints) GetUnresolvedChats(c echo.Context) error {
+	chats, err := e.db.GetUnresolvedChats(c.Request().Context())
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &UnresolvedChats{
+		Chats: chats,
+	})
+}
+
+type ChatUUID struct {
+	UUID string `json:"uuid"`
+}
+
+// ResolveChat godoc
+//
+//	@Summary	Resolve chat
+//	@Param		status	body	ChatUUID	true	"Chat UUID"
+//	@Success	200
+//	@Security	ApiKeyAuth
+//	@Router		/operator/resolve-chat [post]
+func (e *Endpoints) ResolveChat(c echo.Context) error {
+	var req ChatUUID
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
+
+	chat, err := e.db.GetChat(c.Request().Context(), req.UUID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	_, err = e.db.UpdateChatResolved(c.Request().Context(), chat.ID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return nil
+}
+
 // CardConfirmations godoc
 //
 //	@Summary	Get user's card confirmations

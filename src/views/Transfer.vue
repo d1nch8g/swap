@@ -82,6 +82,8 @@ export default {
         <input id="file-upload" type="file">
     </form>
     <button @click="fileChosen">Отправить данные</button>
+
+    <Chat />
 </template>
 
 <style>

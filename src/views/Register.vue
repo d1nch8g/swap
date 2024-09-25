@@ -82,6 +82,8 @@ export default {
             </div>
         </div>
     </form>
+
+    <Chat />
 </template>
 
 

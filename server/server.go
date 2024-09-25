@@ -45,6 +45,9 @@ func Run(port, host, certFile, keyFile, email, telegram, bestchangeLink string, 
 		"/login",
 		"/register",
 		"/rules",
+		"/amlkyc",
+		"/chats",
+		"/chat",
 		"/profile",
 		"/operator",
 		"/currencies",
@@ -54,7 +57,6 @@ func Run(port, host, certFile, keyFile, email, telegram, bestchangeLink string, 
 		"/order",
 		"/orders",
 		"/validate-card",
-		"/amlkyc",
 	}
 
 	for _, path := range staticDir {
@@ -80,6 +82,8 @@ func Run(port, host, certFile, keyFile, email, telegram, bestchangeLink string, 
 	api.GET("/list-exchangers", endpoints.ListExchangers)
 	api.GET("/current-rate", endpoints.CurrentRate)
 	api.GET("/order-status", endpoints.OrderStatus)
+	api.POST("/send-chat-message", endpoints.SendChatMessage)
+	api.GET("/get-chat-messages/:uuid", endpoints.GetChatMessages)
 	api.POST("/login", endpoints.Login)
 
 	user := api.Group("/user", middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {
@@ -133,6 +137,8 @@ func Run(port, host, certFile, keyFile, email, telegram, bestchangeLink string, 
 	operator.GET("/order-search", endpoints.OrderSearch)
 	operator.DELETE("/cancel-card", endpoints.CancelCard)
 	operator.GET("/card-confirmations", endpoints.CardConfirmations)
+	operator.GET("/unresolved-chats", endpoints.GetUnresolvedChats)
+	operator.POST("/resolve-chat", endpoints.ResolveChat)
 
 	admin := api.Group("/admin", middleware.KeyAuth(func(auth string, c echo.Context) (bool, error) {
 		u, err := d.GetUserByToken(c.Request().Context(), auth)

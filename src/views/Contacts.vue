@@ -42,10 +42,11 @@ export default {
     <p>
         Telegram: <a :href="'https://t.me/' + telegram">@{{ telegram }}</a>
     </p>
-    <br>
     <p>
         Часы работы: 8:00-24:00, Москва - UTC/GMT +3 hours
     </p>
+
+    <Chat />
 </template>
 
 <style></style>

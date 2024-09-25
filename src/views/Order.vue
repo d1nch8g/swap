@@ -102,4 +102,6 @@ export default {
         </form>
         <button @click="fileChosen">Отправить данные</button>
     </div>
+
+    <Chat />
 </template>

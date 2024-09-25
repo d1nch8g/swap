@@ -927,3 +927,105 @@ func (e *Endpoints) BcExport(c echo.Context) error {
 func (e *Endpoints) BcLink(c echo.Context) error {
 	return c.String(http.StatusOK, e.bestchangeLink)
 }
+
+type SendChatMessageRequest struct {
+	Uuid     string `json:"uuid"`
+	Message  string `json:"message"`
+	Outgoing bool   `json:"outgoing"`
+}
+
+// SendChatMessage
+//
+//	@Summary	Send message that will be read by operators.
+//	@Param		status	body		SendChatMessageRequest	true	"Request parameters"
+//	@Success	200
+//	@Router		/send-chat-message [post]
+func (e *Endpoints) SendChatMessage(c echo.Context) error {
+	var req SendChatMessageRequest
+	err := c.Bind(&req)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusBadRequest)
+		_, err := c.Response().Write([]byte("unable to unmarshal request"))
+		return err
+	}
+
+	chat, err := e.db.GetChat(c.Request().Context(), req.Uuid)
+	if err != nil {
+		chat, err = e.db.CreateChat(c.Request().Context(), database.CreateChatParams{
+			Uuid:     req.Uuid,
+			Resolved: false,
+		})
+		if err != nil {
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			_, err := c.Response().Write([]byte("unable to access database"))
+			return err
+		}
+	}
+
+	_, err = e.db.CreateChatMessage(c.Request().Context(), database.CreateChatMessageParams{
+		ChatID:   chat.ID,
+		Message:  req.Message,
+		Outgoing: req.Outgoing,
+	})
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	_, err = e.db.UpdateChatUnresolved(c.Request().Context(), chat.ID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	return nil
+}
+
+type ChatMessages struct {
+	Messages []ChatMessage `json:"messages"`
+}
+
+type ChatMessage struct {
+	Outgoing bool   `json:"outgoing"`
+	Message  string `json:"message"`
+	Time     string `json:"time"`
+}
+
+// GetChatMessages
+//
+//	@Summary	Send message that will be read by operators.
+//	@Param		uuid	path	string	true	"UUID sent by email"
+//	@Success	200 {object} ChatMessages
+//	@Router		/get-chat-messages/{uuid} [get]
+func (e *Endpoints) GetChatMessages(c echo.Context) error {
+	uuid := c.Param("uuid")
+
+	chat, err := e.db.GetChat(c.Request().Context(), uuid)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	messages, err := e.db.GetChatMessages(c.Request().Context(), chat.ID)
+	if err != nil {
+		c.Response().WriteHeader(http.StatusInternalServerError)
+		_, err := c.Response().Write([]byte("unable to access database"))
+		return err
+	}
+
+	var msgs []ChatMessage
+	for _, message := range messages {
+		msgs = append(msgs, ChatMessage{
+			Outgoing: message.Outgoing,
+			Message:  message.Message,
+			Time:     message.CreatedAt.Format("15:04"),
+		})
+	}
+
+	return c.JSON(http.StatusOK, &ChatMessages{
+		Messages: msgs,
+	})
+}

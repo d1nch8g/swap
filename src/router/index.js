@@ -36,6 +36,16 @@ const router = createRouter({
       component: () => import("../views/Amlkyc.vue"),
     },
     {
+      path: "/chats",
+      name: "chats",
+      component: () => import("../views/Chats.vue"),
+    },
+    {
+      path: "/chat",
+      name: "chat",
+      component: () => import("../views/Chat.vue"),
+    },
+    {
       path: "/profile",
       name: "profile",
       component: () => import("../views/Profile.vue"),

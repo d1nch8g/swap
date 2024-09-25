@@ -78,6 +78,8 @@ export default {
 
     <br>
     <button class="button" @click="logout"><span>Выйти</span></button>
+
+    <Chat />
 </template>
 
 <style scoped>

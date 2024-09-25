@@ -88,6 +88,8 @@ export default {
             <button type="submit" @click.prevent="login">Войти</button>
         </div>
     </form>
+
+    <Chat />
 </template>
 
 <style scoped>

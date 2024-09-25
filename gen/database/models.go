@@ -25,6 +25,19 @@ type CardConfirmation struct {
 	Image      []byte `json:"image"`
 }
 
+type Chat struct {
+	ID       int64  `json:"id"`
+	Uuid     string `json:"uuid"`
+	Resolved bool   `json:"resolved"`
+}
+
+type ChatMessage struct {
+	ChatID    int64     `json:"chat_id"`
+	Outgoing  bool      `json:"outgoing"`
+	Message   string    `json:"message"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type Currency struct {
 	ID          int64  `json:"id"`
 	Code        string `json:"code"`

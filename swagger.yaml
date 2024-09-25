@@ -17,6 +17,15 @@ definitions:
       verified:
         type: boolean
     type: object
+  database.Chat:
+    properties:
+      id:
+        type: integer
+      resolved:
+        type: boolean
+      uuid:
+        type: string
+    type: object
   database.CreateCurrencyParams:
     properties:
       code:
@@ -94,6 +103,27 @@ definitions:
         items:
           $ref: '#/definitions/database.CardConfirmation'
         type: array
+    type: object
+  server.ChatMessage:
+    properties:
+      message:
+        type: string
+      outgoing:
+        type: boolean
+      time:
+        type: string
+    type: object
+  server.ChatMessages:
+    properties:
+      messages:
+        items:
+          $ref: '#/definitions/server.ChatMessage'
+        type: array
+    type: object
+  server.ChatUUID:
+    properties:
+      uuid:
+        type: string
     type: object
   server.CreateBalanceRequest:
     properties:
@@ -258,6 +288,22 @@ definitions:
         type: boolean
       email:
         type: string
+    type: object
+  server.SendChatMessageRequest:
+    properties:
+      message:
+        type: string
+      outgoing:
+        type: boolean
+      uuid:
+        type: string
+    type: object
+  server.UnresolvedChats:
+    properties:
+      chats:
+        items:
+          $ref: '#/definitions/database.Chat'
+        type: array
     type: object
   server.UpdateBalanceRequest:
     properties:
@@ -553,6 +599,20 @@ paths:
           schema:
             $ref: '#/definitions/server.CurrentRateResponse'
       summary: Current rate at specific currency
+  /get-chat-messages/{uuid}:
+    get:
+      parameters:
+      - description: UUID sent by email
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.ChatMessages'
+      summary: Send message that will be read by operators.
   /info:
     get:
       responses:
@@ -688,6 +748,31 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get user's card confirmations
+  /operator/resolve-chat:
+    post:
+      parameters:
+      - description: Chat UUID
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.ChatUUID'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Resolve chat
+  /operator/unresolved-chats:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.UnresolvedChats'
+      security:
+      - ApiKeyAuth: []
+      summary: Get unresolved chat objects
   /operator/update-balance:
     post:
       parameters:
@@ -717,6 +802,19 @@ paths:
           schema:
             $ref: '#/definitions/server.OrderStatusResponse'
       summary: Check order status and return info about order
+  /send-chat-message:
+    post:
+      parameters:
+      - description: Request parameters
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/server.SendChatMessageRequest'
+      responses:
+        "200":
+          description: OK
+      summary: Send message that will be read by operators.
   /user/list-orders:
     get:
       responses:

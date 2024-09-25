@@ -76,6 +76,8 @@ export default {
         <input id="file-upload" type="file">
     </form>
     <input type="submit" @click="fileChosen">
+    
+    <Chat />
 </template>
 
 <style scoped>

@@ -208,3 +208,33 @@ SET payment_confirmed = $2,
   confirm_image = $3
 WHERE id = $1
 RETURNING *;
+-- name: CreateChat :one
+INSERT INTO chats (uuid, resolved)
+VALUES ($1, $2)
+RETURNING *;
+-- name: UpdateChatResolved :one
+UPDATE chats
+SET resolved = TRUE
+WHERE id = $1
+RETURNING *;
+-- name: UpdateChatUnresolved :one
+UPDATE chats
+SET resolved = FALSE
+WHERE id = $1
+RETURNING *;
+-- name: GetChat :one
+SELECT *
+FROM chats
+WHERE uuid = $1;
+-- name: GetUnresolvedChats :many
+SELECT *
+FROM chats
+WHERE resolved = FALSE;
+-- name: CreateChatMessage :one
+INSERT INTO chat_messages (chat_id, message, outgoing)
+VALUES ($1, $2, $3)
+RETURNING *;
+-- name: GetChatMessages :many
+SELECT *
+FROM chat_messages
+WHERE chat_id = $1;
